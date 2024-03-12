@@ -1,9 +1,9 @@
-from typing import Self
+import model
+import sqlalchemy.orm as orm
 
-
-class UserEntity():
-  def __init__(self: Self, username: str, role: str, space: str, active: bool = True, /) -> None:
-    self.username = username
-    self.role = role
-    self.space = space
-    self.active = active
+class User(model.db.Model):
+  email: orm.Mapped[str] = orm.mapped_column(primary_key=True)
+  username: orm.Mapped[str]
+  role: orm.Mapped[str]
+  space: orm.Mapped[str]
+  active: orm.Mapped[bool]= orm.mapped_column(default=True)
