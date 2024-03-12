@@ -11,7 +11,3 @@ class Space(Enum):
   C = auto()
   SUPPORT = auto()
   HEADQUARTERS = auto()
-  
-class Type(Enum):
-  DATE = auto()
-  PERSONNEL = auto()
