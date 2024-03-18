@@ -2,9 +2,9 @@
   <div class="form-control-label">{{ field.label }} </div>
   <div>{{ field(**kwargs)|safe }}
   {% if field.errors %}
-    <ul class="errors invalid-feedback">
+    <ul class="errors">
     {% for error in field.errors %}
-      <li>{{ error }}</li>
+      <div class="my-invalid-feedback">{{ error }}</div>
     {% endfor %}
     </ul>
   {% endif %}
