@@ -1,13 +1,13 @@
-from enum import Enum, auto
+from enum import Enum
 
 class Role(Enum):
-  USER = auto()
-  MANAGER = auto()
-  ADMIN = auto()
+  USER = "פקיד"
+  MANAGER = "שליש"
+  ADMIN = "מנהל"
   
 class Space(Enum):
-  A = auto()
-  B = auto()
-  C = auto()
-  SUPPORT = auto()
-  HEADQUARTERS = auto()
+  A = "פלוגה א"
+  B = "פלוגה ב"
+  C = "פלוגה ג"
+  SUPPORT = "מסייעת"
+  HEADQUARTERS = "מפקדה"
