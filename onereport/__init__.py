@@ -1,25 +1,42 @@
-import os
-import sys
-from typing import Any
 import flask
+from .data import model
+import dotenv
+import logging
+import os
 
-def create_app(test_config: dict[str, Any] = None) -> flask.Flask:
-  app = flask.Flask(__name__, instance_relative_config=True)
-  app.config.from_mapping(SECRET_KEY = "dev", DATABASE = os.path.join(app.instance_path, "onereport.sqlite"))
-  
-  if not test_config:
-    app.config.from_pyfile("config/config.py", silent=True)
-  else:
-    app.config.from_mapping(test_config)
+# TODO (for prod): 
+# https://developers.google.com/identity/protocols/oauth2/web-server#uri-validation
+# Hosts cannot be raw IP addresses. Localhost IP addresses are exempted from this rule.
+# Redirect URIs must use the HTTPS scheme, not plain HTTP
+
+if not dotenv.load_dotenv():
+    logging.error("failed to load environment variables")
+    exit(1)
     
-  try:
-    os.makedirs(app.instance_path)
-  except OSError as os_err:
-    print(f"error creating directory {app.instance_path}\n reason: {os_err.strerror}", file=sys.stderr)
-    
-  # import controller  # noqa: F401
-  @app.route("/hello")
-  def hello() -> str:
-    return "hello, world!"
-  
-  return app
+app = flask.Flask(__name__)
+app.config["SECRET_KEY"] = "f380646b8a62c55a9f1c526f9a62331fdf57f36b2e3165a29b1f92e868e26df14869967414fffe2d808df5e30dc650ef366faac83f36a51886d713b6322571dd"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
+app.config["OAUTH2_PROVIDERS"] = {
+    # https://blog.miguelgrinberg.com/post/oauth-authentication-with-flask-in-2023
+    # Google OAuth 2.0 documentation:
+    # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
+    "google": {
+        "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
+        "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
+        "authorize_url": "https://accounts.google.com/o/oauth2/auth",
+        "token_url": "https://accounts.google.com/o/oauth2/token",
+        "userinfo": {
+            "url": "https://www.googleapis.com/oauth2/v3/userinfo",
+            "email": lambda json: json["email"],
+        },
+        "scopes": ["https://www.googleapis.com/auth/userinfo.email"],
+    }
+}
+
+
+model.db.init_app(app=app)
+model.login_manager.init_app(app=app)
+model.login_manager.login_view = "login"
+model.login_manager.login_message_category = "info"
+
+from . import endpoints  # noqa: E402, F401
