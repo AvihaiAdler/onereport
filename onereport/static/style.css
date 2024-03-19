@@ -45,5 +45,15 @@ h6 {
 }
 
 .my-invalid-feedback {
-  color: crimson;
+  color: #f71c48;
+}
+
+.even {
+  background: #ffffff;
+  padding: 1rem;
+}
+
+.odd {
+  background: #a7c6df;
+  padding: 1rem;
 }
