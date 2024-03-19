@@ -1,5 +1,5 @@
 import flask
-from .data import model
+from onereport.data import model, misc
 import dotenv
 import logging
 import os
@@ -17,7 +17,6 @@ app = flask.Flask(__name__)
 app.config["SECRET_KEY"] = "f380646b8a62c55a9f1c526f9a62331fdf57f36b2e3165a29b1f92e868e26df14869967414fffe2d808df5e30dc650ef366faac83f36a51886d713b6322571dd"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
 app.config["OAUTH2_PROVIDERS"] = {
-    # https://blog.miguelgrinberg.com/post/oauth-authentication-with-flask-in-2023
     # Google OAuth 2.0 documentation:
     # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
     "google": {
@@ -33,10 +32,17 @@ app.config["OAUTH2_PROVIDERS"] = {
     }
 }
 
-
 model.db.init_app(app=app)
 model.login_manager.init_app(app=app)
 model.login_manager.login_view = "login"
 model.login_manager.login_message_category = "info"
 
-from . import endpoints  # noqa: E402, F401
+# from onereport import endpoints  # noqa: E402, F401
+from onereport.endpoints import users  # noqa: E402, F401
+from onereport.endpoints import auth  # noqa: E402, F401
+from onereport.endpoints import managers # noqa: E402, F401
+from onereport.endpoints import admins # noqa: E402, F401
+
+@app.template_filter()
+def check_user(role: str) -> bool:
+  return misc.Role[role] == misc.Role.USER
