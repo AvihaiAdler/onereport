@@ -3,8 +3,11 @@ from onereport.data import misc
 from onereport.dal import order_attr
 import sqlalchemy
 
-def get_users_by_name(username: str, /) -> model.User | None:
-  return model.db.session.scalars(sqlalchemy.select(model.User).filter(model.User.username == username)).all()
+def get_users_by_first_name(first_name: str, /) -> model.User | None:
+  return model.db.session.scalars(sqlalchemy.select(model.User).filter(model.User.first_name == first_name)).all()
+
+def get_users_by_last_name(last_name: str, /) -> model.User | None:
+  return model.db.session.scalars(sqlalchemy.select(model.User).filter(model.User.last_name == last_name)).all()
 
 def get_user_by_email(email: str, /) -> model.User | None:
   return model.db.session.scalar(sqlalchemy.select(model.User).filter(model.User.email == email))
