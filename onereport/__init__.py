@@ -37,6 +37,22 @@ model.login_manager.init_app(app=app)
 model.login_manager.login_view = "login"
 model.login_manager.login_message_category = "info"
 
+def drop_all() -> None:
+  with app.app_context():
+    model.db.drop_all()
+    
+def create_all() -> None:
+  with app.app_context():
+    model.db.create_all()
+    
+def register_user(user: model.User) -> None:
+  if user is None:
+    raise ValueError("user must not be None")
+  
+  with app.app_context():
+    model.db.session.add(user)
+    model.db.session.commit()
+
 # from onereport import endpoints  # noqa: E402, F401
 from onereport.endpoints import users  # noqa: E402, F401
 from onereport.endpoints import auth  # noqa: E402, F401

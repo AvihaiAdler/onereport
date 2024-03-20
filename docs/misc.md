@@ -1,18 +1,32 @@
 ##### running
 python -m flask --app onereport run --debug
 
+##### drop db:
+```py
+python
+import onereport
+onereport.drop_all()
+```
+
 ##### create db:
 ```py
 python
-from onereport import app
-from onereport.data import model
+import onereport
+onereport.create_all()
+```
 
-with app.app_context():
-  model.db.create_all()
+##### register user:
+```py
+python
+import onereport
+from onereport.data.model import User
+user = User(...)
+onereport.register_user(user)
 ```
 
 ##### query data:
 ```py
+from onereport.dal import user_dal, order_attr
 with app.app_context():
-  model.User.query.all()
+  user_dal.get_all_users(order_attr.UserOrderBy.EMAIL, order_attr.Order.ASC)
 ```
