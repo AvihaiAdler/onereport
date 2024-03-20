@@ -1,14 +1,14 @@
 import flask_wtf
 import wtforms
 import wtforms.validators as validators
-from .data.misc import Space, Role
+from .data.misc import Company, Role
 from .data import model
 
 class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
   id = wtforms.StringField("מספר אישי", validators=[validators.DataRequired(), validators.Length(7,7)])
   first_name = wtforms.StringField("שם פרטי", validators=[validators.DataRequired(), validators.Length(2, 10)])
   last_name = wtforms.StringField("שם משפחה", validators=[validators.DataRequired(), validators.Length(2, 15)])
-  company = wtforms.SelectField("פלוגה", choices=[(name, member.value) for name, member in Space.__members__.items()])
+  company = wtforms.SelectField("פלוגה", choices=[(name, member.value) for name, member in Company.__members__.items()])
   
   submit = wtforms.SubmitField("הוסף חייל")
   
@@ -21,7 +21,7 @@ class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
 class UserRegistrationFrom(flask_wtf.FlaskForm):
   email = wtforms.EmailField("אימייל", validators=[validators.DataRequired(), validators.Email()])
   username = wtforms.StringField("שם", validators=[validators.DataRequired(), validators.Length(2, 25)])
-  company = wtforms.SelectField("פלוגה", choices=[(name, member.value) for name, member in Space.__members__.items()])
+  company = wtforms.SelectField("פלוגה", choices=[(name, member.value) for name, member in Company.__members__.items()])
   role = wtforms.SelectField("תפקיד", choices=[(name, member.value) for name, member in Role.__members__.items()])
   
   submit = wtforms.SubmitField("הוסף משתמש")

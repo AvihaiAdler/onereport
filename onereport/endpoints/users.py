@@ -17,7 +17,7 @@ def logout() -> str:
 @app.get("/onereport/home")
 @flask_login.login_required
 def home() -> str:
-  title = misc.Space[flask_login.current_user.company].value
+  title = misc.Company[flask_login.current_user.company].value
   return flask.render_template("home.html", title=title)
 
 @app.get("/onereport/about")

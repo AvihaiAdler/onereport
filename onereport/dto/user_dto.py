@@ -7,5 +7,5 @@ class UserDTO():
     self.username = user.username
     self.email = user.email
     self.role = misc.Role[user.role].value
-    self.company = misc.Space[user.company].value
+    self.company = misc.Company[user.company].value
     self.active = "פעיל" if user.active else "לא פעיל"

@@ -5,7 +5,7 @@ class Role(Enum):
   MANAGER = "שליש"
   ADMIN = "מנהל"
   
-class Space(Enum):
+class Company(Enum):
   A = "פלוגה א"
   B = "פלוגה ב"
   C = "פלוגה ג"
