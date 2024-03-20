@@ -14,16 +14,20 @@ login_manager = LoginManager()
 
 class User(db.Model, UserMixin):
   email: orm.Mapped[str] = orm.mapped_column(primary_key=True)
-  username: orm.Mapped[str]
+  first_name: orm.Mapped[str]
+  last_name: orm.Mapped[str]
   role: orm.Mapped[str]
   company: orm.Mapped[str]
   active: orm.Mapped[bool]= orm.mapped_column(default=True)
   
-  def __init__(self, email: str, username: str, role: str, company: str, /) -> None:
-    super().__init__(email=email, username=username, role=role, company=company)
+  def __init__(self: Self, email: str, first_name: str, last_name: str, role: str, company: str, /) -> None:
+    super().__init__(email=email, first_name=first_name, last_name=last_name, role=role, company=company)
+    
+  def update(self: Self, other: Self) -> None:
+    self.first_name, self.last_name = other.first_name, other.last_name
   
   def __repr__(self: Self) -> str:
-    return f"User(email: {self.email}, username: {self.username}, role: {self.role}, company: {self.company}, active: {self.active})"
+    return f"User(email: {self.email}, name: {' '.join((self.first_name, self.last_name))}, role: {self.role}, company: {self.company}, active: {self.active})"
   
   def get_id(self: Self) -> str:
     return self.email
@@ -32,10 +36,10 @@ class User(db.Model, UserMixin):
 def load_user(email: str) -> User:
   return db.session.get(User, email)
 
-personnel_date = sqlalchemy.Table(
-  "personnel_date",
+personnel_report_rel = sqlalchemy.Table(
+  "personnel_report_rel",
   Base.metadata,
-  sqlalchemy.Column("date_id", sqlalchemy.ForeignKey("date.id"), primary_key=True),
+  sqlalchemy.Column("report_id", sqlalchemy.ForeignKey("report.id"), primary_key=True),
   sqlalchemy.Column("personnel_id", sqlalchemy.ForeignKey("personnel.id"), primary_key=True),
 )
 
@@ -47,26 +51,31 @@ class Personnel(db.Model):
   platoon: orm.Mapped[str]
   active: orm.Mapped[bool] = orm.mapped_column(default=True)
   
-  dates_present: orm.Mapped[Set["Date"]] = orm.relationship(secondary=personnel_date, back_populates="present", lazy=True)
+  dates_present: orm.Mapped[Set["Report"]] = orm.relationship(secondary=personnel_report_rel, back_populates="present", lazy=True)
   
-  def __init__(self, id: str, first_name: str, last_name: str, company: str, platoon: str, /) -> None:
+  def __init__(self: Self, id: str, first_name: str, last_name: str, company: str, platoon: str, /) -> None:
     super().__init__(id=id, first_name=first_name, last_name=last_name, company=company, platoon=platoon)
+  
+  def update(self: Self, other: Self) -> None:
+    self.first_name, self.last_name = other.first_name, other.last_name
+    self.company = other.company
+    self.platoon = other.platoon
+    self.active = other.active
   
   def __repr__(self: Self) -> str:
     return f"Personnel(id: {self.id}, full name:{' '.join((self.first_name, self.last_name))}, company: {self.company}, platoon: {self.platoon}, active: {self.active})"
   
 
-class Date(db.Model):
-  id: orm.Mapped[datetime.date] = orm.mapped_column(primary_key=True, default=datetime.date.today)
+class Report(db.Model):
+  id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
+  date: orm.Mapped[datetime.date] = orm.mapped_column(default=datetime.date.today)
+  company: orm.Mapped[str]
   
-  present: orm.Mapped[Set["Personnel"]] = orm.relationship(secondary=personnel_date, back_populates="dates_present", lazy=True)
+  present: orm.Mapped[Set["Personnel"]] = orm.relationship(secondary=personnel_report_rel, back_populates="dates_present", lazy=True)
 
-  def __init__(self) -> None:
+  def __init__(self: Self) -> None:
     super().__init__()
-    
-  def get_id(self: Self) -> datetime.date:
-    return Self.id
 
   def __repr__(self: Self) -> str:
-    return f"Date({self.id.day}/{self.id.month}/{self.id.year})"
+    return f"Report(date: {self.id.day}/{self.id.month}/{self.id.year}, company: {self.company})"
 
