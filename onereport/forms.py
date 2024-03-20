@@ -1,5 +1,7 @@
+from typing import Self
 import flask_wtf
 import wtforms
+import flask_login
 import wtforms.validators as validators
 from onereport.data import misc
 from onereport.dal import personnel_dal, user_dal
@@ -12,7 +14,7 @@ class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
   
   submit = wtforms.SubmitField("הוסף חייל")
   
-  def validate_id(self, id: wtforms.StringField) -> None:
+  def validate_id(self: Self, id: wtforms.StringField) -> None:
     personnel = personnel_dal.get_personnel_by_id(id.data)
     if personnel:
       raise wtforms.ValidationError("Personnel already exists")
@@ -27,7 +29,11 @@ class UserRegistrationFrom(flask_wtf.FlaskForm):
 
   submit = wtforms.SubmitField("הוסף משתמש")
   
-  def validate_email(self, email: wtforms.StringField) -> None:
+  def validate_email(self: Self, email: wtforms.StringField) -> None:
     user = user_dal.get_user_by_email(email.data)
     if user:
       raise wtforms.ValidationError("User already exists")
+    
+  def validate_role(self: Self, role: wtforms.SelectField) -> None:
+    if misc.Role[flask_login.current_user.role] != misc.Role.ADMIN and role.data == "ADMIN":
+      raise wtforms.ValidationError("Permission denied")
