@@ -46,3 +46,14 @@ from onereport.endpoints import admins # noqa: E402, F401
 @app.template_filter()
 def check_user(role: str) -> bool:
   return misc.Role[role] == misc.Role.USER
+
+@app.template_filter()
+def generate_urlstr(role: str, urlstr: str) -> str:
+  if misc.Role[role] == misc.Role.USER:
+    return f"u_{urlstr}"
+  
+  if misc.Role[role] == misc.Role.MANAGER:
+    return f"m_{urlstr}"
+  
+  urlstr = "_".join([token for token in urlstr.split("_") if token != "active"])
+  return f"a_{urlstr}"

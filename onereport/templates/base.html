@@ -46,12 +46,20 @@
           <p class='text-muted'>{{ current_user.username }}
           <ul class="list-group">
           {% if not current_user.role|check_user %}
-            <li class="list-group-item list-group-item-light">הוסף חייל</li>
-            <li class="list-group-item list-group-item-light">הוסף פקיד</li>
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_personnel")) }}>
+              <li class="list-group-item list-group-item-light">הוסף חייל</li>
+            </a>
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_user")) }}>  
+              <li class="list-group-item list-group-item-light">הוסף פקיד</li>
+            </a>
             <li class="list-group-item list-group-item-light">פתח שמ"פ</li>
-            <li class="list-group-item list-group-item-light">פקידים</li>
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_active_users")) }}>
+              <li class="list-group-item list-group-item-light">פקידים</li>
+            </a>
           {% endif %}
+          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_active_personnel")) }}>
             <li class="list-group-item list-group-item-light">חיילים</li>
+          </a>
             <li class="list-group-item list-group-item-light">שמפי"ם קודמים</li> 
           </ul>
           </p>
