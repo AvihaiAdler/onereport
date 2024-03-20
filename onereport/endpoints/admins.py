@@ -21,12 +21,15 @@ def a_register_personnel() -> str:
     # SELECT p FROM personnel WHERE p.id == personnel.id
     old_personnel = personnel_dal.get_personnel_by_id(personnel.id)
     if old_personnel is not None:
-      model.db.session.delete(old_personnel)
+      # model.db.session.delete(old_personnel)
+      old_personnel.update(personnel)
+      model.db.session.commit()
+      flask.flash(f"החייל {' '.join((old_personnel.first_name, old_personnel.last_name))} עודכן בהצלחה", category="success")
+    else:  
+      model.db.session.add(personnel)
+      model.db.session.commit()
+      flask.flash(f"החייל {' '.join((personnel.first_name, personnel.last_name))} נוסף בהצלחה", category="success")
     
-    model.db.session.add(personnel)
-    model.db.session.commit()
-    
-    flask.flash(f"החייל {form.first_name.data} {form.last_name.data} נוסף בהצלחה", "success")
     return flask.redirect(flask.url_for("home"))
     
   return flask.render_template("personnel_registration.html", form=form)
@@ -40,17 +43,20 @@ def a_register_user() -> str:
   form = forms.UserRegistrationFrom()
   
   if form.validate_on_submit():
-    user = model.User(form.email.data.strip(), form.username.data.strip(), form.role.data, form.company.data)
+    user = model.User(form.email.data.strip(), form.first_name.data.strip(), form.last_name.data.strip(), form.role.data, form.company.data)
     
     # SELECT old_user FROM users WHERE old_user.email == user.email
     old_user = user_dal.get_user_by_email(user.email)
     if old_user is not None:
-      model.db.session.delete(old_user)
+      # model.db.session.delete(old_user)
+      old_user.update(user)
+      model.db.session.commit()
+      flask.flash(f"הפקיד {' '.join((old_user.first_name, old_user.last_name))} עודכן בהצלחה", category="success")
+    else:
+      model.db.session.add(user)
+      model.db.session.commit()
+      flask.flash(f"הפקיד {' '.join((user.first_name, user.last_name))} נוסף בהצלחה", category="success")
     
-    model.db.session.add(user)
-    model.db.session.commit()
-    
-    flask.flash(f"הפקיד {form.username.data} נוסף בהצלחה")
     return flask.redirect(flask.url_for("home"))
   
   return flask.render_template("user_registration.html", form=form)
