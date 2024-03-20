@@ -19,7 +19,7 @@ def get_all_active_personnel(order_by: order_attr.PersonnelOrderBy, order: order
   return model.db.session.scalars(construct_statement(order_by, order).filter(model.Personnel.active)).all()
 
 def get_all_active_personnel_by_company(company: misc.Company, order_by: order_attr.PersonnelOrderBy, order: order_attr.Order, /) -> list[model.Personnel]:
-  return model.db.session.scalars(construct_statement(order_by, order).filter(model.Personnel.active).filter(company.name)).all()
+  return model.db.session.scalars(construct_statement(order_by, order).filter(model.Personnel.active).filter(model.Personnel.company == company.name)).all()
 
 def get_all_personnel(order_by: order_attr.PersonnelOrderBy, order: order_attr.Order, /) -> list[model.Personnel]:
   return model.db.session.scalars(construct_statement(order_by, order)).all()
