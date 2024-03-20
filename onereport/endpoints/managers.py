@@ -62,7 +62,7 @@ def m_register_user() -> str:
 # pagination
 @app.route("/onereport/managers/users", methods=["GET", "POST"])
 @flask_login.login_required
-def m_get_all_active_users(order_by: str, order: str = "ASC") -> str:
+def m_get_all_active_users(order_by: str = "COMPANY", order: str = "ASC") -> str:
   current_user = flask_login.current_user
   if misc.Role[current_user.role] != misc.Role.MANAGER:
     return flask.redirect(flask.url_for("home"))
@@ -83,7 +83,7 @@ def m_get_all_active_users(order_by: str, order: str = "ASC") -> str:
 # pagination
 @app.route("/onereport/managers/personnel", methods=["GET", "POST"])
 @flask_login.login_required
-def m_get_all_personnel(order_by: str, order: str = "ASC") -> str:
+def m_get_all_personnel(order_by: str = "LAST_NAME", order: str = "ASC") -> str:
   current_user = flask_login.current_user
   if misc.Role[current_user.role] != misc.Role.MANAGER:
     return flask.redirect(flask.url_for("home"))
