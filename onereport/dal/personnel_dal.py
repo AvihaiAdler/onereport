@@ -1,5 +1,6 @@
 from onereport.dal import order_attr
 from onereport.data import model
+from onereport.data import misc
 import sqlalchemy
 
 def get_personnel_by_id(id: str) -> model.Personnel | None:
@@ -16,6 +17,9 @@ def construct_statement(order_by: order_attr.PersonnelOrderBy, order: order_attr
 
 def get_all_active_personnel(order_by: order_attr.PersonnelOrderBy, order: order_attr.Order, /) -> list[model.Personnel]:
   return model.db.session.scalars(construct_statement(order_by, order).filter(model.Personnel.active)).all()
+
+def get_all_active_personnel_by_company(company: misc.Company, order_by: order_attr.PersonnelOrderBy, order: order_attr.Order, /) -> list[model.Personnel]:
+  return model.db.session.scalars(construct_statement(order_by, order).filter(model.Personnel.active).filter(company.name)).all()
 
 def get_all_personnel(order_by: order_attr.PersonnelOrderBy, order: order_attr.Order, /) -> list[model.Personnel]:
   return model.db.session.scalars(construct_statement(order_by, order)).all()
