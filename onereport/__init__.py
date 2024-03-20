@@ -14,8 +14,8 @@ if not dotenv.load_dotenv():
     exit(1)
     
 app = flask.Flask(__name__)
-app.config["SECRET_KEY"] = "f380646b8a62c55a9f1c526f9a62331fdf57f36b2e3165a29b1f92e868e26df14869967414fffe2d808df5e30dc650ef366faac83f36a51886d713b6322571dd"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
 app.config["OAUTH2_PROVIDERS"] = {
     # Google OAuth 2.0 documentation:
     # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
