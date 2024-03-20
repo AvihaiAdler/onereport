@@ -4,8 +4,9 @@
 <div class="container content-section">
   {% for user in users %}
   <div class="row {{ loop.cycle('even', 'odd') }}">
-    <div class="col-3">{{ user.username }}</div>
-    <div class="col-4">{{ user.email }}</div>
+    <div class="col-2">{{ user.first_name }}</div>
+    <div class="col-2">{{ user.last_name }}</div>
+    <div class="col-3">{{ user.email }}</div>
     <div class="col-1">{{ user.role }}</div>
     <div class="col-2">{{ user.company }}</div>
     <div class="col-1">{{ user.active }}</div>
