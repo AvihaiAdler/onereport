@@ -1,8 +1,8 @@
 from typing import Self
-from . import misc
-from . import model
+from onereport.data import misc
+from onereport.data import model
 
-class UserDto():
+class UserDTO():
   def __init__(self: Self, user: model.User) -> None:
     self.username = user.username
     self.email = user.email
