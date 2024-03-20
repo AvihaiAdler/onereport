@@ -1,5 +1,5 @@
 from onereport import app
-from onereport.data import model
+from onereport.dal import user_dal
 import flask
 import flask_login
 import secrets
@@ -83,7 +83,7 @@ def oauth2_callback(provider: str):
     email = provider_data["userinfo"]["email"](response.json())
 
     # find the user in the database
-    user = model.db.session.query(model.User).filter(model.User.email==email).scalar()
+    user = user_dal.get_user_by_email(email)
     if user is None:
         flask.abort(401)
 
