@@ -1,10 +1,8 @@
 from onereport import app, forms
 from onereport.data import model
 from onereport.data import misc
-from onereport.dto import user_dto
-from onereport.dto import personnel_dto
-from onereport.dal import personnel_dal
-from onereport.dal import user_dal
+from onereport.dto import user_dto, personnel_dto
+from onereport.dal import personnel_dal, user_dal
 from onereport.dal import order_attr
 import flask
 import flask_login
@@ -14,7 +12,7 @@ import flask_login
 
 @app.route("/onereport/managers/register_personnel", methods=["GET", "POST"])
 @flask_login.login_required
-def register_personnel() -> str:
+def m_register_personnel() -> str:
   if misc.Role[flask_login.current_user.role] != misc.Role.MANAGER:
     return flask.redirect(flask.url_for("home"))
   
@@ -38,7 +36,7 @@ def register_personnel() -> str:
 
 @app.route("/onereport/managers/register_user", methods=["GET", "POST"])
 @flask_login.login_required
-def register_user() -> str:
+def m_register_user() -> str:
   if misc.Role[flask_login.current_user.role] != misc.Role.MANAGER:
     return flask.redirect(flask.url_for("home"))
   
@@ -64,7 +62,7 @@ def register_user() -> str:
 # pagination
 @app.route("/onereport/managers/users", methods=["GET", "POST"])
 @flask_login.login_required
-def get_all_active_users(order_by: str, order: str = "ASC") -> str:
+def m_get_all_active_users(order_by: str, order: str = "ASC") -> str:
   current_user = flask_login.current_user
   if misc.Role[current_user.role] != misc.Role.MANAGER:
     return flask.redirect(flask.url_for("home"))
@@ -85,7 +83,7 @@ def get_all_active_users(order_by: str, order: str = "ASC") -> str:
 # pagination
 @app.route("/onereport/managers/personnel", methods=["GET", "POST"])
 @flask_login.login_required
-def get_all_personnel(order_by: str, order: str = "ASC") -> str:
+def m_get_all_personnel(order_by: str, order: str = "ASC") -> str:
   current_user = flask_login.current_user
   if misc.Role[current_user.role] != misc.Role.MANAGER:
     return flask.redirect(flask.url_for("home"))
