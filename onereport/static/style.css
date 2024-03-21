@@ -49,11 +49,11 @@ h6 {
 }
 
 .even {
-  background: #ffffff;
+  background: #a7c6df;
   padding: 1rem;
 }
 
 .odd {
-  background: #a7c6df;
+  background: #ffffff;
   padding: 1rem;
 }
