@@ -16,14 +16,14 @@
 
   <div class="container content-section">
     {% for p in personnel %}
-    <div class="row {{ loop.cycle('even', 'odd') }}">
+    <a href={{ url_for("update_personnel", id=p.id) }} class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }}">
       <div class="col-2 border-start">{{ p.id }}</div>
       <div class="col-3 border-start">{{ p.first_name }}</div>
       <div class="col-3 border-start">{{ p.last_name }}</div>
       <div class="col-2 border-start">{{ p.company }}</div>
       <div class="col-1 border-start">{{ p.platoon }}</div>
       <div class="col-1">{{ p.active }}</div>
-    </div>
+    </a>
     {% endfor %}
   </div>
 </div>

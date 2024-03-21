@@ -45,18 +45,18 @@
           <p class="text-muted">{{ current_user.first_name }} {{ current_user.last_name }}
           <ul class="list-group">
           {% if not current_user.role|check_user %}
-            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_personnel")) }}>
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_personnel")) }} class="link-underline link-underline-opacity-0">
               <li class="list-group-item list-group-item-light">הוסף חייל</li>
             </a>
-            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_user")) }}>  
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_user")) }} class="link-underline link-underline-opacity-0">  
               <li class="list-group-item list-group-item-light">הוסף פקיד</li>
             </a>
             <li class="list-group-item list-group-item-light">פתח שמ"פ</li>
-            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_active_users")) }}>
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_active_users")) }} class="link-underline link-underline-opacity-0">
               <li class="list-group-item list-group-item-light">פקידים</li>
             </a>
           {% endif %}
-          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_active_personnel")) }}>
+          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_active_personnel")) }} class="link-underline link-underline-opacity-0">
             <li class="list-group-item list-group-item-light">חיילים</li>
           </a>
             <li class="list-group-item list-group-item-light">שמפי"ם קודמים</li> 
