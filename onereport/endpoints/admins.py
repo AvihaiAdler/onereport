@@ -69,11 +69,11 @@ def a_get_all_users(order_by: str = "COMPANY", order: str = "ASC") -> str:
   if misc.Role[flask_login.current_user.role] != misc.Role.ADMIN:
     return flask.redirect(flask.url_for("home"))
   
-  if not order_attr.UserOrderBy.is_valid_order(order_by):
+  if not order_attr.UserOrderBy.is_valid(order_by):
     flask.flash(f"אין אפשרות לסדר את העצמים לפי {order_by}", category="info")
     return flask.render_template("users.html", users=[])
 
-  if not order_attr.Order.is_valid_order(order):
+  if not order_attr.Order.is_valid(order):
     flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
     return flask.render_template("users.html", users=[])
   
@@ -84,18 +84,25 @@ def a_get_all_users(order_by: str = "COMPANY", order: str = "ASC") -> str:
 @app.route("/onereport/admins/personnel", methods=["GET", "POST"])
 @flask_login.login_required
 def a_get_all_personnel(order_by: str = "LAST_NAME", order: str = "ASC") -> str:
-  current_user = flask_login.current_user
-  if misc.Role[current_user.role] != misc.Role.ADMIN:
+  if misc.Role[flask_login.current_user.role] != misc.Role.ADMIN:
     return flask.redirect(flask.url_for("home"))
   
-  if not order_attr.PersonnelOrderBy.is_valid_order(order_by):
+  form = forms.PersonnelListForm()
+  if form.validate_on_submit():
+    order_by = order_attr.PersonnelOrderBy[form.order_by.data]
+    order = order_attr.Order[form.order.data]
+    
+    personnel = personnel_dal.get_all_active_personnel(order_by, order)
+    return flask.render_template("personnel.html", form=form, personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
+  
+  if not order_attr.PersonnelOrderBy.is_valid(order_by):
     flask.flash(f"אין אפשרות לסדר את העצמים לפי {order_by}", category="info")
-    return flask.render_template("personnel.html", personnel=[])
+    return flask.render_template("personnel.html", form=form, personnel=[])
 
-  if not order_attr.Order.is_valid_order(order):
+  if not order_attr.Order.is_valid(order):
     flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
-    return flask.render_template("personnel.html", personnel=[])
+    return flask.render_template("personnel.html", form=form, personnel=[])
   
   # SELECT * FROM personnel WHERE personnel.active ORDER_BY order_by order
   personnel = personnel_dal.get_all_personnel(order_attr.PersonnelOrderBy[order_by], order_attr.Order[order])
-  return flask.render_template("personnel.html", personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
+  return flask.render_template("personnel.html", form=form, personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
