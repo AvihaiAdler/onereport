@@ -2,30 +2,31 @@ from enum import Enum
 
 
 class Order(Enum):
-  ASC = "asc"
-  DESC = "desc"
+  ASC = "עולה"
+  DESC = "יורד"
   
   @staticmethod
-  def is_valid_order(order: str) -> bool:
+  def is_valid(order: str) -> bool:
     return order in Order._member_names_
   
 class UserOrderBy(Enum):
-  EMAIL = "email"
-  USERNAME = "username"
-  COMPANY = "company"
+  EMAIL = "מייל"
+  FIRST_NAME = "שם פרטי"
+  LAST_NAME = "שם משפחה"
+  COMPANY = "פלוגה"
   
   @staticmethod
-  def is_valid_order(order: str) -> bool:
+  def is_valid(order: str) -> bool:
     return order in UserOrderBy._member_names_
   
 class PersonnelOrderBy(Enum):
-  ID = "id"
-  FIRST_NAME = "first_name"
-  LAST_NAME = "last_name"
-  COMPANY = "company"
-  PLATOON = "platton"
+  ID = "מס' אישי"
+  FIRST_NAME = "שם פרטי"
+  LAST_NAME = "שם משפחה"
+  COMPANY = "פלוגה"
+  PLATOON = "מחלקה"
   
   @staticmethod
-  def is_valid_order(order: str) -> bool:
+  def is_valid(order: str) -> bool:
     return order in PersonnelOrderBy._member_names_
   
