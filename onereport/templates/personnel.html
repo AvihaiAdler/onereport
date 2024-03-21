@@ -1,16 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container content-section">
-  {% for p in personnel %}
-  <div class="row {{ loop.cycle('even', 'odd') }}">
-    <div class="col-2">{{ p.id }}</div>
-    <div class="col-3">{{ p.first_name }}</div>
-    <div class="col-3">{{ p.last_name }}</div>
-    <div class="col-2">{{ p.company }}</div>
-    <div class="col-1">{{ p.platoon }}</div>
-    <div class="col-1">{{ p.active }}</div>
+<div class="container">
+  {% from "form_helper.html" import render_field %}
+  <form method="POST" , class="form-inline">
+    {{ form.hidden_tag() }}
+    <fieldset>
+      <div class="row">
+        <div class="col-sm-4">{{ render_field(form.order_by, class="form-select") }}</div>
+        <div class="col-sm-3">{{ render_field(form.order, class="form-select") }}</div>
+        <div class="col-sm-2">{{ form.submit(class="btn btn-outline-info") }}</div>
+      </div>
+    </fieldset>
+  </form>
+
+  <div class="container content-section">
+    {% for p in personnel %}
+    <div class="row {{ loop.cycle('even', 'odd') }}">
+      <div class="col-2 border-start">{{ p.id }}</div>
+      <div class="col-3 border-start">{{ p.first_name }}</div>
+      <div class="col-3 border-start">{{ p.last_name }}</div>
+      <div class="col-2 border-start">{{ p.company }}</div>
+      <div class="col-1 border-start">{{ p.platoon }}</div>
+      <div class="col-1">{{ p.active }}</div>
+    </div>
+    {% endfor %}
   </div>
-  {% endfor %}
 </div>
 {% endblock %}
