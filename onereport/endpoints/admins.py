@@ -84,7 +84,6 @@ def a_update_personnel(id: str) -> str:
       personnel.active = misc.Active[form.active.data] == misc.Active.ACTIVE 
     
     old_personnel.update(personnel)
-    personnel.company = old_personnel.company # to ensure users cannot update Personnel::company
     
     model.db.session.commit()
     

@@ -66,8 +66,9 @@ def u_update_personnel(id: str) -> str:
     if misc.Active.is_valid(form.active.data):
       personnel.active = misc.Active[form.active.data] == misc.Active.ACTIVE 
     
+    old_company = old_personnel.company
     old_personnel.update(personnel)
-    personnel.company = old_personnel.company # to ensure users cannot update Personnel::company
+    personnel.company = old_company # to ensure users cannot update Personnel::company
     
     model.db.session.commit()
     
