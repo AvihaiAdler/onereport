@@ -58,3 +58,17 @@ class PersonnelListForm(flask_wtf.FlaskForm):
   def validate_order(self: Self, order: wtforms.SelectField) -> None:
     if not order_attr.Order.is_valid(order.data):
       raise wtforms.ValidationError("Invalid order")
+    
+    
+class PersonnelUpdateForm(flask_wtf.FlaskForm):
+  id = wtforms.StringField("מספר אישי")
+  first_name = wtforms.StringField("שם פרטי", validators=[validators.InputRequired("שדה חובה"), validators.Length(2, 10)])
+  last_name = wtforms.StringField("שם משפחה", validators=[validators.InputRequired("שדה חובה"), validators.Length(2, 15)])
+  company = wtforms.SelectField("פלוגה", choices=[(name, member.value) for name, member in misc.Company._member_map_.items()])
+  active = wtforms.SelectField("פעיל", choices=[(name, member.value) for name, member in misc.Active._member_map_.items()])
+  
+  submit = wtforms.SubmitField("עדכן")
+    
+  def validate_company(self: Self, company: wtforms.SelectField) -> None:
+    if not misc.Company.is_valid(company.data):
+      raise wtforms.ValidationError("Invalid company")
