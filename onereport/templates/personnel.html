@@ -7,24 +7,18 @@
     {{ form.hidden_tag() }}
     <fieldset>
       <div class="row">
-        <div class="col-sm-4">{{ render_field(form.order_by, class="form-select") }}</div>
-        <div class="col-sm-3">{{ render_field(form.order, class="form-select") }}</div>
-        <div class="col-sm-2">{{ form.submit(class="btn btn-outline-info") }}</div>
+        <legend class="border-bottom mb-4">הוסף חייל</legend>
+        {{ render_field(form.id, placeholder="מס' אישי", class="col-sm-10 form-control", disabled="") }}
+        {{ render_field(form.first_name, placeholder="שם פרטי", class="col-sm-10 form-control") }}
+        {{ render_field(form.last_name, placeholder="שם משפחה", class="col-sm-10 form-control") }}
+
+        {% if current_user.role|is_not_user %}
+          {{ render_field(form.company, class="form-control form-select") }}
+          {{ render_field(form.active, class="form-control form-select") }}
+        {% endif %}
+
+        {{ form.submit(class="btn btn-sm btn-outline-info") }}
       </div>
     </fieldset>
   </form>
-
-  <div class="container content-section">
-    {% for p in personnel %}
-    <a href={{ url_for("update_personnel", id=p.id) }} class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }}">
-      <div class="col-2 border-start">{{ p.id }}</div>
-      <div class="col-3 border-start">{{ p.first_name }}</div>
-      <div class="col-3 border-start">{{ p.last_name }}</div>
-      <div class="col-2 border-start">{{ p.company }}</div>
-      <div class="col-1 border-start">{{ p.platoon }}</div>
-      <div class="col-1">{{ p.active }}</div>
-    </a>
-    {% endfor %}
-  </div>
-</div>
 {% endblock %}
