@@ -53,7 +53,6 @@ def register_user(user: model.User) -> None:
     model.db.session.add(user)
     model.db.session.commit()
 
-# from onereport import endpoints  # noqa: E402, F401
 from onereport.endpoints import users  # noqa: E402, F401
 from onereport.endpoints import auth  # noqa: E402, F401
 from onereport.endpoints import managers # noqa: E402, F401
@@ -73,3 +72,7 @@ def generate_urlstr(role: str, urlstr: str) -> str:
   
   urlstr = "_".join([token for token in urlstr.split("_") if token != "active"])
   return f"a_{urlstr}"
+
+@app.template_filter()
+def is_not_user(role: str) -> bool:
+  return misc.Role[role] != misc.Role.USER
