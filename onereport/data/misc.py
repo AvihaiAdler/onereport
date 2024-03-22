@@ -19,3 +19,11 @@ class Company(Enum):
   @staticmethod
   def is_valid(company: str):
     return company in Company._member_names_
+  
+class Active(Enum):
+  ACTIVE = "פעיל"
+  INACTIVE = "לא פעיל"
+  
+  @staticmethod
+  def is_valid(active: str):
+    return active in Active._member_names_ 
