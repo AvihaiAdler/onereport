@@ -7,13 +7,13 @@ from onereport.dal import order_attr
 import flask
 import flask_login
 
-# TODO:
-# might want to implement a better upsert
+def not_manager() -> bool:
+  return misc.Role[flask_login.current_user.role] != misc.Role.MANAGER
 
 @app.route("/onereport/managers/register_personnel", methods=["GET", "POST"])
 @flask_login.login_required
 def m_register_personnel() -> str:
-  if misc.Role[flask_login.current_user.role] != misc.Role.MANAGER:
+  if not_manager():
     return flask.redirect(flask.url_for("home"))
   
   form = forms.PersonnelRegistrationFrom()
@@ -22,7 +22,7 @@ def m_register_personnel() -> str:
     personnel = model.Personnel(form.id.data.strip(), form.first_name.data.strip(), form.last_name.data.strip(), form.company.data, "1")
     
     # SELECT p FROM personnel WHERE p.id == personnel.id
-    old_personnel = personnel_dal.get_personnel_by_id(personnel.id)
+    old_personnel = personnel_dal.find_personnel_by_id(personnel.id)
     if old_personnel is not None:
       # model.db.session.delete(old_personnel)
       old_personnel.update(personnel)
@@ -40,7 +40,7 @@ def m_register_personnel() -> str:
 @app.route("/onereport/managers/register_user", methods=["GET", "POST"])
 @flask_login.login_required
 def m_register_user() -> str:
-  if misc.Role[flask_login.current_user.role] != misc.Role.MANAGER:
+  if not_manager():
     return flask.redirect(flask.url_for("home"))
   
   form = forms.UserRegistrationFrom()
@@ -49,7 +49,7 @@ def m_register_user() -> str:
     user = model.User(form.email.data.strip(), form.first_name.data.strip(), form.last_name.data.strip(), form.role.data, form.company.data)
     
     # SELECT old_user FROM users WHERE old_user.email == user.email
-    old_user = user_dal.get_user_by_email(user.email)
+    old_user = user_dal.find_user_by_email(user.email)
     if old_user is not None:
       # model.db.session.delete(old_user)
       old_user.update(user)
@@ -64,13 +64,47 @@ def m_register_user() -> str:
   
   return flask.render_template("user_registration.html", form=form)
 
+@app.route("/onereport/managers/personnel/<id>/update", methods=["GET", "POST"])
+@flask_login.login_required
+def m_update_personnel(id: str) -> str:
+  if not_manager():
+    return flask.redirect(flask.url_for("home"))
+  
+  old_personnel = personnel_dal.find_personnel_by_id(id)
+  if old_personnel is None:
+    flask.flash(f"החייל {id} אינו במסד הנתונים", category="danger")
+    return flask.redirect(flask.url_for("m_get_all_active_personnel"))
+  
+  form = forms.PersonnelUpdateForm()
+  if form.validate_on_submit():
+    personnel = model.Personnel(old_personnel.id, form.first_name.data.strip(), form.last_name.data.strip(), form.company.data, "1")
+    if misc.Active.is_valid(form.active.data):
+      personnel.active = misc.Active[form.active.data] == misc.Active.ACTIVE 
+    
+    old_personnel.update(personnel)
+    personnel.company = old_personnel.company # to ensure users cannot update Personnel::company
+    
+    model.db.session.commit()
+    
+    flask.flash(f"החייל {id} עודכן בהצלחה", category="success")
+    return flask.redirect(flask.url_for("m_get_all_active_personnel"))
+  
+  if flask.request.method == "GET":
+    form.id.data = old_personnel.id
+    form.first_name.data, form.last_name.data = old_personnel.first_name, old_personnel.last_name
+    form.company.data = old_personnel.company
+    form.active.data = old_personnel.active
+  
+    return flask.render_template("personnel.html", form=form, personnel=[personnel_dto.PersonnelDTO(old_personnel)])  
+  
+  return flask.redirect(flask.url_for("m_get_all_active_personnel"))
+
 # TODO:
 # pagination
 @app.route("/onereport/managers/users", methods=["GET", "POST"])
 @flask_login.login_required
 def m_get_all_active_users(order_by: str = "COMPANY", order: str = "ASC") -> str:
-  current_user = flask_login.current_user
-  if misc.Role[current_user.role] != misc.Role.MANAGER:
+  if not_manager():
     return flask.redirect(flask.url_for("home"))
   
   if not order_attr.UserOrderBy.is_valid(order_by):
@@ -82,7 +116,7 @@ def m_get_all_active_users(order_by: str = "COMPANY", order: str = "ASC") -> str
     return flask.render_template("users.html", users=[])
   
   # SELECT * FROM users WHERE user.active AND user.role != ADMIN ORDER_BY order_by order
-  users = user_dal.get_all_active_users(order_attr.UserOrderBy[order_by], order_attr.Order(order))
+  users = user_dal.find_all_active_users(order_attr.UserOrderBy[order_by], order_attr.Order(order))
   return flask.render_template("users.html", users=[user_dto.UserDTO(user) for user in users])
 
 # TODO:
@@ -90,7 +124,7 @@ def m_get_all_active_users(order_by: str = "COMPANY", order: str = "ASC") -> str
 @app.route("/onereport/managers/personnel", methods=["GET", "POST"])
 @flask_login.login_required
 def m_get_all_personnel(order_by: str = "LAST_NAME", order: str = "ASC") -> str:
-  if misc.Role[flask_login.current_user.role] != misc.Role.MANAGER:
+  if not_manager():
     return flask.redirect(flask.url_for("home"))
   
   form = forms.PersonnelListForm()
@@ -98,17 +132,17 @@ def m_get_all_personnel(order_by: str = "LAST_NAME", order: str = "ASC") -> str:
     order_by = order_attr.PersonnelOrderBy[form.order_by.data]
     order = order_attr.Order[form.order.data]
     
-    personnel = personnel_dal.get_all_active_personnel(order_by, order)
-    return flask.render_template("personnel.html", personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
+    personnel = personnel_dal.find_all_active_personnel(order_by, order)
+    return flask.render_template("personnel_list.html", personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
   
   if not order_attr.PersonnelOrderBy.is_valid(order_by):
     flask.flash(f"אין אפשרות לסדר את העצמים לפי {order_by}", category="info")
-    return flask.render_template("personnel.html", personnel=[])
+    return flask.render_template("personnel_list.html", personnel=[])
 
   if not order_attr.Order.is_valid(order):
     flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
-    return flask.render_template("personnel.html", personnel=[])
+    return flask.render_template("personnel_list.html", personnel=[])
   
   # SELECT * FROM personnel WHERE personnel.active ORDER_BY order_by order
-  personnel = personnel_dal.get_all_active_personnel(order_attr.PersonnelOrderBy[order_by], order_attr.Order[order])
-  return flask.render_template("personnel.html", personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
+  personnel = personnel_dal.find_all_active_personnel(order_attr.PersonnelOrderBy[order_by], order_attr.Order[order])
+  return flask.render_template("personnel_list.html", personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
