@@ -57,3 +57,7 @@ h6 {
   background: #ffffff;
   padding: 1rem;
 }
+
+a.link-underline:hover {
+  background-color: #5f788a;
+}
