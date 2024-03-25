@@ -7,7 +7,7 @@
     {{ form.hidden_tag() }}
     <fieldset>
       <div class="row">
-        <legend class="border-bottom mb-4">הוסף חייל</legend>
+        <legend class="border-bottom mb-4">פרטי חייל</legend>
         {{ render_field(form.id, placeholder="מס' אישי", class="col-sm-10 form-control", disabled="") }}
         {{ render_field(form.first_name, placeholder="שם פרטי", class="col-sm-10 form-control") }}
         {{ render_field(form.last_name, placeholder="שם משפחה", class="col-sm-10 form-control") }}
@@ -17,7 +17,7 @@
           {{ render_field(form.active, class="form-control form-select") }}
         {% endif %}
 
-        {{ form.submit(class="btn btn-sm btn-outline-info") }}
+        {{ form.submit(class="btn btn-sm btn-outline-info col-sm-1") }}
       </div>
     </fieldset>
   </form>
