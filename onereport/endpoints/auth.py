@@ -84,7 +84,7 @@ def oauth2_callback(provider: str):
 
     # find the user in the database
     user = user_dal.find_user_by_email(email)
-    if user is None:
+    if user is None or not user.active:
         flask.abort(401)
 
     # log the user in
