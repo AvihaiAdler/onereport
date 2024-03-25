@@ -30,24 +30,32 @@ def about() -> str:
 def not_user() -> bool:
   return misc.Role[flask_login.current_user.role] != misc.Role.USER
 
-@app.get("/onereport/users/personnel")
+@app.route("/onereport/users/personnel", methods=["GET", "POST"])
 @flask_login.login_required
 def u_get_all_active_personnel(order_by: str = "ID", order: str = "ASC") -> str:
   if not_user():
     return flask.redirect(flask.url_for("home"))
   
+  form = forms.PersonnelListForm()
   if not order_attr.PersonnelOrderBy.is_valid(order_by):
     flask.flash(f"אין אפשרות לסדר את העצמים לפי {order_by}", category="info")
-    return flask.render_template("personnel_list.html", personnel=[])
+    return flask.render_template("personnel_list.html", form=form, personnel=[])
 
   if not order_attr.Order.is_valid(order):
     flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
-    return flask.render_template("personnel_list.html", personnel=[])
+    return flask.render_template("personnel_list.html", form=form, personnel=[])
   
+  if form.validate_on_submit():
+    order_by = order_attr.PersonnelOrderBy[form.order_by.data]
+    order = order_attr.Order[form.order.data]
+  elif flask.request.method == "GET":
+    order_by = order_attr.PersonnelOrderBy[order_by]
+    order = order_attr.Order[order]
+    
   company = misc.Company[flask_login.current_user.company]
-  personnel = personnel_dal.find_all_active_personnel_by_company(company, order_attr.PersonnelOrderBy[order_by], order_attr.Order[order])
+  personnel = personnel_dal.find_all_active_personnel_by_company(company, order_by, order)
   
-  return flask.render_template("personnel_list.html", personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
+  return flask.render_template("personnel_list.html", form=form, personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
 
 @app.route("/onereport/users/personnel/<id>/update", methods=["GET", "POST"])
 @flask_login.login_required

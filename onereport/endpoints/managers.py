@@ -127,21 +127,21 @@ def m_get_all_personnel(order_by: str = "LAST_NAME", order: str = "ASC") -> str:
     return flask.redirect(flask.url_for("home"))
   
   form = forms.PersonnelListForm()
-  if form.validate_on_submit():
-    order_by = order_attr.PersonnelOrderBy[form.order_by.data]
-    order = order_attr.Order[form.order.data]
-    
-    personnel = personnel_dal.find_all_active_personnel(order_by, order)
-    return flask.render_template("personnel_list.html", personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
-  
   if not order_attr.PersonnelOrderBy.is_valid(order_by):
     flask.flash(f"אין אפשרות לסדר את העצמים לפי {order_by}", category="info")
-    return flask.render_template("personnel_list.html", personnel=[])
+    return flask.render_template("personnel_list.html", form=form, personnel=[])
 
   if not order_attr.Order.is_valid(order):
     flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
-    return flask.render_template("personnel_list.html", personnel=[])
+    return flask.render_template("personnel_list.html", form=form, personnel=[])
   
+  if form.validate_on_submit():
+    order_by = order_attr.PersonnelOrderBy[form.order_by.data]
+    order = order_attr.Order[form.order.data]
+  elif flask.request.method == "GET":
+    order_by = order_attr.PersonnelOrderBy[order_by]
+    order = order_attr.Order[order]   
+
   # SELECT * FROM personnel WHERE personnel.active ORDER_BY order_by order
-  personnel = personnel_dal.find_all_active_personnel(order_attr.PersonnelOrderBy[order_by], order_attr.Order[order])
-  return flask.render_template("personnel_list.html", personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
+  personnel = personnel_dal.find_all_active_personnel(order_by, order)
+  return flask.render_template("personnel_list.html", form=form, personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
