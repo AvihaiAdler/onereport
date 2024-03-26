@@ -10,3 +10,6 @@ class PersonnelDTO():
     self.company = misc.Company[personnel.company].value
     # TODO: self.platoon
     self.active = "פעיל" if personnel.active else "לא פעיל"
+    
+  def __repr__(self: Self) -> str:
+    return f"PersonnelDTO(id: {self.id}, first name: {self.first_name}, last name: {self.first_name}, company: {self.company}, active: {self.active})"
