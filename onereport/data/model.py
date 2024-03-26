@@ -51,7 +51,7 @@ class Personnel(db.Model):
   platoon: orm.Mapped[str]
   active: orm.Mapped[bool] = orm.mapped_column(default=True)
   
-  dates_present: orm.Mapped[Set["Report"]] = orm.relationship(secondary=personnel_report_rel, back_populates="present", lazy=True)
+  dates_present: orm.Mapped[Set["Report"]] = orm.relationship(secondary=personnel_report_rel, back_populates="presence", lazy=True)
   
   def __init__(self: Self, id: str, first_name: str, last_name: str, company: str, platoon: str, /) -> None:
     super().__init__(id=id, first_name=first_name, last_name=last_name, company=company, platoon=platoon)
@@ -71,10 +71,10 @@ class Report(db.Model):
   date: orm.Mapped[datetime.date] = orm.mapped_column(default=datetime.date.today)
   company: orm.Mapped[str]
   
-  present: orm.Mapped[Set["Personnel"]] = orm.relationship(secondary=personnel_report_rel, back_populates="dates_present", lazy=True)
+  presence: orm.Mapped[Set["Personnel"]] = orm.relationship(secondary=personnel_report_rel, back_populates="dates_present", lazy=True)
 
-  def __init__(self: Self) -> None:
-    super().__init__()
+  def __init__(self: Self, company: str, /) -> None:
+    super().__init__(company=company)
 
   def __repr__(self: Self) -> str:
     return f"Report(date: {self.id.day}/{self.id.month}/{self.id.year}, company: {self.company})"
