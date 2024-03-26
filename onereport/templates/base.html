@@ -59,6 +59,9 @@
           <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_active_personnel")) }} class="link-underline link-underline-opacity-0">
             <li class="list-group-item list-group-item-light">חיילים</li>
           </a>
+          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="create_report")) }} class="link-underline link-underline-opacity-0">
+            <li class="list-group-item list-group-item-light">שמ"פ נוכחי</li>
+          </a>
             <li class="list-group-item list-group-item-light">שמפי"ם קודמים</li> 
           </ul>
           </p>
