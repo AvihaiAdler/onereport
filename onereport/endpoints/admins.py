@@ -147,4 +147,8 @@ def a_get_all_personnel(order_by: str = "LAST_NAME", order: str = "ASC") -> str:
   personnel = personnel_dal.find_all_personnel(order_by, order)
   return flask.render_template("personnel_list.html", form=form, personnel=[personnel_dto.PersonnelDTO(p) for p in personnel])
 
+@app.route("/onereport/users/report", methods=["GET", "POST"])
+def a_create_report() -> str:
+  return "nothing to see here"
+
  

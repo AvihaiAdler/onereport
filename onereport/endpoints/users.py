@@ -1,9 +1,10 @@
 from onereport import app, forms
 from onereport.data import model, misc
-from onereport.dal import personnel_dal, order_attr
+from onereport.dal import personnel_dal, report_dal, order_attr
 from onereport.dto import personnel_dto
 import flask
 import flask_login
+import datetime
 
 @app.get("/")
 @app.get("/onereport/login") 
@@ -92,4 +93,33 @@ def u_update_personnel(id: str) -> str:
     return flask.render_template("personnel.html", form=form, personnel=[personnel_dto.PersonnelDTO(old_personnel)])    
   
   return flask.redirect(flask.url_for("u_get_all_active_personnel"))
+
+@app.route("/onereport/users/report", methods=["GET", "POST"])
+def u_create_report() -> str:
+  if not_user():
+    return flask.redirect(flask.url_for("home"))
   
+  company = misc.Company[flask_login.current_user.company]
+  report = report_dal.find_report_by_date_and_company(datetime.date.today(), company)
+  
+  # no report for the current date has been opened
+  if report is None:
+    report = model.Report(company.name)
+    model.db.session.add(report)
+    model.db.session.commit()
+    
+    return flask.redirect(flask.url_for("u_create_report"))
+  
+  personnel = personnel_dal.find_all_active_personnel_by_company(company, order_attr.PersonnelOrderBy.LAST_NAME, order_attr.Order.ASC)  
+  form = forms.UpdateReportForm()
+  
+  # there is a report opened for the day
+  if form.validate_on_submit():   
+    report.presence = report.presence & {p for p in personnel if p.id in flask.request.form} # must check to validate the ORM updates the report correctly
+    model.db.session.commit()
+    
+    return flask.redirect(flask.url_for("u_create_report"))
+    
+   
+  return flask.render_template("edit_report.html", form=form, personnel=personnel)
+    
