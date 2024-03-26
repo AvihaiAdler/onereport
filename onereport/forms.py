@@ -5,6 +5,7 @@ import flask_login
 import wtforms.validators as validators
 from onereport.data import misc
 from onereport.dal import personnel_dal, user_dal, order_attr
+from onereport.dto import personnel_dto
 
 class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
   id = wtforms.StringField("מספר אישי", validators=[validators.InputRequired("שדה חובה"), validators.Length(7,7)])
@@ -15,7 +16,7 @@ class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
   submit = wtforms.SubmitField("הוסף חייל")
   
   def validate_id(self: Self, id: wtforms.StringField) -> None:
-    personnel = personnel_dal.get_personnel_by_id(id.data)
+    personnel = personnel_dal.find_personnel_by_id(id.data)
     if personnel:
       raise wtforms.ValidationError("Personnel already exists")
     
@@ -34,7 +35,7 @@ class UserRegistrationFrom(flask_wtf.FlaskForm):
   submit = wtforms.SubmitField("הוסף משתמש")
   
   def validate_email(self: Self, email: wtforms.StringField) -> None:
-    user = user_dal.get_user_by_email(email.data)
+    user = user_dal.find_user_by_email(email.data)
     if user:
       raise wtforms.ValidationError("User already exists")
     
@@ -72,3 +73,15 @@ class PersonnelUpdateForm(flask_wtf.FlaskForm):
   def validate_company(self: Self, company: wtforms.SelectField) -> None:
     if not misc.Company.is_valid(company.data):
       raise wtforms.ValidationError("Invalid company")
+
+class UpdateReportForm(flask_wtf.FlaskForm):
+  submit = wtforms.SubmitField("שלח")
+  
+  def append_all(self: Self, personnel: list[personnel_dto.PersonnelDTO]) -> None:
+    for p in personnel:
+      self.personnel.append_entry(wtforms.BooleanField())
+      self.personnel.entries[-1].data = False
+      self.personnel.entries[-1].id = p.id
+      
+    for entry in self.personnel.entries:
+      print(entry)
