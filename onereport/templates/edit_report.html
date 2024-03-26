@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% from "form_helper.html" import render_field_inline %}
+{% block content %}
+
+<form method="POST">
+  {{ form.hidden_tag() }}
+  <div class="row">
+    <fieldset class="form-group">
+      {{ form.submit(class="btn btn-sm btn-outline-info col-1") }}
+    </fieldset>
+  </div>
+  <div class="container">
+    <div class="row mb-3">
+      <div class="col-sm-2 border-start border-bottom d-flex justify-content-center">מס' אישי</div>
+      <div class="col-sm-3 border-start border-bottom d-flex justify-content-center">שם משפחה</div>
+      <div class="col-sm-3 border-start border-bottom d-flex justify-content-center">שם פרטי</div>
+      <div class="col-sm-1 border-bottom d-flex justify-content-center">נוכח</div>
+    </div>
+    {% for p in personnel %}
+    <div class="row mb-2 {{ loop.cycle('even', 'odd' )}}">
+      <div class="col-sm-2 border-start">{{ p.id }}</div>
+      <div class="col-sm-3 border-start">{{ p.last_name }}</div>
+      <div class="col-sm-3 border-start">{{ p.first_name }}</div>
+      <div class="col-sm-1 form-check d-flex justify-content-center">
+        <input type="checkbox" class="form-check-input border-3" id={{ p.id }} name={{ p.id }}>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</form>
+
+{% endblock %}
