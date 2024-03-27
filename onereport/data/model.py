@@ -77,5 +77,5 @@ class Report(db.Model):
     super().__init__(company=company)
 
   def __repr__(self: Self) -> str:
-    return f"Report(date: {self.id.day}/{self.id.month}/{self.id.year}, company: {self.company})"
+    return f"Report(date: {self.date.day}/{self.date.month}/{self.date.year}, company: {self.company})"
 
