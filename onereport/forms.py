@@ -43,7 +43,11 @@ class UserRegistrationFrom(flask_wtf.FlaskForm):
     if not misc.Role.is_valid(role.data):
       raise wtforms.ValidationError("Invalid role")
     
-    if misc.Role[flask_login.current_user.role] != misc.Role.ADMIN and role.data == "ADMIN":
+    current_user_role = flask_login.current_user.role
+    if not misc.Role.is_valid(current_user_role):
+      raise wtforms.ValidationError("Invalid role")
+    
+    if misc.Role[current_user_role] != misc.Role.ADMIN and role.data == misc.Role.ADMIN.name:
       raise wtforms.ValidationError("Permission denied")
     
 class PersonnelListForm(flask_wtf.FlaskForm):
