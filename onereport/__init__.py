@@ -32,6 +32,28 @@ app.config["OAUTH2_PROVIDERS"] = {
     }
 }
 
+@app.template_filter()
+def check_user(role: str) -> bool:
+  return misc.Role[role] == misc.Role.USER
+
+@app.template_filter()
+def generate_urlstr(role: str, urlstr: str) -> str:
+  if misc.Role[role] == misc.Role.USER:
+    return f"u_{urlstr}"
+  
+  if misc.Role[role] == misc.Role.MANAGER:
+    return f"m_{urlstr}"
+  
+  return f"a_{urlstr}"
+
+@app.template_filter()
+def is_not_user(role: str) -> bool:
+  return misc.Role[role] != misc.Role.USER
+
+@app.template_filter()
+def checked(present: bool) -> str:
+  return "checked" if present else ""
+
 model.db.init_app(app=app)
 model.login_manager.init_app(app=app)
 model.login_manager.login_view = "login"
@@ -57,22 +79,3 @@ from onereport.endpoints import users  # noqa: E402, F401
 from onereport.endpoints import auth  # noqa: E402, F401
 from onereport.endpoints import managers # noqa: E402, F401
 from onereport.endpoints import admins # noqa: E402, F401
-
-@app.template_filter()
-def check_user(role: str) -> bool:
-  return misc.Role[role] == misc.Role.USER
-
-@app.template_filter()
-def generate_urlstr(role: str, urlstr: str) -> str:
-  if misc.Role[role] == misc.Role.USER:
-    return f"u_{urlstr}"
-  
-  if misc.Role[role] == misc.Role.MANAGER:
-    return f"m_{urlstr}"
-  
-  urlstr = "_".join([token for token in urlstr.split("_") if token != "active"])
-  return f"a_{urlstr}"
-
-@app.template_filter()
-def is_not_user(role: str) -> bool:
-  return misc.Role[role] != misc.Role.USER
