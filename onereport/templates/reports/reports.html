@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  {% if current_user.role|is_not_user %}
+  <div class="row mb-2">
+    <div class="col-sm-2">
+      <h5>{{ current_company }}</h3>
+    </div>
+    <div class="col-sm-3">
+      <select class="form-control form-select" onChange="window.location.href=this.value">
+        <option value="#">בחר פלוגה</option>
+        {% for name, enum in company.__members__.items() %}
+        <option value={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_reports" ), company=name) }}>{{
+          enum.value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  {% endif %}
+  <div class="container content-section">
+    {% for report in reports %}
+    <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_report" ), id=report.id ) }}
+      class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }} hover-row">
+      <div class="">{{ report.date }}</div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

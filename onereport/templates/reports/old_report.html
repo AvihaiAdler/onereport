@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container content-section">
+  <div class="row heading">
+    <div class="col-sm-2 border-start d-flex justify-content-center">מס' אישי</div>
+    <div class="col-sm-3 border-start d-flex justify-content-center">שם משפחה</div>
+    <div class="col-sm-3 border-start d-flex justify-content-center">שם פרטי</div>
+    <div class="col-sm-2 border-start d-flex justify-content-center">פלוגה</div>
+    <div class="col-sm-2 d-flex justify-content-center">מחלקה</div>
+  </div>
+
+  {% for personnel in report.presence %}
+  <div class="row {{loop.cycle('even', 'odd')}}">
+    <div class="col-sm-2 border-start d-flex justify-content-center">{{ personnel.id }}</div>
+    <div class="col-sm-3 border-start d-flex justify-content-center">{{ personnel.last_name }}</div>
+    <div class="col-sm-3 border-start d-flex justify-content-center">{{ personnel.first_name }}</div>
+    <div class="col-sm-2 border-start d-flex justify-content-center">{{ personnel.company }}</div>
+    <div class="col-sm-2 d-flex justify-content-center">{{ personnel.platoon }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

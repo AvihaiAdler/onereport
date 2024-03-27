@@ -58,6 +58,14 @@ h6 {
   padding: 1rem;
 }
 
-a.link-underline:hover {
-  background-color: #5f788a;
+a.hover-row:hover {
+  background-color: #8297a5;
+}
+
+.hover:hover {
+  background-color: #a7c6df;
+}
+
+.heading {
+  padding: 1rem;
 }

@@ -46,23 +46,24 @@
           <ul class="list-group">
           {% if not current_user.role|check_user %}
             <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_personnel")) }} class="link-underline link-underline-opacity-0">
-              <li class="list-group-item list-group-item-light">הוסף חייל</li>
+              <li class="list-group-item list-group-item-light hover">הוסף חייל</li>
             </a>
             <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_user")) }} class="link-underline link-underline-opacity-0">  
-              <li class="list-group-item list-group-item-light">הוסף פקיד</li>
+              <li class="list-group-item list-group-item-light hover">הוסף פקיד</li>
             </a>
-            <li class="list-group-item list-group-item-light">פתח שמ"פ</li>
-            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_active_users")) }} class="link-underline link-underline-opacity-0">
-              <li class="list-group-item list-group-item-light">פקידים</li>
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_users")) }} class="link-underline link-underline-opacity-0">
+              <li class="list-group-item list-group-item-light hover">פקידים</li>
             </a>
           {% endif %}
-          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_active_personnel")) }} class="link-underline link-underline-opacity-0">
-            <li class="list-group-item list-group-item-light">חיילים</li>
+          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_personnel")) }} class="link-underline link-underline-opacity-0">
+            <li class="list-group-item list-group-item-light hover">חיילים</li>
           </a>
           <a href={{ url_for(current_user.role|generate_urlstr(urlstr="create_report")) }} class="link-underline link-underline-opacity-0">
-            <li class="list-group-item list-group-item-light">שמ"פ נוכחי</li>
+            <li class="list-group-item list-group-item-light hover">שמ"פ נוכחי</li>
           </a>
-            <li class="list-group-item list-group-item-light">שמפי"ם קודמים</li> 
+          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_reports")) }} class="link-underline link-underline-opacity-0">
+            <li class="list-group-item list-group-item-light hover">שמפי"ם קודמים</li> 
+          </a>
           </ul>
           </p>
         </div>
