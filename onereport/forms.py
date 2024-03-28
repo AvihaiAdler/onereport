@@ -12,6 +12,7 @@ class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
   first_name = wtforms.StringField("שם פרטי", validators=[validators.InputRequired("שדה חובה"), validators.Length(2, 10)])
   last_name = wtforms.StringField("שם משפחה", validators=[validators.InputRequired("שדה חובה"), validators.Length(2, 15)])
   company = wtforms.SelectField("פלוגה", choices=[(name, member.value) for name, member in misc.Company._member_map_.items()])
+  platoon = wtforms.SelectField("מחלקה", choices=[(name, member.value) for name, member in misc.Platoon._member_map_.items()])
   
   submit = wtforms.SubmitField("הוסף חייל")
   
@@ -23,6 +24,10 @@ class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
   def validate_company(self: Self, company: wtforms.SelectField) -> None:
     if not misc.Company.is_valid(company.data):
       raise wtforms.ValidationError("Invalid company")
+    
+  def validate_platoon(self: Self, platoon: wtforms.SelectField) -> None:
+    if not misc.Platoon.is_valid(platoon.data):
+      raise wtforms.ValidationError("Invalid platoon")
   
   
 class UserRegistrationFrom(flask_wtf.FlaskForm):
@@ -70,6 +75,7 @@ class PersonnelUpdateForm(flask_wtf.FlaskForm):
   first_name = wtforms.StringField("שם פרטי", validators=[validators.InputRequired("שדה חובה"), validators.Length(2, 10)])
   last_name = wtforms.StringField("שם משפחה", validators=[validators.InputRequired("שדה חובה"), validators.Length(2, 15)])
   company = wtforms.SelectField("פלוגה", choices=[(name, member.value) for name, member in misc.Company._member_map_.items()])
+  platoon = wtforms.SelectField("מחלקה", choices=[(name, member.value) for name, member in misc.Platoon._member_map_.items()])
   active = wtforms.SelectField("פעיל", choices=[(name, member.value) for name, member in misc.Active._member_map_.items()])
   
   submit = wtforms.SubmitField("עדכן")
@@ -77,6 +83,44 @@ class PersonnelUpdateForm(flask_wtf.FlaskForm):
   def validate_company(self: Self, company: wtforms.SelectField) -> None:
     if not misc.Company.is_valid(company.data):
       raise wtforms.ValidationError("Invalid company")
+    
+  def validate_active(self: Self, active: wtforms.SelectField) -> None:
+    if not misc.Active.is_valid(active.data):
+      raise wtforms.ValidationError("invalid value")
+
+  def validate_platoon(self: Self, platoon: wtforms.SelectField) -> None:
+    if not misc.Platoon.is_valid(platoon.data):
+      raise wtforms.ValidationError("Invalid platoon")
+    
+
+class UserUpdateForm(flask_wtf.FlaskForm):
+  email = wtforms.StringField("אימייל")
+  first_name = wtforms.StringField("שם פרטי", validators=[validators.InputRequired("שדה חובה"), validators.Length(2, 10)])
+  last_name = wtforms.StringField("שם משפחה", validators=[validators.InputRequired("שדה חובה"), validators.Length(2, 15)])
+  role = wtforms.SelectField("תפקיד", choices=[(name, member.value) for name, member in misc.Role._member_map_.items()])
+  company = wtforms.SelectField("פלוגה", choices=[(name, member.value) for name, member in misc.Company._member_map_.items()])
+  active = wtforms.SelectField("פעיל", choices=[(name, member.value) for name, member in misc.Active._member_map_.items()])
+  
+  submit = wtforms.SubmitField("עדכן")
+  
+  def validate_company(self: Self, company: wtforms.SelectField) -> None:
+    if not misc.Company.is_valid(company.data):
+      raise wtforms.ValidationError("Invalid company")
+    
+  def validate_active(self: Self, active: wtforms.SelectField) -> None:
+    if not misc.Active.is_valid(active.data):
+      raise wtforms.ValidationError("invalid value")
+  
+  def validate_role(self: Self, role: wtforms.SelectField) -> None:
+    if not misc.Role.is_valid(role.data):
+      raise wtforms.ValidationError("Invalid role")
+    
+    current_user_role = flask_login.current_user.role
+    if not misc.Role.is_valid(current_user_role):
+      raise wtforms.ValidationError("Invalid role")
+    
+    if misc.Role[current_user_role] != misc.Role.ADMIN and role.data == misc.Role.ADMIN.name:
+      raise wtforms.ValidationError("Permission denied")
 
 class UpdateReportForm(flask_wtf.FlaskForm):
   submit = wtforms.SubmitField("שלח")
