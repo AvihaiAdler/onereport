@@ -11,19 +11,19 @@ import datetime
 def not_manager() -> bool:
   return misc.Role[flask_login.current_user.role] != misc.Role.MANAGER
 
-def is_user() -> bool:
-  return misc.Role.is_valid(flask_login.current_user.role) and misc.Role[flask_login.current_user.role] == misc.Role.USER
+def is_permitted() -> bool:
+  return misc.Role.is_valid(flask_login.current_user.role) and misc.Role[flask_login.current_user.role] in [role for _, role in misc.Role._member_map_.items() if role != misc.Role.USER]
 
 @app.route("/onereport/managers/register_personnel", methods=["GET", "POST"])
 @flask_login.login_required
 def m_register_personnel() -> str:
-  if is_user():
+  if not is_permitted():
     return flask.redirect(flask.url_for("home"))
   
   form = forms.PersonnelRegistrationFrom()
   
   if form.validate_on_submit():
-    personnel = model.Personnel(form.id.data.strip(), form.first_name.data.strip(), form.last_name.data.strip(), form.company.data, "1")
+    personnel = model.Personnel(form.id.data.strip(), form.first_name.data.strip(), form.last_name.data.strip(), form.company.data, form.platoon.data)
     
     old_personnel = personnel_dal.find_personnel_by_id(personnel.id)
     if old_personnel is not None:
@@ -42,7 +42,7 @@ def m_register_personnel() -> str:
 @app.route("/onereport/managers/register_user", methods=["GET", "POST"])
 @flask_login.login_required
 def m_register_user() -> str:
-  if is_user():
+  if not is_permitted():
     return flask.redirect(flask.url_for("home"))
   
   form = forms.UserRegistrationFrom()
@@ -69,7 +69,7 @@ def m_register_user() -> str:
 @app.route("/onereport/managers/personnel/<id>/update", methods=["GET", "POST"])
 @flask_login.login_required
 def m_update_personnel(id: str) -> str:
-  if is_user():
+  if not is_permitted():
     return flask.redirect(flask.url_for("home"))
   
   old_personnel = personnel_dal.find_personnel_by_id(id)
@@ -79,9 +79,8 @@ def m_update_personnel(id: str) -> str:
   
   form = forms.PersonnelUpdateForm()
   if form.validate_on_submit():
-    personnel = model.Personnel(old_personnel.id, form.first_name.data.strip(), form.last_name.data.strip(), form.company.data, "1")
-    if misc.Active.is_valid(form.active.data):
-      personnel.active = misc.Active[form.active.data] == misc.Active.ACTIVE 
+    personnel = model.Personnel(old_personnel.id, form.first_name.data.strip(), form.last_name.data.strip(), form.company.data, form.platoon.data)
+    personnel.active = misc.Active[form.active.data] == misc.Active.ACTIVE 
     
     old_personnel.update(personnel)
     
@@ -96,9 +95,43 @@ def m_update_personnel(id: str) -> str:
     form.company.data = old_personnel.company
     form.active.data = old_personnel.active
   
-    return flask.render_template("personnel/personnel.html", form=form, personnel=[personnel_dto.PersonnelDTO(old_personnel)])  
+    return flask.render_template("personnel/personnel.html", form=form) #personnel=[personnel_dto.PersonnelDTO(old_personnel)]  
   
   return flask.redirect(flask.url_for(generate_urlstr(flask_login.current_user.role, "get_all_personnel")))
+
+@app.route("/onereport/managers/user/<email>/update", methods=["GET", "POST"])
+@flask_login.login_required
+def m_update_user(email: str) -> str:
+  if not is_permitted():
+    return flask.redirect(flask.url_for("home"))
+  
+  old_user = user_dal.find_user_by_email(email)
+  if old_user is None:
+    flask.flash("המשתמש אינו במסד הנתונים", category="info")
+    return flask.redirect(flask.url_for("home"))
+  
+  form = forms.UserUpdateForm()
+  if form.validate_on_submit():
+    user = model.User(old_user.email, form.first_name.data.strip(), form.last_name.data.strip(), form.role.data, form.company.data)
+    user.active = misc.Active[form.active.data] == misc.Active.ACTIVE
+    
+    old_user.update(user)
+    model.db.session.commit()
+    
+    flask.flash(f"המשתמש {old_user.email} עודכן בהצלחה", category="success")
+    
+    return flask.redirect(flask.url_for(generate_urlstr(flask_login.current_user.role, "get_all_users")))
+  
+  if flask.request.method == "GET":
+    form.email.data = old_user.email
+    form.first_name.data, form.last_name.data = old_user.first_name, old_user.last_name
+    form.role.data = old_user.role
+    form.company.data = old_user.company
+    form.active.data = old_user.active
+    
+    return flask.render_template("users/user.html", form=form)
+  
+  return flask.redirect(flask.url_for(generate_urlstr(flask_login.current_user.role, "get_all_users")))
 
 # TODO:
 # pagination
@@ -157,7 +190,7 @@ def m_get_all_personnel() -> str:
 @app.route("/onereport/managers/report", methods=["GET", "POST"])
 @flask_login.login_required
 def m_create_report() -> str:
-  if is_user():
+  if not is_permitted():
     return flask.redirect(flask.url_for("home"))
   
   if not misc.Company.is_valid(flask_login.current_user.company):
@@ -191,7 +224,7 @@ def m_get_all_reports() -> str:
   company = flask.request.args.get("company", default="")
   order = flask.request.args.get("order", "DESC")
   
-  if is_user():
+  if not is_permitted():
     return flask.redirect(flask.url_for("home"))
   
   if not order_attr.Order.is_valid(order):
@@ -199,6 +232,7 @@ def m_get_all_reports() -> str:
     return flask.redirect(flask.url_for("home"))
   
   if not misc.Company.is_valid(flask_login.current_user.company):
+    flask.flash(f"{company} אינה פלוגה בגדוד", category="info")
     return flask.redirect(flask.url_for("home"))
   
   company = misc.Company[company] if misc.Company.is_valid(company) else misc.Company[flask_login.current_user.company]
@@ -209,7 +243,7 @@ def m_get_all_reports() -> str:
 @app.get("/onereport/managers/report/<int:id>")
 @flask_login.login_required
 def m_get_report(id: int) -> str:
-  if is_user():
+  if not is_permitted():
     return flask.redirect(flask.url_for("home"))
   
   report = report_dal.find_report_by_id(id)
