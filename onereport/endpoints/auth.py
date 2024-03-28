@@ -6,6 +6,7 @@ import secrets
 import requests
 import urllib.parse as urllib_parse
 
+
 @app.route("/onereport/authorize/<provider>")
 def oauth2_authorize(provider: str):
     if not flask_login.current_user.is_anonymous:
@@ -19,17 +20,22 @@ def oauth2_authorize(provider: str):
     flask.session["oauth2_state"] = secrets.token_urlsafe(16)
 
     # create a query string with all the OAuth2 parameters
-    query = urllib_parse.urlencode({
-        "client_id": provider_data["client_id"],
-        "redirect_uri": flask.url_for("oauth2_callback", provider=provider, _external=True),
-        "response_type": "code",
-        "scope": " ".join(provider_data["scopes"]),
-        "state": flask.session["oauth2_state"],
-    })
+    query = urllib_parse.urlencode(
+        {
+            "client_id": provider_data["client_id"],
+            "redirect_uri": flask.url_for(
+                "oauth2_callback", provider=provider, _external=True
+            ),
+            "response_type": "code",
+            "scope": " ".join(provider_data["scopes"]),
+            "state": flask.session["oauth2_state"],
+        }
+    )
 
     # redirect the user to the OAuth2 provider authorization URL
     return flask.redirect(provider_data["authorize_url"] + "?" + query)
-  
+
+
 @app.route("/onereport/callback/<provider>")
 def oauth2_callback(provider: str):
     if not flask_login.current_user.is_anonymous:
@@ -61,25 +67,32 @@ def oauth2_callback(provider: str):
         "client_secret": provider_data["client_secret"],
         "code": flask.request.args["code"],
         "grant_type": "authorization_code",
-        "redirect_uri": flask.url_for("oauth2_callback", provider=provider, _external=True),
+        "redirect_uri": flask.url_for(
+            "oauth2_callback", provider=provider, _external=True
+        ),
     }
-    response = requests.post(provider_data["token_url"], data=body, headers={"Accept": "application/json"})
-    
+    response = requests.post(
+        provider_data["token_url"], data=body, headers={"Accept": "application/json"}
+    )
+
     if response.status_code != 200:
         flask.abort(401)
-        
+
     oauth2_token = response.json().get("access_token")
     if not oauth2_token:
         flask.abort(401)
 
     # use the access token to get the user"s email address
-    response = requests.get(provider_data["userinfo"]["url"], headers={
-        "Authorization": "Bearer " + oauth2_token,
-        "Accept": "application/json",
-    })
+    response = requests.get(
+        provider_data["userinfo"]["url"],
+        headers={
+            "Authorization": "Bearer " + oauth2_token,
+            "Accept": "application/json",
+        },
+    )
     if response.status_code != 200:
         flask.abort(401)
-        
+
     email = provider_data["userinfo"]["email"](response.json())
 
     # find the user in the database
