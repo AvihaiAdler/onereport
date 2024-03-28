@@ -25,6 +25,9 @@ class User(db.Model, UserMixin):
     
   def update(self: Self, other: Self) -> None:
     self.first_name, self.last_name = other.first_name, other.last_name
+    self.company = other.company
+    self.active = other.active
+    self.role = other.role
   
   def __repr__(self: Self) -> str:
     return f"User(email: {self.email}, name: {' '.join((self.first_name, self.last_name))}, role: {self.role}, company: {self.company}, active: {self.active})"
