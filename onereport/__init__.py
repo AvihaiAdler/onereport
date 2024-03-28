@@ -37,11 +37,11 @@ def check_user(role: str) -> bool:
   return misc.Role[role] == misc.Role.USER
 
 @app.template_filter()
-def generate_urlstr(role: str, urlstr: str) -> str:
-  if misc.Role[role] == misc.Role.USER:
+def generate_urlstr(role_name: str, urlstr: str) -> str:
+  if misc.Role[role_name] == misc.Role.USER:
     return f"u_{urlstr}"
   
-  if misc.Role[role] == misc.Role.MANAGER:
+  if misc.Role[role_name] == misc.Role.MANAGER:
     return f"m_{urlstr}"
   
   return f"a_{urlstr}"
