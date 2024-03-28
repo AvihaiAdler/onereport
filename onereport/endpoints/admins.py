@@ -12,17 +12,34 @@ def not_admin() -> bool:
 @app.route("/onereport/admins/register_personnel", methods=["GET", "POST"])
 @flask_login.login_required
 def a_register_personnel() -> str:
+  if not_admin():
+    return flask.redirect("home")
+    
   return flask.redirect(flask.url_for(generate_urlstr(misc.Role.MANAGER.name, "register_personnel")))
 
 @app.route("/onereport/admins/register_user", methods=["GET", "POST"])
 @flask_login.login_required
 def a_register_user() -> str:
+  if not_admin():
+    return flask.redirect("home")
+  
   return flask.redirect(flask.url_for(generate_urlstr(misc.Role.MANAGER.name, "register_user")))
 
 @app.route("/onereport/admins/personnel/<id>/update", methods=["GET", "POST"])
 @flask_login.login_required
 def a_update_personnel(id: str) -> str:
+  if not_admin():
+    return flask.redirect("home")
+  
   return flask.redirect(flask.url_for(generate_urlstr(misc.Role.MANAGER.name, "update_personnel"), id=id))
+
+@app.route("/onereport/admins/user/<email>/update", methods = ["GET", "POST"])
+@flask_login.login_required
+def a_update_user(email: str) -> str:
+  if not_admin():
+    return flask.redirect("home")
+  
+  return flask.redirect(flask.url_for(generate_urlstr(misc.Role.MANAGER.name, "update_user"), email=email))
 
 # TODO:
 # pagination
@@ -80,11 +97,17 @@ def a_get_all_personnel() -> str:
 @app.route("/onereport/admins/report", methods=["GET", "POST"])
 @flask_login.login_required
 def a_create_report() -> str:
+  if not_admin():
+    return flask.redirect("home")
+  
   return flask.redirect(flask.url_for(generate_urlstr(misc.Role.MANAGER.name, "create_report")))
 
 @app.get("/onereport/admins/reports")
 @flask_login.login_required
 def a_get_all_reports() -> str:
+  if not_admin():
+    return flask.redirect("home")
+  
   company = flask.request.args.get("company", default="")
   order = flask.request.args.get("order", default="DESC")
   return flask.redirect(flask.url_for(generate_urlstr(misc.Role.MANAGER.name, "get_all_reports"), company=company, order=order))
@@ -92,6 +115,9 @@ def a_get_all_reports() -> str:
 @app.get("/onereport/admins/report/<int:id>")
 @flask_login.login_required
 def a_get_report(id: int) -> str:
+  if not_admin():
+    return flask.redirect("home")
+  
   return flask.redirect(flask.url_for(generate_urlstr(misc.Role.MANAGER.name, "get_report"), id=id))
 
  
