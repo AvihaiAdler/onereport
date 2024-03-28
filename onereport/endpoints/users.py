@@ -75,13 +75,11 @@ def u_update_personnel(id: str) -> str:
   
   form = forms.PersonnelUpdateForm()
   if form.validate_on_submit():
-    personnel = model.Personnel(old_personnel.id, form.first_name.data.strip(), form.last_name.data.strip(), form.company.data, "1")
-    if misc.Active.is_valid(form.active.data):
-      personnel.active = misc.Active[form.active.data] == misc.Active.ACTIVE 
+    personnel = model.Personnel(old_personnel.id, form.first_name.data.strip(), form.last_name.data.strip(), form.company.data, form.platoon.data)
+    personnel.active = misc.Active[form.active.data] == misc.Active.ACTIVE 
+    personnel.company = old_personnel.company # to ensure users cannot update Personnel::company
     
-    old_company = old_personnel.company
     old_personnel.update(personnel)
-    personnel.company = old_company # to ensure users cannot update Personnel::company
     
     model.db.session.commit()
     
