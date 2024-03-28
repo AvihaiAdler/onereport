@@ -19,10 +19,6 @@
     <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
       <div class="container">
         <a class="navbar-brand mr-4" href={{ url_for("home") }}>כוח אדם - 8114</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle"
-          aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
         <div class="collapse navbar-collapse" id="navbarToggle">
           <div class="navbar-nav mr-auto">
             <a class="nav-item nav-link" href={{ url_for("about") }}>אודות</a>
@@ -44,26 +40,32 @@
           <h6>שלום,</h6>
           <p class="text-muted">{{ current_user.first_name }} {{ current_user.last_name }}
           <ul class="list-group">
-          {% if not current_user.role|check_user %}
-            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_personnel")) }} class="link-underline link-underline-opacity-0">
+            {% if not current_user.role|check_user %}
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_personnel" )) }}
+              class="link-underline link-underline-opacity-0">
               <li class="list-group-item list-group-item-light hover">הוסף חייל</li>
             </a>
-            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_user")) }} class="link-underline link-underline-opacity-0">  
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_user" )) }}
+              class="link-underline link-underline-opacity-0">
               <li class="list-group-item list-group-item-light hover">הוסף פקיד</li>
             </a>
-            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_users")) }} class="link-underline link-underline-opacity-0">
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_users" )) }}
+              class="link-underline link-underline-opacity-0">
               <li class="list-group-item list-group-item-light hover">פקידים</li>
             </a>
-          {% endif %}
-          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_personnel")) }} class="link-underline link-underline-opacity-0">
-            <li class="list-group-item list-group-item-light hover">חיילים</li>
-          </a>
-          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="create_report")) }} class="link-underline link-underline-opacity-0">
-            <li class="list-group-item list-group-item-light hover">שמ"פ נוכחי</li>
-          </a>
-          <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_reports")) }} class="link-underline link-underline-opacity-0">
-            <li class="list-group-item list-group-item-light hover">שמפי"ם קודמים</li> 
-          </a>
+            {% endif %}
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_personnel" )) }}
+              class="link-underline link-underline-opacity-0">
+              <li class="list-group-item list-group-item-light hover">חיילים</li>
+            </a>
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="create_report" )) }}
+              class="link-underline link-underline-opacity-0">
+              <li class="list-group-item list-group-item-light hover">שמ"פ נוכחי</li>
+            </a>
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_reports" )) }}
+              class="link-underline link-underline-opacity-0">
+              <li class="list-group-item list-group-item-light hover">שמפי"ם קודמים</li>
+            </a>
           </ul>
           </p>
         </div>
