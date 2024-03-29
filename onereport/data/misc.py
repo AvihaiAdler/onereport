@@ -25,15 +25,15 @@ class Company(Enum):
 
 class Platoon(Enum):
     UNCATEGORIZED = "לא משוייך"
-    FIRST = "1"
-    SECOND = "2"
-    THIRD = "3"
-    FORTH = "4"
-    FIFTH = "5"
-    SIXTH = "6"
-    SEVENTH = "7"
-    EIGHTH = "8"
-    NINTH = "9"
+    _1 = "1"
+    _2 = "2"
+    _3 = "3"
+    _4 = "4"
+    _5 = "5"
+    _6 = "6"
+    _7 = "7"
+    _8 = "8"
+    _9 = "9"
 
     @staticmethod
     def is_valid(platoon: str, /) -> bool:
