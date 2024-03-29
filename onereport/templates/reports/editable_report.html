@@ -5,18 +5,16 @@
 
 <form method="POST">
   {{ form.hidden_tag() }}
-  <div class="row">
-    <fieldset class="form-group">
-      {{ form.submit(class="btn btn-sm btn-outline-info col-1") }}
-    </fieldset>
-  </div>
   <div class="container content-section">
     <div class="row heading">
       <div class="col-sm-3 border-start d-flex justify-content-center">מס' אישי</div>
       <div class="col-sm-3 border-start d-flex justify-content-center">שם משפחה</div>
       <div class="col-sm-3 border-start d-flex justify-content-center">שם פרטי</div>
       <div class="col-sm-2 border-start d-flex justify-content-center">מחלקה</div>
-      <div class="col-sm-1 d-flex justify-content-center">נוכח</div>
+      <div class="col-sm-1 d-flex justify-content-center">
+        <label for="check-all">נוכח</label>
+        <input type="checkbox" class="form-check-input me-2" id="check-all" onchange="check_all(this)">
+      </div>
     </div>
     {% for personnel, present in personnel_presence_list %}
     <div class="row {{ loop.cycle('even', 'odd' )}}">
@@ -25,11 +23,39 @@
       <div class="col-sm-3 border-start d-flex justify-content-center">{{ personnel.first_name }}</div>
       <div class="col-sm-2 border-start d-flex justify-content-center">{{ personnel.platoon }}</div>
       <div class="col-sm-1 form-check d-flex justify-content-center">
-        <input type="checkbox" class="form-check-input border-3" name={{ personnel.id }} {{ present|checked }}>
+        <input type="checkbox" class="form-check-input" name={{ personnel.id }} {{ present|checked }}>
       </div>
     </div>
     {% endfor %}
+    <div class="row">
+      <fieldset class="form-group">
+        {{ form.submit(class="btn btn-sm btn-outline-success") }}
+      </fieldset>
+    </div>
   </div>
+  <script type="text/javascript">
+    let checkboxes = document.querySelectorAll("input[type=checkbox]");
+    let personnel_checkboxes = document.querySelectorAll("input[type=checkbox]:not([id=check-all])");
+
+    personnel_checkboxes.forEach(c => {
+      if ([...personnel_checkboxes].every(c => c.checked)) document.getElementById("check-all").checked = true;
+    });
+
+    personnel_checkboxes.forEach(c => {
+      c.addEventListener("change", e => {
+        if (!e.target.checked) document.getElementById("check-all").checked = false;
+        else if ([...personnel_checkboxes].every(c => c.checked)) document.getElementById("check-all").checked = true;
+      });
+    });
+
+    function check_all(elem) {
+      if (elem.checked) {
+        checkboxes.forEach(c => c.checked = true);
+      } else {
+        checkboxes.forEach(c => c.checked = false);
+      }
+    }
+  </script>
 </form>
 
 {% endblock %}
