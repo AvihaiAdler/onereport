@@ -1,7 +1,7 @@
 from onereport import app, forms
 from onereport.data import model, misc
 from onereport.dal import personnel_dal, report_dal, order_attr
-from onereport.dto import personnel_dto
+from onereport.dto import personnel_dto, report_dto
 import flask
 import flask_login
 import datetime
@@ -210,4 +210,4 @@ def u_get_report(id: int) -> str:
         flask.flash(f"הדוח {id} אינו במסד הנתונים", category="danger")
         return flask.redirect(flask.url_for("u_get_all_reports"))
 
-    return flask.render_template("reports/old_report.html", report=report)
+    return flask.render_template("reports/old_report.html", report=report_dto.ReportDTO(report))

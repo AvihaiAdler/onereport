@@ -1,7 +1,7 @@
 from onereport import app, forms, generate_urlstr
 from onereport.data import model
 from onereport.data import misc
-from onereport.dto import user_dto, personnel_dto
+from onereport.dto import report_dto, user_dto, personnel_dto
 from onereport.dal import personnel_dal, user_dal, report_dal
 from onereport.dal import order_attr
 import flask
@@ -363,4 +363,4 @@ def m_get_report(id: int) -> str:
             )
         )
 
-    return flask.render_template("reports/old_report.html", report=report)
+    return flask.render_template("reports/old_report.html", report=report_dto.ReportDTO(report))
