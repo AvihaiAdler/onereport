@@ -69,3 +69,7 @@ a.hover-row:hover {
 .heading {
   padding: 1rem;
 }
+
+input.form-check-input {
+  border: 2px solid #3d3d3d;
+}
