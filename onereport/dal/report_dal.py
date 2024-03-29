@@ -38,7 +38,7 @@ def find_all_reports_by_company(
     return model.db.session.scalars(
         sqlalchemy.select(model.Report)
         .filter(model.Report.company == company.name)
-        .filter(model.Report.presence)
+        .filter(model.Report.presence.any())
         .order_by(
             sqlalchemy.asc(model.Report.date)
             if order == order_attr.Order.ASC
