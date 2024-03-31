@@ -1,5 +1,10 @@
 import json
 import sys
+import pathlib
+
+parent_path = pathlib.Path(pathlib.Path(pathlib.Path(__file__).parent.absolute()).parent.absolute())
+sys.path.append(parent_path.as_posix()) # https://stackoverflow.com/a/61235118
+
 from onereport import app, drop_all, create_all, register_user, register_personnel
 from onereport.data.model import User, Personnel
 
@@ -40,7 +45,7 @@ def bulk_register_users(users: list[dict[str, str]], /) -> None:
         user = user_converter(user)
         register_user(user)
 
-        print(f"The user: {user} registered successfully")
+        # print(f"The user: {user} registered successfully")
 
 
 def bulk_register_personnel(personnel: list[dict[str, str]], /) -> None:
@@ -51,13 +56,13 @@ def bulk_register_personnel(personnel: list[dict[str, str]], /) -> None:
         p = personnel_converter(p)
         register_personnel(p)
 
-        print(f"The personnel: {p} registered successfully")
+        # print(f"The personnel: {p} registered successfully")
 
 
 def main() -> None:
     argv = sys.argv
     if len(argv) < 2:
-        print(f"Usage {argv[0]} path/to/data.json", file=sys.stdout)
+        print(f"Usage: {argv[0]} path/to/data.json", file=sys.stdout)
         return
 
     data_file_path = argv[1]
