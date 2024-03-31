@@ -1,6 +1,4 @@
-.vscode/
-.venv/
-.env
+.*
 config/
 instance/
 __pycache__/
