@@ -22,8 +22,8 @@ app.config["OAUTH2_PROVIDERS"] = {
     "google": {
         "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
         "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
-        "authorize_url": "https://accounts.google.com/o/oauth2/auth",
-        "token_url": "https://accounts.google.com/o/oauth2/token",
+        "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+        "token_url": "https://oauth2.googleapis.com/token",
         "userinfo": {
             "url": "https://www.googleapis.com/oauth2/v3/userinfo",
             "email": lambda json: json["email"],
@@ -61,9 +61,6 @@ def checked(present: bool) -> str:
 
 model.db.init_app(app=app)
 model.login_manager.init_app(app=app)
-model.login_manager.login_view = "login"
-model.login_manager.login_message_category = "info"
-
 
 def drop_all() -> None:
     with app.app_context():
