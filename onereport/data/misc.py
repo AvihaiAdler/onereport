@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class Role(Enum):
-    USER = "פקיד"
-    MANAGER = "שליש"
-    ADMIN = "מנהל"
+    USER = "פקיד.ה"
+    MANAGER = "שליש.ה"
+    ADMIN = "מנהל.ת"
 
     @staticmethod
     def is_valid(role: str, /) -> bool:
@@ -41,8 +41,8 @@ class Platoon(Enum):
 
 
 class Active(Enum):
-    ACTIVE = "פעיל"
-    INACTIVE = "לא פעיל"
+    ACTIVE = "פעיל.ה"
+    INACTIVE = "לא פעיל.ה"
 
     @staticmethod
     def is_valid(active: str, /) -> bool:
@@ -50,8 +50,8 @@ class Active(Enum):
 
 
 class Presence(Enum):
-    PRESENT = "נמצא"
-    NOT_PRESENT = "לא נמצא"
+    PRESENT = "נמצא.ת"
+    NOT_PRESENT = "לא נמצא.ת"
 
     @staticmethod
     def is_valid(presence: str, /) -> bool:
