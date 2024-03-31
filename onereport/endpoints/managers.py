@@ -19,7 +19,7 @@ def is_permitted() -> bool:
     ] in [role for _, role in misc.Role._member_map_.items() if role != misc.Role.USER]
 
 
-@app.route("/onereport/managers/register_personnel", methods=["GET", "POST"])
+@app.route("/onereport/managers/personnel/register", methods=["GET", "POST"])
 @flask_login.login_required
 def m_register_personnel() -> str:
     if not is_permitted():
@@ -37,19 +37,24 @@ def m_register_personnel() -> str:
         )
 
         old_personnel = personnel_dal.find_personnel_by_id(personnel.id)
-        if old_personnel is not None:
-            old_personnel.update(personnel)
-            model.db.session.commit()
-            flask.flash(
-                f"החייל {' '.join((personnel.first_name, personnel.last_name))} עודכן בהצלחה",
-                category="success",
-            )
-        else:
+        if old_personnel is None:
             model.db.session.add(personnel)
             model.db.session.commit()
             flask.flash(
-                f"החייל {form.first_name.data} {form.last_name.data} נוסף בהצלחה",
+                f"החייל.ת {form.first_name.data} {form.last_name.data} נוסף.ה בהצלחה",
                 category="success",
+            )
+        elif old_personnel is not None and not old_personnel.active:
+            old_personnel.update(personnel)
+            model.db.session.commit()
+            flask.flash(
+                f"החייל.ת {form.first_name.data} {form.last_name.data} נוסף.ה בהצלחה",
+                category="success",
+            )
+        else:
+            flask.flash(
+                f"חייל.ת עם מס' אישי {old_personnel.id} כבר נמצא במערכת",
+                category="danger",
             )
 
         return flask.redirect(flask.url_for("home"))
@@ -57,44 +62,77 @@ def m_register_personnel() -> str:
     return flask.render_template("personnel/personnel_registration.html", form=form)
 
 
-@app.route("/onereport/managers/register_user", methods=["GET", "POST"])
+@app.route("/onereport/managers/users/<id>/register", methods=["GET", "POST"])
 @flask_login.login_required
-def m_register_user() -> str:
+def m_register_user(id: str) -> str:
     if not is_permitted():
         return flask.redirect(flask.url_for("home"))
 
-    form = forms.UserRegistrationFrom()
+    personnel = personnel_dal.find_personnel_by_id(id)
+    if personnel is None:
+        flask.flash(f"המס' האישי {id} אינו במסד הנתונים", category="danger")
+        return flask.redirect("home")
 
+    form = forms.UserRegistrationFrom()
     if form.validate_on_submit():
         user = model.User(
+            personnel.id,
             form.email.data.strip(),
             form.first_name.data.strip(),
             form.last_name.data.strip(),
             form.role.data,
             form.company.data,
+            form.platoon.data,
         )
 
-        # SELECT old_user FROM users WHERE old_user.email == user.email
+        if (
+            flask_login.current_user.role != misc.Role.ADMIN
+            and user.role == misc.Role.ADMIN.name
+        ):
+            flask.flash("אינך ראשי.ת לבצע פעולה זו", category="danger")
+            return flask.redirect("home")
+
         old_user = user_dal.find_user_by_email(user.email)
-        if old_user is not None:
-            # model.db.session.delete(old_user)
-            old_user.update(user)
+        if old_user is None:
+            model.db.session.delete(
+                personnel
+            )  # delete personnel since it has the same id
             model.db.session.commit()
-            flask.flash(
-                f"הפקיד {' '.join((user.first_name, user.last_name))} עודכן בהצלחה",
-                category="success",
-            )
-        else:
+
             model.db.session.add(user)
             model.db.session.commit()
             flask.flash(
-                f"הפקיד {' '.join((user.first_name, user.last_name))} נוסף בהצלחה",
+                f"המשתמש.ת {' '.join((user.first_name, user.last_name))} נוסף.ה בהצלחה",
                 category="success",
             )
+        elif old_user is not None and not old_user.active:
+            old_user.update(user)
+            model.db.session.commit()
+            flask.flash(
+                f"המשתמש.ת {' '.join((user.first_name, user.last_name))} עודכן.ה בהצלחה",
+                category="success",
+            )
+        else:
+            flask.flash("משתמש.ת עם כתובת מייל זו כבר רשום.ה במערכת", category="danger")
 
         return flask.redirect(flask.url_for("home"))
 
-    return flask.render_template("users/user_registration.html", form=form)
+    if flask.request.method == "GET":
+        form.id.data = personnel.id
+        form.first_name.data, form.last_name.data = (
+            personnel.first_name,
+            personnel.last_name,
+        )
+        form.company.data = personnel.company
+        form.platoon.data = personnel.platoon
+
+        return flask.render_template("users/user_registration.html", form=form)
+
+    return flask.redirect(
+        flask.url_for(
+            generate_urlstr(flask_login.current_user.role, "register_user"), id=id
+        )
+    )
 
 
 @app.route("/onereport/managers/personnel/<id>/update", methods=["GET", "POST"])
@@ -143,9 +181,7 @@ def m_update_personnel(id: str) -> str:
         form.company.data = old_personnel.company
         form.active.data = old_personnel.active
 
-        return flask.render_template(
-            "personnel/personnel.html", form=form
-        )  # personnel=[personnel_dto.PersonnelDTO(old_personnel)]
+        return flask.render_template("personnel/personnel.html", form=form)
 
     return flask.redirect(
         flask.url_for(
@@ -154,7 +190,7 @@ def m_update_personnel(id: str) -> str:
     )
 
 
-@app.route("/onereport/managers/user/<email>/update", methods=["GET", "POST"])
+@app.route("/onereport/managers/users/<email>/update", methods=["GET", "POST"])
 @flask_login.login_required
 def m_update_user(email: str) -> str:
     if not is_permitted():
@@ -167,14 +203,44 @@ def m_update_user(email: str) -> str:
 
     form = forms.UserUpdateForm()
     if form.validate_on_submit():
+        if form.delete.data:
+            personnel = model.Personnel(
+                old_user.id,
+                form.first_name.data.strip(),
+                form.last_name.data.strip(),
+                form.company.data,
+                form.platoon.data,
+            )
+
+            model.db.session.delete(old_user)  # delete user since it has the same id
+            model.db.session.commit()
+
+            model.db.session.add(personnel)
+            model.db.session.commit()
+
+            return flask.redirect(
+                flask.url_for(
+                    generate_urlstr(flask_login.current_user.role, "get_all_users")
+                )
+            )
+
         user = model.User(
-            old_user.email,
+            old_user.id,
+            form.email.data,
             form.first_name.data.strip(),
             form.last_name.data.strip(),
             form.role.data,
             form.company.data,
+            form.platoon.data,
         )
         user.active = misc.Active[form.active.data] == misc.Active.ACTIVE
+
+        if (
+            flask_login.current_user.role != misc.Role.ADMIN
+            and user.role == misc.Role.ADMIN.name
+        ):
+            flask.flash("אינך ראשי.ת לבצע פעולה זו", category="danger")
+            return flask.redirect("home")
 
         old_user.update(user)
         model.db.session.commit()
@@ -188,6 +254,7 @@ def m_update_user(email: str) -> str:
         )
 
     if flask.request.method == "GET":
+        form.id.data = old_user.id
         form.email.data = old_user.email
         form.first_name.data, form.last_name.data = (
             old_user.first_name,
@@ -300,6 +367,7 @@ def m_create_report() -> str:
         report.presence = {p for p in personnel if p.id in flask.request.form}
         model.db.session.commit()
 
+        flask.flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
         return flask.redirect(
             flask.url_for(
                 generate_urlstr(flask_login.current_user.role, "create_report")
@@ -363,4 +431,6 @@ def m_get_report(id: int) -> str:
             )
         )
 
-    return flask.render_template("reports/old_report.html", report=report_dto.ReportDTO(report))
+    return flask.render_template(
+        "reports/old_report.html", report=report_dto.ReportDTO(report)
+    )
