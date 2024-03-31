@@ -102,7 +102,7 @@ class User(Personnel, UserMixin):
     __mapper_args__ = {
         "polymorphic_identity": "user",
     }
-    
+
     def __init__(
         self: Self,
         id: str,
@@ -127,7 +127,6 @@ class User(Personnel, UserMixin):
     def __repr__(self: Self) -> str:
         repr_str = super().__repr__()
         return f"User({repr_str} email: {self.email}, role: {self.role})"
-      
 
     def get_id(self: Self) -> str:
         return self.email
