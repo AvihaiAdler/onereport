@@ -30,7 +30,7 @@ onereport.register_user(user)
 from onereport import app
 from onereport.dal import user_dal, order_attr
 with app.app_context():
-  user_dal.get_all_users(order_attr.UserOrderBy.EMAIL, order_attr.Order.ASC)
+  user_dal.find_all_users(order_attr.UserOrderBy.EMAIL, order_attr.Order.ASC)
 ```
 
 #### loading dummy data in bulk
