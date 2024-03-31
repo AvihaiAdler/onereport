@@ -11,7 +11,7 @@ def not_admin() -> bool:
     return misc.Role[flask_login.current_user.role] != misc.Role.ADMIN
 
 
-@app.route("/onereport/admins/register_personnel", methods=["GET", "POST"])
+@app.route("/onereport/admins/personnel/register", methods=["GET", "POST"])
 @flask_login.login_required
 def a_register_personnel() -> str:
     if not_admin():
@@ -22,14 +22,14 @@ def a_register_personnel() -> str:
     )
 
 
-@app.route("/onereport/admins/register_user", methods=["GET", "POST"])
+@app.route("/onereport/admins/users/<id>/register", methods=["GET", "POST"])
 @flask_login.login_required
-def a_register_user() -> str:
+def a_register_user(id: str) -> str:
     if not_admin():
         return flask.redirect("home")
 
     return flask.redirect(
-        flask.url_for(generate_urlstr(misc.Role.MANAGER.name, "register_user"))
+        flask.url_for(generate_urlstr(misc.Role.MANAGER.name, "register_user"), id=id)
     )
 
 
@@ -46,7 +46,7 @@ def a_update_personnel(id: str) -> str:
     )
 
 
-@app.route("/onereport/admins/user/<email>/update", methods=["GET", "POST"])
+@app.route("/onereport/admins/users/<email>/update", methods=["GET", "POST"])
 @flask_login.login_required
 def a_update_user(email: str) -> str:
     if not_admin():
