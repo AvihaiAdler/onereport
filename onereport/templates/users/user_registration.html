@@ -5,13 +5,16 @@
   <form method="POST">
     {{ form.hidden_tag() }}
     <fieldset class="form-group">
-      <legend class="border-bottom mb-4">הוסף פקיד</legend>
+      <legend class="border-bottom mb-4">הוסף.י משתמש.ת</legend>
+      {{ render_field(form.id, class="col-sm-10 form-control", disabled="") }}
       {{ render_field(form.email, placeholder="מייל", class="form-control is-invalid") }}
       {{ render_field(form.first_name, placeholder="שם פרטי", class="form-control") }}
       {{ render_field(form.last_name, placeholder="שם משפחה", class="form-control") }}
       {{ render_field(form.role, class="form-control form-select") }}
       {{ render_field(form.company, class="form-control form-select") }}
-      {{ form.submit(class="btn btn-sm btn-outline-success") }}
+      {{ render_field(form.platoon, class="form-control form-select") }}
+
+      {{ form.submit(class="btn btn-sm btn-outline-success col-sm") }}
     </fieldset>
   </form>
 </div>
