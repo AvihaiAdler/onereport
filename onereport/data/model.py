@@ -12,6 +12,9 @@ class Base(orm.DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
+login_manager.login_view = "login"
+login_manager.login_message_category = "info"
+login_manager.login_message = "אנא התחבר למערכת על מנת להכנס"
 
 personnel_report_rel = sqlalchemy.Table(
     "personnel_report_rel",
@@ -96,7 +99,7 @@ class User(Personnel, UserMixin):
     id: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.ForeignKey("personnel.id"), primary_key=True
     )
-    email: orm.Mapped[str]
+    email: orm.Mapped[str] = orm.mapped_column(unique=True)
     role: orm.Mapped[str]
 
     __mapper_args__ = {
@@ -121,6 +124,7 @@ class User(Personnel, UserMixin):
     def update(self: Self, other: Self) -> None:
         self.first_name, self.last_name = other.first_name, other.last_name
         self.company = other.company
+        self.platoon = other.platoon
         self.active = other.active
         self.role = other.role
 
@@ -131,7 +135,6 @@ class User(Personnel, UserMixin):
     def get_id(self: Self) -> str:
         return self.email
 
-
 @login_manager.user_loader
-def load_user(id: str) -> User:
-    return db.session.get(User, id)
+def load_user(email: str) -> User | None:
+    return db.session.scalar(sqlalchemy.select(User).filter(User.email == email))#get(User, email)
