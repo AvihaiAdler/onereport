@@ -1,0 +1,52 @@
+{
+  "Users": [
+    {
+      "id": "id goes here",
+      "email": "email goes here",
+      "first_name": "first name goes here",
+      "last_name": "last name goes here",
+      "role": "role goes here",
+      "company": "company goes here",
+      "platoon": "platoon goes here"
+    },
+    {
+      "id": "id goes here",
+      "email": "email goes here",
+      "first_name": "first name goes here",
+      "last_name": "last name goes here",
+      "role": "role goes here",
+      "company": "company goes here",
+      "platoon": "platoon goes here"
+    }
+  ],
+  "Personnel": [
+    {
+      "id": "id goes here",
+      "first_name": "first name goes here",
+      "last_name": "last name goes here",
+      "company": "company goes here",
+      "platoon": "platoon goes here"
+    },
+    {
+      "id": "id goes here",
+      "first_name": "first name goes here",
+      "last_name": "last name goes here",
+      "company": "company goes here",
+      "platoon": "platoon goes here"
+    },
+    {
+      "id": "id goes here",
+      "first_name": "first name goes here",
+      "last_name": "last name goes here",
+      "company": "company goes here",
+      "platoon": "platoon goes here"
+    },
+    {
+      "id": "id goes here",
+      "first_name": "first name goes here",
+      "last_name": "last name goes here",
+      "company": "company goes here",
+      "platoon": "platoon goes here"
+    }
+  ]
+}

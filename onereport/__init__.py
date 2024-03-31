@@ -84,6 +84,15 @@ def register_user(user: model.User) -> None:
         model.db.session.commit()
 
 
+def register_personnel(personnel: model.Personnel) -> None:
+    if personnel is None:
+        raise ValueError("personnel must not be None")
+
+    with app.app_context():
+        model.db.session.add(personnel)
+        model.db.session.commit()
+
+
 from onereport.endpoints import users  # noqa: E402, F401
 from onereport.endpoints import auth  # noqa: E402, F401
 from onereport.endpoints import managers  # noqa: E402, F401
