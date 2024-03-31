@@ -45,10 +45,7 @@
               class="link-underline link-underline-opacity-0">
               <li class="list-group-item list-group-item-light hover">הוסף חייל</li>
             </a>
-            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_user" )) }}
-              class="link-underline link-underline-opacity-0">
-              <li class="list-group-item list-group-item-light hover">הוסף פקיד</li>
-            </a>
+
             <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_users" )) }}
               class="link-underline link-underline-opacity-0">
               <li class="list-group-item list-group-item-light hover">פקידים</li>
