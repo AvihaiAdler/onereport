@@ -160,6 +160,7 @@ def u_create_report() -> str:
         report.presence = {p for p in personnel if p.id in flask.request.form}
         model.db.session.commit()
 
+        flask.flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
         return flask.redirect(flask.url_for("u_create_report"))
 
     personnel_presence_list = [
