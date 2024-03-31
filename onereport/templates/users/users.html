@@ -5,7 +5,8 @@
   {% for user in users %}
   <a href={{ url_for(current_user.role|generate_urlstr(urlstr="update_user" ), email=user.email) }}
     class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }} hover-row">
-    <div class="col-2">{{ user.first_name }}</div>
+    <div class="col-2">{{ user.id }}</div>
+    <div class="col-1">{{ user.first_name }}</div>
     <div class="col-2">{{ user.last_name }}</div>
     <div class="col-3">{{ user.email }}</div>
     <div class="col-1">{{ user.role }}</div>
