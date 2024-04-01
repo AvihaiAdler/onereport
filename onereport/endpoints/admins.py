@@ -77,7 +77,7 @@ def a_get_all_users() -> str:
 
     order_by = flask.request.args.get("order_by", default="COMPANY")
     order = flask.request.args.get("order", "ASC")
-    app.logger.info(
+    app.logger.debug(
         f"query all users for {flask_login.current_user}\nquery params: order by: {order_by}, order: {order}"
     )
 
@@ -100,7 +100,7 @@ def a_get_all_users() -> str:
     if not users:
         app.logger.warning("users table is empty")
 
-    app.logger.info(
+    app.logger.debug(
         f"passing {len(users)} users to users.html for {flask_login.current_user}"
     )
     return flask.render_template(
@@ -117,7 +117,7 @@ def a_get_all_personnel() -> str:
 
     order_by = flask.request.args.get("order_by", default="LAST_NAME")
     order = flask.request.args.get("order", "ASC")
-    app.logger.info(
+    app.logger.debug(
         f"query all users for {flask_login.current_user}\nquery params: order by: {order_by}, order: {order}"
     )
 
@@ -125,6 +125,7 @@ def a_get_all_personnel() -> str:
     if not order_attr.PersonnelOrderBy.is_valid(order_by):
         app.logger.warning(f"received incorrect query param order by: {order_by}")
         flask.flash(f"אין אפשרות לסדר את העצמים לפי {order_by}", category="info")
+        
         return flask.render_template(
             "personnel/personnel_list.html", form=form, personnel=[]
         )
@@ -132,6 +133,7 @@ def a_get_all_personnel() -> str:
     if not order_attr.Order.is_valid(order):
         app.logger.warning(f"received incorrect query param order: {order}")
         flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
+        
         return flask.render_template(
             "personnel/personnel_list.html", form=form, personnel=[]
         )
@@ -147,7 +149,7 @@ def a_get_all_personnel() -> str:
     if not personnel:
         app.logger.warning("personnel table is empty")
 
-    app.logger.info(
+    app.logger.debug(
         f"passing {len(personnel)} personnel to personnel_list.html for {flask_login.current_user}"
     )
     return flask.render_template(
@@ -178,7 +180,7 @@ def a_get_all_reports() -> str:
 
     company = flask.request.args.get("company", default="")
     order = flask.request.args.get("order", default="DESC")
-    app.logger.info(
+    app.logger.debug(
         f"query all reports for {flask_login.current_user}\nquery params: company: {company}, order: {order}"
     )
 

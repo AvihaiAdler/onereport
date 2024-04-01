@@ -50,7 +50,7 @@ def oauth2_callback(provider: str):
         app.logger.error(f"no oauth2 config for provider {provider}")
         flask.abort(404)
 
-    app.logger.info(f"got a request:\n{flask.request.args}")
+    app.logger.debug(f"got a request:\n{flask.request.args}")
     
     # if there was an authentication error, flash the error messages and exit
     if "error" in flask.request.args:

@@ -37,7 +37,7 @@ def m_register_personnel() -> str:
         if old_personnel is None:
             personnel_dal.save(personnel)
 
-            app.logger.info(
+            app.logger.debug(
                 f"{flask_login.current_user} successfully registered {personnel}"
             )
             flask.flash(
@@ -52,7 +52,7 @@ def m_register_personnel() -> str:
                 )
                 flask.flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
             else:
-                app.logger.warning(
+                app.logger.error(
                     f"{flask_login.current_user} failed to update {old_personnel}"
                 )
                 flask.flash(f"הפעולה עבור החייל.ת {id} לא הושלמה", category="danger")
@@ -83,6 +83,7 @@ def m_register_user(id: str) -> str:
             f"{flask_login.current_user} tried to register a non exiting user with id {id}"
         )
         flask.flash(f"המס' האישי {id} אינו במסד הנתונים", category="danger")
+        
         return flask.redirect("home")
 
     form = forms.UserRegistrationFrom()
@@ -103,18 +104,17 @@ def m_register_user(id: str) -> str:
                 f"{flask_login.current_user} with permision level {current_user_level} tried to register a user with permission level {misc.Role.get_level(form.role.data)}"
             )
             flask.flash("אינך ראשי.ת לבצע פעולה זו", category="danger")
+            
             return flask.redirect("home")
 
         old_user = user_dal.find_user_by_email(user.email)
         if old_user is None:
             personnel_dal.delete(personnel)  # delete personnel since it has the same id
-
             app.logger.info(
                 f"{flask_login.current_user} successfully deleted {personnel}"
             )
 
             user_dal.save(user)
-
             app.logger.info(
                 f"{flask_login.current_user} successfully registered {user}"
             )
@@ -133,7 +133,7 @@ def m_register_user(id: str) -> str:
                     category="success",
                 )
             else:
-                app.logger.info(
+                app.logger.error(
                     f"{flask_login.current_user} failed to update {old_user}"
                 )
                 flask.flash(
@@ -204,7 +204,7 @@ def m_update_personnel(id: str) -> str:
             )
             flask.flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
         else:
-            app.logger.warning(
+            app.logger.error(
                 f"{flask_login.current_user} failed to update {old_personnel}"
             )
             flask.flash(f"הפעולה עבור החייל.ת {id} לא הושלמה", category="danger")
@@ -249,6 +249,7 @@ def m_update_user(email: str) -> str:
             f"{flask_login.current_user} tried to update non exisiting user with id {id}"
         )
         flask.flash("המשתמש אינו במסד הנתונים", category="info")
+        
         return flask.redirect(flask.url_for("home"))
 
     form = forms.UserUpdateForm()
@@ -304,7 +305,7 @@ def m_update_user(email: str) -> str:
             )
             flask.flash(f"המשתמש.ת {old_user.email} עודכן בהצלחה", category="success")
         else:
-            app.logger.info(f"{flask_login.current_user} failed to update {old_user}")
+            app.logger.error(f"{flask_login.current_user} failed to update {old_user}")
             flask.flash(
                 f"הפעולה עבור המשתמש.ת {old_user.email} לא הושלמה", category="success"
             )
@@ -344,18 +345,20 @@ def m_get_all_users() -> str:
 
     order_by = flask.request.args.get("order_by", default="COMPANY")
     order = flask.request.args.get("order", "ASC")
-    app.logger.info(
+    app.logger.debug(
         f"query all active non-admin users for {flask_login.current_user}\nquery params: order by: {order_by}, order: {order}"
     )
 
     if not order_attr.UserOrderBy.is_valid(order_by):
         app.logger.warning(f"received incorrect query param order by: {order_by}")
         flask.flash(f"אין אפשרות לסדר את העצמים לפי {order_by}", category="info")
+        
         return flask.render_template("users/users.html", users=[])
 
     if not order_attr.Order.is_valid(order):
         app.logger.warning(f"received incorrect query param order: {order}")
         flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
+        
         return flask.render_template("users.html", users=[])
 
     users = user_dal.find_all_active_users(
@@ -365,7 +368,7 @@ def m_get_all_users() -> str:
     if not users:
         app.logger.debug(f"there are no visible users for {flask_login.current_user}")
 
-    app.logger.info(
+    app.logger.debug(
         f"passing {len(users)} personnel to users.html for {flask_login.current_user}"
     )
     return flask.render_template(
@@ -384,7 +387,7 @@ def m_get_all_personnel() -> str:
 
     order_by = flask.request.args.get("order_by", default="LAST_NAME")
     order = flask.request.args.get("order", "ASC")
-    app.logger.info(
+    app.logger.debug(
         f"query all active personnel for {flask_login.current_user}\nquery params: order by: {order_by}, order: {order}"
     )
 
@@ -418,7 +421,7 @@ def m_get_all_personnel() -> str:
             f"there are no visible personnel for {flask_login.current_user}"
         )
 
-    app.logger.info(
+    app.logger.debug(
         f"passing {len(personnel)} personnel to personnel_list.html for {flask_login.current_user}"
     )
     return flask.render_template(
@@ -454,7 +457,7 @@ def m_create_report() -> str:
     )
 
     if not personnel:
-        app.logger.warning(f"no visibale users for {flask_login.current_user}")
+        app.logger.debug(f"no visibale users for {flask_login.current_user}")
 
     form = forms.UpdateReportForm()
 
@@ -469,7 +472,7 @@ def m_create_report() -> str:
                 f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success"
             )
         else:
-            app.logger.info(
+            app.logger.error(
                 f"{flask_login.current_user} failed to update the report {report}"
             )
             flask.flash(f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger")
@@ -484,7 +487,7 @@ def m_create_report() -> str:
         (personnel_dto.PersonnelDTO(p), p in report.presence) for p in personnel
     ]  # list specifically to preserve the order
 
-    app.logger.info(
+    app.logger.debug(
         f"passing {len(personnel_presence_list)} personnel to editable_report.html for {flask_login.current_user}"
     )
     return flask.render_template(
@@ -503,13 +506,14 @@ def m_get_all_reports() -> str:
 
     company = flask.request.args.get("company", default="")
     order = flask.request.args.get("order", "DESC")
-    app.logger.info(
+    app.logger.debug(
         f"query all reports for {flask_login.current_user}\nquery params: company: {company}, order: {order}"
     )
 
     if not order_attr.Order.is_valid(order):
         app.logger.warning(f"received incorrect query param order: {order}")
         flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
+        
         return flask.redirect(flask.url_for("home"))
 
     if not misc.Company.is_valid(flask_login.current_user.company):
@@ -530,7 +534,7 @@ def m_get_all_reports() -> str:
     if not reports:
         app.logger.debug(f"no visible reports for {flask_login.current_user}")
 
-    app.logger.info(
+    app.logger.debug(
         f"passing {len(reports)} reports to reports.html for {flask_login.current_user}"
     )
     return flask.render_template(
@@ -575,7 +579,7 @@ def m_get_report(id: int) -> str:
             )
         )
 
-    app.logger.info(f"sends {report} to old_report.html for {flask_login.current_user}")
+    app.logger.debug(f"sends {report} to old_report.html for {flask_login.current_user}")
     return flask.render_template(
         "reports/old_report.html", report=report_dto.ReportDTO(report)
     )

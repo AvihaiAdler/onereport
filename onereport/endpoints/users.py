@@ -25,7 +25,7 @@ def u_get_all_personnel() -> str:
     order_by = flask.request.args.get("order_by", default="ID")
     order = flask.request.args.get("order", default="ASC")
 
-    app.logger.info(
+    app.logger.debug(
         f"query all personnel for {flask_login.current_user}\nquery params: order by: {order_by}, order: {order}"
     )
 
@@ -63,7 +63,7 @@ def u_get_all_personnel() -> str:
             f"there are no visible personnel for {flask_login.current_user}"
         )
 
-    app.logger.info(
+    app.logger.debug(
         f"passing {len(personnel)} personnel to personnel_list.html for {flask_login.current_user}"
     )
 
@@ -111,7 +111,7 @@ def u_update_personnel(id: str) -> str:
             )
             flask.flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
         else:
-            app.logger.warning(
+            app.logger.error(
                 f"{flask_login.current_user} failed to update {old_personnel}"
             )
             flask.flash(f"הפעולה עבור החייל.ת {id} לא הושלמה", category="danger")
@@ -130,7 +130,7 @@ def u_update_personnel(id: str) -> str:
         form.company.data = old_personnel.company
         form.active.data = old_personnel.active
 
-        app.logger.info(
+        app.logger.debug(
             f"passing {personnel} personnel.html for {flask_login.current_user}"
         )
         return flask.render_template(
@@ -172,7 +172,7 @@ def u_create_report() -> str:
     )
 
     if not personnel:
-        app.logger.warning(f"no visibale users for {flask_login.current_user}")
+        app.logger.debug(f"no visibale users for {flask_login.current_user}")
 
     form = forms.UpdateReportForm()
 
@@ -187,7 +187,7 @@ def u_create_report() -> str:
                 f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success"
             )
         else:
-            app.logger.info(
+            app.logger.error(
                 f"{flask_login.current_user} failed to update the report {report}"
             )
             flask.flash(f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger")
@@ -235,7 +235,7 @@ def u_get_all_reports() -> str:
     if not reports:
         app.logger.debug(f"no visible reports for {flask_login.current_user}")
 
-    app.logger.info(
+    app.logger.debug(
         f"passing {len(reports)} reports to reports.html for {flask_login.current_user}"
     )
     return flask.render_template("reports/reports.html", reports=reports)
@@ -270,7 +270,7 @@ def u_get_report(id: int) -> str:
             )
         )
 
-    app.logger.info(f"sends {report} to old_report.html for {flask_login.current_user}")
+    app.logger.debug(f"sends {report} to old_report.html for {flask_login.current_user}")
     return flask.render_template(
         "reports/old_report.html", report=report_dto.ReportDTO(report)
     )
