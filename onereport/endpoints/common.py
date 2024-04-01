@@ -14,6 +14,7 @@ def login() -> str:
 @flask_login.login_required
 def logout() -> str:
     flask_login.logout_user()
+    app.logger.info(f"The user: {flask_login.current_user} logged out")
     return flask.redirect(flask.url_for("login"))
 
 

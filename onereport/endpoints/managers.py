@@ -1,32 +1,25 @@
 from onereport import app, forms, generate_urlstr
-from onereport.data import model
-from onereport.data import misc
+from onereport.data import model, misc
 from onereport.dto import report_dto, user_dto, personnel_dto
-from onereport.dal import personnel_dal, user_dal, report_dal
-from onereport.dal import order_attr
+from onereport.dal import personnel_dal, user_dal, report_dal, order_attr
 import flask
 import flask_login
 import datetime
 
 
-def not_manager() -> bool:
-    return misc.Role[flask_login.current_user.role] != misc.Role.MANAGER
-
-
-def is_permitted() -> bool:
+def not_permitted() -> bool:
     if not misc.Role.is_valid(flask_login.current_user.role):
         return False
-    return misc.Role.get_level(flask_login.current_user.role) in [
-        misc.Role.get_level(role_name)
-        for role_name in misc.Role._member_names_
-        if role_name != misc.Role.USER.name
-    ]
+    return misc.Role.get_level(flask_login.current_user.role) > misc.Role.get_level(
+        misc.Role.MANAGER.name
+    )
 
 
 @app.route("/onereport/managers/personnel/register", methods=["GET", "POST"])
 @flask_login.login_required
 def m_register_personnel() -> str:
-    if not is_permitted():
+    if not_permitted():
+        app.logger.warning(f"unauthorized access by {flask_login.current_user}")
         return flask.redirect(flask.url_for("home"))
 
     form = forms.PersonnelRegistrationFrom()
@@ -43,18 +36,30 @@ def m_register_personnel() -> str:
         old_personnel = personnel_dal.find_personnel_by_id(personnel.id)
         if old_personnel is None:
             personnel_dal.save(personnel)
+
+            app.logger.info(
+                f"{flask_login.current_user} successfully registered {personnel}"
+            )
             flask.flash(
                 f"החייל.ת {form.first_name.data} {form.last_name.data} נוסף.ה בהצלחה",
                 category="success",
             )
         elif old_personnel is not None and not old_personnel.active:
             old_personnel.update(personnel)
-            personnel_dal.update(old_personnel)
-            flask.flash(
-                f"החייל.ת {form.first_name.data} {form.last_name.data} נוסף.ה בהצלחה",
-                category="success",
-            )
+            if personnel_dal.update(old_personnel):
+                app.logger.info(
+                    f"{flask_login.current_user} successfully updated {old_personnel}"
+                )
+                flask.flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
+            else:
+                app.logger.warning(
+                    f"{flask_login.current_user} failed to update {old_personnel}"
+                )
+                flask.flash(f"הפעולה עבור החייל.ת {id} לא הושלמה", category="danger")
         else:
+            app.logger.error(
+                f"{flask_login.current_user} tried to register {personnel} with the same id as {old_personnel}"
+            )
             flask.flash(
                 f"חייל.ת עם מס' אישי {old_personnel.id} כבר נמצא במערכת",
                 category="danger",
@@ -68,11 +73,15 @@ def m_register_personnel() -> str:
 @app.route("/onereport/managers/users/<id>/register", methods=["GET", "POST"])
 @flask_login.login_required
 def m_register_user(id: str) -> str:
-    if not is_permitted():
+    if not_permitted():
+        app.logger.warning(f"unauthorized access by {flask_login.current_user}")
         return flask.redirect(flask.url_for("home"))
 
     personnel = personnel_dal.find_personnel_by_id(id)
     if personnel is None:
+        app.logger.error(
+            f"{flask_login.current_user} tried to register a non exiting user with id {id}"
+        )
         flask.flash(f"המס' האישי {id} אינו במסד הנתונים", category="danger")
         return flask.redirect("home")
 
@@ -90,26 +99,51 @@ def m_register_user(id: str) -> str:
 
         current_user_level = misc.Role.get_level(flask_login.current_user.role)
         if current_user_level > misc.Role.get_level(form.role.data):
+            app.logger.error(
+                f"{flask_login.current_user} with permision level {current_user_level} tried to register a user with permission level {misc.Role.get_level(form.role.data)}"
+            )
             flask.flash("אינך ראשי.ת לבצע פעולה זו", category="danger")
             return flask.redirect("home")
 
         old_user = user_dal.find_user_by_email(user.email)
         if old_user is None:
             personnel_dal.delete(personnel)  # delete personnel since it has the same id
+
+            app.logger.info(
+                f"{flask_login.current_user} successfully deleted {personnel}"
+            )
+
             user_dal.save(user)
 
+            app.logger.info(
+                f"{flask_login.current_user} successfully registered {user}"
+            )
             flask.flash(
                 f"המשתמש.ת {' '.join((user.first_name, user.last_name))} נוסף.ה בהצלחה",
                 category="success",
             )
         elif old_user is not None and not old_user.active:
             old_user.update(user)
-            user_dal.update(old_user)
-            flask.flash(
-                f"המשתמש.ת {' '.join((user.first_name, user.last_name))} עודכן.ה בהצלחה",
-                category="success",
-            )
+            if user_dal.update(old_user):
+                app.logger.info(
+                    f"{flask_login.current_user} successfully updated {old_user}"
+                )
+                flask.flash(
+                    f"המשתמש.ת {' '.join((user.first_name, user.last_name))} עודכן.ה בהצלחה",
+                    category="success",
+                )
+            else:
+                app.logger.info(
+                    f"{flask_login.current_user} failed to update {old_user}"
+                )
+                flask.flash(
+                    f"הפעולה עבור {' '.join((user.first_name, user.last_name))} לא הושלמה",
+                    category="success",
+                )
         else:
+            app.logger.error(
+                f"{flask_login.current_user} tried to register {user} with the same email as {old_user}"
+            )
             flask.flash("משתמש.ת עם כתובת מייל זו כבר רשום.ה במערכת", category="danger")
 
         return flask.redirect(flask.url_for("home"))
@@ -135,12 +169,17 @@ def m_register_user(id: str) -> str:
 @app.route("/onereport/managers/personnel/<id>/update", methods=["GET", "POST"])
 @flask_login.login_required
 def m_update_personnel(id: str) -> str:
-    if not is_permitted():
+    if not_permitted():
+        app.logger.warning(f"unauthorized access by {flask_login.current_user}")
         return flask.redirect(flask.url_for("home"))
 
     old_personnel = personnel_dal.find_personnel_by_id(id)
     if old_personnel is None:
+        app.logger.error(
+            f"{flask_login.current_user} tried to update non existing personnel with id {id}"
+        )
         flask.flash(f"החייל {id} אינו במסד הנתונים", category="danger")
+
         return flask.redirect(
             flask.url_for(
                 generate_urlstr(flask_login.current_user.role, "get_all_personnel")
@@ -159,9 +198,17 @@ def m_update_personnel(id: str) -> str:
         personnel.active = misc.Active[form.active.data] == misc.Active.ACTIVE
 
         old_personnel.update(personnel)
-        personnel_dal.update(old_personnel)
+        if personnel_dal.update(personnel):
+            app.logger.info(
+                f"{flask_login.current_user} successfully updated {old_personnel}"
+            )
+            flask.flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
+        else:
+            app.logger.warning(
+                f"{flask_login.current_user} failed to update {old_personnel}"
+            )
+            flask.flash(f"הפעולה עבור החייל.ת {id} לא הושלמה", category="danger")
 
-        flask.flash(f"החייל {id} עודכן בהצלחה", category="success")
         return flask.redirect(
             flask.url_for(
                 generate_urlstr(flask_login.current_user.role, "get_all_personnel")
@@ -192,11 +239,15 @@ def m_update_personnel(id: str) -> str:
 @app.route("/onereport/managers/users/<email>/update", methods=["GET", "POST"])
 @flask_login.login_required
 def m_update_user(email: str) -> str:
-    if not is_permitted():
+    if not_permitted():
+        app.logger.warning(f"unauthorized access by {flask_login.current_user}")
         return flask.redirect(flask.url_for("home"))
 
     old_user = user_dal.find_user_by_email(email)
     if old_user is None:
+        app.logger.error(
+            f"{flask_login.current_user} tried to update non exisiting user with id {id}"
+        )
         flask.flash("המשתמש אינו במסד הנתונים", category="info")
         return flask.redirect(flask.url_for("home"))
 
@@ -212,7 +263,14 @@ def m_update_user(email: str) -> str:
             )
 
             user_dal.delete(old_user)  # delete user since it has the same id
+            app.logger.info(
+                f"{flask_login.current_user} successfully deleted {old_user}"
+            )
+
             personnel_dal.save(personnel)
+            app.logger.info(
+                f"{flask_login.current_user} successfuly demoted {old_user} to a personnel {personnel}"
+            )
 
             return flask.redirect(
                 flask.url_for(
@@ -233,13 +291,23 @@ def m_update_user(email: str) -> str:
 
         current_user_level = misc.Role.get_level(flask_login.current_user.role)
         if current_user_level > misc.Role.get_level(form.role.data):
+            app.logger.error(
+                f"{flask_login.current_user} with permision level {current_user_level} tried to register a user with permission level {misc.Role.get_level(form.role.data)}"
+            )
             flask.flash("אינך ראשי.ת לבצע פעולה זו", category="danger")
             return flask.redirect("home")
 
         old_user.update(user)
-        user_dal.update(old_user)
-
-        flask.flash(f"המשתמש {old_user.email} עודכן בהצלחה", category="success")
+        if user_dal.update(old_user):
+            app.logger.info(
+                f"{flask_login.current_user} successfully updated {old_user}"
+            )
+            flask.flash(f"המשתמש.ת {old_user.email} עודכן בהצלחה", category="success")
+        else:
+            app.logger.info(f"{flask_login.current_user} failed to update {old_user}")
+            flask.flash(
+                f"הפעולה עבור המשתמש.ת {old_user.email} לא הושלמה", category="success"
+            )
 
         return flask.redirect(
             flask.url_for(
@@ -270,23 +338,35 @@ def m_update_user(email: str) -> str:
 @app.route("/onereport/managers/users", methods=["GET", "POST"])
 @flask_login.login_required
 def m_get_all_users() -> str:
-    order_by = flask.request.args.get("order_by", default="COMPANY")
-    order = flask.request.args.get("order", "ASC")
-
-    if not_manager():
+    if not_permitted():
+        app.logger.warning(f"unauthorized access by {flask_login.current_user}")
         return flask.redirect(flask.url_for("home"))
 
+    order_by = flask.request.args.get("order_by", default="COMPANY")
+    order = flask.request.args.get("order", "ASC")
+    app.logger.info(
+        f"query all active non-admin users for {flask_login.current_user}\nquery params: order by: {order_by}, order: {order}"
+    )
+
     if not order_attr.UserOrderBy.is_valid(order_by):
+        app.logger.warning(f"received incorrect query param order by: {order_by}")
         flask.flash(f"אין אפשרות לסדר את העצמים לפי {order_by}", category="info")
         return flask.render_template("users/users.html", users=[])
 
     if not order_attr.Order.is_valid(order):
+        app.logger.warning(f"received incorrect query param order: {order}")
         flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
         return flask.render_template("users.html", users=[])
 
-    # SELECT * FROM users WHERE user.active AND user.role != ADMIN ORDER_BY order_by order
     users = user_dal.find_all_active_users(
         order_attr.UserOrderBy[order_by], order_attr.Order(order)
+    )
+
+    if not users:
+        app.logger.debug(f"there are no visible users for {flask_login.current_user}")
+
+    app.logger.info(
+        f"passing {len(users)} personnel to users.html for {flask_login.current_user}"
     )
     return flask.render_template(
         "users/users.html", users=[user_dto.UserDTO(user) for user in users]
@@ -298,21 +378,29 @@ def m_get_all_users() -> str:
 @app.route("/onereport/managers/personnel", methods=["GET", "POST"])
 @flask_login.login_required
 def m_get_all_personnel() -> str:
+    if not_permitted():
+        app.logger.warning(f"unauthorized access by {flask_login.current_user}")
+        return flask.redirect(flask.url_for("home"))
+
     order_by = flask.request.args.get("order_by", default="LAST_NAME")
     order = flask.request.args.get("order", "ASC")
-
-    if not_manager():
-        return flask.redirect(flask.url_for("home"))
+    app.logger.info(
+        f"query all active personnel for {flask_login.current_user}\nquery params: order by: {order_by}, order: {order}"
+    )
 
     form = forms.PersonnelListForm()
     if not order_attr.PersonnelOrderBy.is_valid(order_by):
+        app.logger.warning(f"received incorrect query param order by: {order_by}")
         flask.flash(f"אין אפשרות לסדר את העצמים לפי {order_by}", category="info")
+
         return flask.render_template(
             "personnel/personnel_list.html", form=form, personnel=[]
         )
 
     if not order_attr.Order.is_valid(order):
+        app.logger.warning(f"received incorrect query param order: {order}")
         flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
+
         return flask.render_template(
             "personnel/personnel_list.html", form=form, personnel=[]
         )
@@ -324,8 +412,15 @@ def m_get_all_personnel() -> str:
         order_by = order_attr.PersonnelOrderBy[order_by]
         order = order_attr.Order[order]
 
-    # SELECT * FROM personnel WHERE personnel.active ORDER_BY order_by order
     personnel = personnel_dal.find_all_active_personnel(order_by, order)
+    if not personnel:
+        app.logger.debug(
+            f"there are no visible personnel for {flask_login.current_user}"
+        )
+
+    app.logger.info(
+        f"passing {len(personnel)} personnel to personnel_list.html for {flask_login.current_user}"
+    )
     return flask.render_template(
         "personnel/personnel_list.html",
         form=form,
@@ -336,10 +431,12 @@ def m_get_all_personnel() -> str:
 @app.route("/onereport/managers/report", methods=["GET", "POST"])
 @flask_login.login_required
 def m_create_report() -> str:
-    if not is_permitted():
+    if not_permitted():
+        app.logger.warning(f"unauthorized access by {flask_login.current_user}")
         return flask.redirect(flask.url_for("home"))
 
     if not misc.Company.is_valid(flask_login.current_user.company):
+        app.logger.warning(f"{flask_login.current_user} 's company is invalid")
         return flask.redirect(flask.url_for("home"))
 
     company = misc.Company[flask_login.current_user.company]
@@ -350,19 +447,33 @@ def m_create_report() -> str:
         report = model.Report(company.name)
         report_dal.save(report)
 
+        app.logger.info(f"{flask_login.current_user} successfully created {report}")
+
     personnel = personnel_dal.find_all_active_personnel_by_company(
         company, order_attr.PersonnelOrderBy.LAST_NAME, order_attr.Order.ASC
     )
+
+    if not personnel:
+        app.logger.warning(f"no visibale users for {flask_login.current_user}")
+
     form = forms.UpdateReportForm()
 
     # there is a report opened for the day
     if form.validate_on_submit():
         report.presence = {p for p in personnel if p.id in flask.request.form}
-        report_dal.update(report)
+        if report_dal.update(report):
+            app.logger.info(
+                f"{flask_login.current_user} successfully updated the report {report}"
+            )
+            flask.flash(
+                f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success"
+            )
+        else:
+            app.logger.info(
+                f"{flask_login.current_user} failed to update the report {report}"
+            )
+            flask.flash(f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger")
 
-        flask.flash(
-            f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success"
-        )
         return flask.redirect(
             flask.url_for(
                 generate_urlstr(flask_login.current_user.role, "create_report")
@@ -372,6 +483,10 @@ def m_create_report() -> str:
     personnel_presence_list = [
         (personnel_dto.PersonnelDTO(p), p in report.presence) for p in personnel
     ]  # list specifically to preserve the order
+
+    app.logger.info(
+        f"passing {len(personnel_presence_list)} personnel to editable_report.html for {flask_login.current_user}"
+    )
     return flask.render_template(
         "reports/editable_report.html",
         form=form,
@@ -382,18 +497,27 @@ def m_create_report() -> str:
 @app.get("/onereport/managers/reports")
 @flask_login.login_required
 def m_get_all_reports() -> str:
-    company = flask.request.args.get("company", default="")
-    order = flask.request.args.get("order", "DESC")
-
-    if not is_permitted():
+    if not_permitted():
+        app.logger.warning(f"unauthorized access by {flask_login.current_user}")
         return flask.redirect(flask.url_for("home"))
 
+    company = flask.request.args.get("company", default="")
+    order = flask.request.args.get("order", "DESC")
+    app.logger.info(
+        f"query all reports for {flask_login.current_user}\nquery params: company: {company}, order: {order}"
+    )
+
     if not order_attr.Order.is_valid(order):
+        app.logger.warning(f"received incorrect query param order: {order}")
         flask.flash(f"אין אפשרות לסדר את העצמים בסדר {order}", category="info")
         return flask.redirect(flask.url_for("home"))
 
     if not misc.Company.is_valid(flask_login.current_user.company):
-        flask.flash(f"{company} אינה פלוגה בגדוד", category="info")
+        app.logger.warning(f"{flask_login.current_user} 's company is invalid")
+        flask.flash(
+            f"{flask_login.current_user.company} אינה פלוגה בגדוד", category="info"
+        )
+
         return flask.redirect(flask.url_for("home"))
 
     company = (
@@ -403,6 +527,12 @@ def m_get_all_reports() -> str:
     )
 
     reports = report_dal.find_all_reports_by_company(company, order_attr.Order[order])
+    if not reports:
+        app.logger.debug(f"no visible reports for {flask_login.current_user}")
+
+    app.logger.info(
+        f"passing {len(reports)} reports to reports.html for {flask_login.current_user}"
+    )
     return flask.render_template(
         "reports/reports.html",
         reports=reports,
@@ -414,18 +544,38 @@ def m_get_all_reports() -> str:
 @app.get("/onereport/managers/report/<int:id>")
 @flask_login.login_required
 def m_get_report(id: int) -> str:
-    if not is_permitted():
+    if not_permitted():
+        app.logger.warning(f"unauthorized access by {flask_login.current_user}")
         return flask.redirect(flask.url_for("home"))
 
-    report = report_dal.find_report_by_id(id)
+    company = flask.request.args.get("company", None)
+
+    if not misc.Company.is_valid(flask_login.current_user.company):
+        app.logger.warning(f"{flask_login.current_user} 's company is invalid")
+        flask.flash(
+            f"{flask_login.current_user.company} אינה פלוגה בגדוד", category="info"
+        )
+
+        return flask.redirect(flask.url_for("home"))
+
+    company = (
+        company if misc.Company.is_valid(company) else flask_login.current_user.company
+    )
+    report = report_dal.find_report_by_id_and_company(id, misc.Company[company])
+
     if report is None:
+        app.logger.error(
+            f"{flask_login.current_user} tried to get a non existing report with id {id} for company {flask_login.current_user.company}"
+        )
         flask.flash(f"הדוח {id} אינו במסד הנתונים", category="danger")
+
         return flask.redirect(
             flask.url_for(
                 generate_urlstr(flask_login.current_user.role, "get_all_reports")
             )
         )
 
+    app.logger.info(f"sends {report} to old_report.html for {flask_login.current_user}")
     return flask.render_template(
         "reports/old_report.html", report=report_dto.ReportDTO(report)
     )
