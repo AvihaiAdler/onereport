@@ -7,32 +7,6 @@ import flask_login
 import datetime
 
 
-@app.get("/")
-@app.get("/onereport/login")
-def login() -> str:
-    return flask.render_template("login.html")
-
-
-@app.get("/onereport/logout")
-@flask_login.login_required
-def logout() -> str:
-    flask_login.logout_user()
-    return flask.redirect(flask.url_for("login"))
-
-
-@app.get("/onereport/home")
-@flask_login.login_required
-def home() -> str:
-    title = misc.Company[flask_login.current_user.company].value
-    return flask.render_template("home.html", title=title)
-
-
-@app.get("/onereport/about")
-@flask_login.login_required
-def about() -> str:
-    return "about"
-
-
 def not_user() -> bool:
     current_user_role = flask_login.current_user.role
     return (
@@ -108,10 +82,10 @@ def u_update_personnel(id: str) -> str:
         )  # to ensure users cannot update Personnel::company
 
         old_personnel.update(personnel)
-
-        model.db.session.commit()
-
-        flask.flash(f"החייל {id} עודכן בהצלחה", category="success")
+        if personnel_dal.update(personnel):
+            flask.flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
+        else:
+            flask.flash(f"הפעולה עבור החייל.ת {id} לא הושלמה", category="danger") 
         return flask.redirect(flask.url_for("u_get_all_active_personnel"))
 
     if flask.request.method == "GET":
@@ -147,8 +121,7 @@ def u_create_report() -> str:
     # no report for the current date has been opened
     if report is None:
         report = model.Report(company.name)
-        model.db.session.add(report)
-        model.db.session.commit()
+        report_dal.save(report)
 
     personnel = personnel_dal.find_all_active_personnel_by_company(
         company, order_attr.PersonnelOrderBy.LAST_NAME, order_attr.Order.ASC
@@ -158,9 +131,10 @@ def u_create_report() -> str:
     # there is a report opened for the day
     if form.validate_on_submit():
         report.presence = {p for p in personnel if p.id in flask.request.form}
-        model.db.session.commit()
-
-        flask.flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
+        if report_dal.update(report):
+            flask.flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
+        else:
+            flask.flash(f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger")
         return flask.redirect(flask.url_for("u_create_report"))
 
     personnel_presence_list = [

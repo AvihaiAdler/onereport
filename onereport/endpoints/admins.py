@@ -116,7 +116,6 @@ def a_get_all_personnel() -> str:
         order_by = order_attr.PersonnelOrderBy[order_by]
         order = order_attr.Order[order]
 
-    # SELECT * FROM personnel WHERE personnel.active ORDER_BY order_by order
     personnel = personnel_dal.find_all_personnel(order_by, order)
     return flask.render_template(
         "personnel/personnel_list.html",
