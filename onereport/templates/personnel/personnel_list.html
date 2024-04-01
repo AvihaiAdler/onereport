@@ -15,16 +15,26 @@
   </form>
 
   <div class="container content-section">
+    <div class="row heading">
+      <div class="col-sm-2 border-start">מס' אישי</div>
+      <div class="col-sm-3 border-start">שם משפחה</div>
+      <div class="col-sm-2 border-start">שם פרטי</div>
+      <div class="col-sm-2 border-start">פלוגה</div>
+      <div class="col-sm-2 border-start">מחלקה</div>
+      <div class="col-sm-1">פעיל.ה</div>
+    </div>
     {% for p in personnel %}
-    <a href={{ url_for(current_user.role|generate_urlstr(urlstr="update_personnel"), id=p.id) }} class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }} hover-row">
-      <div class="col-2 border-start">{{ p.id }}</div>
-      <div class="col-2 border-start">{{ p.first_name }}</div>
-      <div class="col-2 border-start">{{ p.last_name }}</div>
-      <div class="col-2 border-start">{{ p.company }}</div>
-      <div class="col-2 border-start">{{ p.platoon }}</div>
-      <div class="col-1">{{ p.active }}</div>
-    </a>
-    {% endfor %}
+      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="update_personnel"), id=p.id) }} class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }} hover-row">
+        <div class="col-sm-2 border-start">{{ p.id }}</div>
+        <div class="col-sm-3 border-start">{{ p.last_name }}</div>
+        <div class="col-sm-2 border-start">{{ p.first_name }}</div>
+        <div class="col-sm-2 border-start">{{ p.company }}</div>
+        <div class="col-sm-2 border-start">{{ p.platoon }}</div>
+        <div class="col-sm-1 form-check d-flex justify-content-center">
+          <input type="checkbox" class="form-check-input" {{p.active|is_active}} disabled>
+        </div>
+      </a>
+      {% endfor %}
   </div>
 </div>
 {% endblock %}
