@@ -9,6 +9,7 @@ from onereport.dal import order_attr
 
 ID_LEN = 7
 
+
 class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
     id = wtforms.StringField(
         "מספר אישי",
@@ -60,7 +61,6 @@ class UserRegistrationFrom(flask_wtf.FlaskForm):
         "אימייל",
         validators=[
             validators.InputRequired("שדה חובה"),
-            # validators.Email("שדה לא תקין"),
         ],
     )
     first_name = wtforms.StringField(
@@ -86,7 +86,7 @@ class UserRegistrationFrom(flask_wtf.FlaskForm):
     role = wtforms.SelectField(
         "תפקיד",
         choices=[
-            (name, member.value) for name, member in misc.Role._member_map_.items()
+            (name, permission.value.name) for name, permission in misc.Role._member_map_.items()
         ],
     )
 
@@ -102,14 +102,11 @@ class UserRegistrationFrom(flask_wtf.FlaskForm):
         if not misc.Role.is_valid(role.data):
             raise wtforms.ValidationError("תפקיד לא תקין")
 
-        current_user_role = flask_login.current_user.role
-        if not misc.Role.is_valid(current_user_role):
-            raise wtforms.ValidationError("אין לך הרשאה לבצע פעולה זו")
+        current_user_role_level = misc.Role.get_level(flask_login.current_user.role)
+        if current_user_role_level is None:
+            raise wtforms.ValidationError("הרשאתך אינה תקינה")
 
-        if (
-            misc.Role[current_user_role] != misc.Role.ADMIN
-            and role.data == misc.Role.ADMIN.name
-        ):
+        if current_user_role_level > misc.Role.get_level(role.data):
             raise wtforms.ValidationError("אינך רשאי.ת ליצור משתמש עם הרשאה זו")
 
 
@@ -198,7 +195,7 @@ class UserUpdateForm(flask_wtf.FlaskForm):
     role = wtforms.SelectField(
         "תפקיד",
         choices=[
-            (name, member.value) for name, member in misc.Role._member_map_.items()
+            (name, permission.value.name) for name, permission in misc.Role._member_map_.items()
         ],
     )
     company = wtforms.SelectField(
@@ -245,17 +242,13 @@ class UserUpdateForm(flask_wtf.FlaskForm):
         if not misc.Role.is_valid(role.data):
             raise wtforms.ValidationError("תפקיד לא תקין")
 
-        current_user_role = flask_login.current_user.role
-        if not misc.Role.is_valid(current_user_role):
-            raise wtforms.ValidationError("אין לך הרשאה לבצע פעולה זו")
+        current_user_role_level = misc.Role.get_level(flask_login.current_user.role)
+        if current_user_role_level is None:
+            raise wtforms.ValidationError("הרשאתך אינה תקינה")
 
-        if (
-            misc.Role[current_user_role] != misc.Role.ADMIN
-            and role.data == misc.Role.ADMIN.name
-        ):
+        if current_user_role_level > misc.Role.get_level(role.data):
             raise wtforms.ValidationError("אינך רשאי.ת ליצור משתמש עם הרשאה זו")
 
 
 class UpdateReportForm(flask_wtf.FlaskForm):
     submit = wtforms.SubmitField("שלח")
-

@@ -1,20 +1,41 @@
 from enum import Enum
+from typing import Self
 
+
+class Permission():
+    def __init__(self: Self, level: int, name: str) -> None:
+        self.level = level
+        self.name = name
+
+    def __repr__(self: Self) -> str:
+        return f"Permission(level: {self.level}, name: {self.name})"
 
 class Role(Enum):
-    USER = "פקיד.ה"
-    MANAGER = "שליש.ה"
-    ADMIN = "מנהל.ת"
+    USER = Permission(2, "פקיד.ה")
+    MANAGER = Permission(1, "שליש.ה")
+    ADMIN = Permission(0, "מנהל.ת")
 
     @staticmethod
-    def is_valid(role: str, /) -> bool:
-        return role in Role._member_names_
+    def is_valid(role_name: str, /) -> bool:
+        return role_name in Role._member_names_
+    
+    @staticmethod
+    def get_value(role_name: str) -> str | None:
+        if not Role.is_valid(role_name):
+            return None
+        return Role[role_name].value.name
+    
+    @staticmethod
+    def get_level(role_name: str) -> int | None:
+        if not Role.is_valid(role_name):
+            return None
+        return Role[role_name].value.level
 
 
 class Company(Enum):
-    A = "פלוגה א"
-    B = "פלוגה ב"
-    C = "פלוגה ג"
+    A = "א"
+    B = "ב"
+    C = "ג"
     SUPPORT = "מסייעת"
     HEADQUARTERS = "מפקדה"
 
