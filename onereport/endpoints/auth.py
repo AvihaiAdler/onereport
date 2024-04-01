@@ -20,7 +20,7 @@ def oauth2_authorize(provider: str):
     flask.session["oauth2_state"] = secrets.token_urlsafe(16)
 
     # create a query string with all the OAuth2 parameters
-    query = urllib_parse.urlencode(
+    query_params = urllib_parse.urlencode(
         {
             "client_id": provider_data["client_id"],
             "redirect_uri": flask.url_for(
@@ -34,7 +34,7 @@ def oauth2_authorize(provider: str):
 
     app.logger.debug(f"{oauth2_authorize.__name__} completed auth setup redirecting")
     # redirect the user to the OAuth2 provider authorization URL
-    return flask.redirect(provider_data["authorize_url"] + "?" + query)
+    return flask.redirect(f"{provider_data['authorize_url']}?{query_params}")
 
 
 @app.route("/onereport/callback/<provider>")
@@ -96,7 +96,7 @@ def oauth2_callback(provider: str):
     response = requests.get(
         provider_data["userinfo"]["url"],
         headers={
-            "Authorization": "Bearer " + oauth2_token,
+            "Authorization": f"Bearer {oauth2_token}",
             "Accept": "application/json",
         },
     )
