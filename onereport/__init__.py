@@ -14,8 +14,16 @@ if not dotenv.load_dotenv():
     exit(1)
 
 app = flask.Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", None)
+if app.config["SECRET_KEY"] is None:
+    app.logger.error("failed to load in secret_key")
+    exit(1)
+    
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI", None)
+if app.config["SQLALCHEMY_DATABASE_URI"] is None:
+    app.logger.error("failed to load in db uri")
+    exit(1)
+    
 app.config["OAUTH2_PROVIDERS"] = {
     # Google OAuth 2.0 documentation:
     # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
@@ -31,6 +39,9 @@ app.config["OAUTH2_PROVIDERS"] = {
         "scopes": ["https://www.googleapis.com/auth/userinfo.email"],
     }
 }
+
+app.config["PHONE"] = os.environ.get("PHONE", None)
+app.config["EMAIL"] = os.environ.get("EMAIL", None)
 
 
 @app.template_filter()
@@ -58,6 +69,10 @@ def is_not_user(role: str) -> bool:
 def checked(present: bool) -> str:
     return "checked" if present else ""
 
+
+@app.template_filter()
+def is_active(active: bool) -> str:
+    return "checked" if active else ""
 
 model.db.init_app(app=app)
 model.login_manager.init_app(app=app)
@@ -89,8 +104,8 @@ def register_personnel(personnel: model.Personnel) -> None:
         model.db.session.add(personnel)
         model.db.session.commit()
 
-
-from onereport.endpoints import users  # noqa: E402, F401
-from onereport.endpoints import auth  # noqa: E402, F401
-from onereport.endpoints import managers  # noqa: E402, F401
-from onereport.endpoints import admins  # noqa: E402, F401
+from onereport.endpoints import common      # noqa: E402, F401
+from onereport.endpoints import users       # noqa: E402, F401
+from onereport.endpoints import auth        # noqa: E402, F401
+from onereport.endpoints import managers    # noqa: E402, F401
+from onereport.endpoints import admins      # noqa: E402, F401
