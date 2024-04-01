@@ -4,6 +4,45 @@ from onereport.data import misc
 from onereport.dal import order_attr
 import sqlalchemy
 
+def save(user: model.User, /) -> bool:
+    if user is None:
+        return False
+    model.db.session.add(user)
+    model.db.session.commit()
+    return True
+
+
+def update(user: model.User, /) -> bool:
+    if user is None:
+        return False
+    model.db.session.commit()
+    return True
+
+
+def save_all(users: list[model.User], /) -> bool:
+    if users is None or not users:
+        return False
+    model.db.session.add_all(users)
+    model.db.session.commit()
+    return True
+
+
+def delete(user: model.User, /) -> bool:
+    if user is None:
+        return False
+    model.db.session.delete(user)
+    model.db.session.commit()
+    return True
+
+
+def delete_all(users: list[model.User], /) -> bool:
+    if users is None or not users:
+        return False
+    for user in users:
+        model.db.session.delete(user)
+    model.db.session.commit()
+    return True
+
 def find_users_by_first_name(first_name: str, /) -> model.User | None:
   return model.db.session.scalars(sqlalchemy.select(model.User).filter(model.User.first_name == first_name)).all()
 

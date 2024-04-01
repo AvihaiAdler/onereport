@@ -1,17 +1,57 @@
 from typing import List, Tuple
+
 from onereport.dal import order_attr
 from onereport.data import model
 from onereport.data import misc
 import sqlalchemy
 
 
-def find_personnel_by_id(id: str) -> model.Personnel | None:
+def save(personnel: model.Personnel, /) -> bool:
+    if personnel is None:
+        return False
+    model.db.session.add(personnel)
+    model.db.session.commit()
+    return True
+
+
+def update(personnel: model.Personnel, /) -> bool:
+    if personnel is None:
+        return False
+    model.db.session.commit()
+    return True
+
+def save_all(personnel: list[model.Personnel], /) -> bool:
+    if personnel is None or not personnel:
+        return False
+    model.db.session.add_all(personnel)
+    model.db.session.commit()
+    return True
+
+
+def delete(personnel: model.Personnel, /) -> bool:
+    if personnel is None:
+        return False
+    model.db.session.delete(personnel)
+    model.db.session.commit()
+    return True
+
+
+def delete_all(personnel: list[model.Personnel], /) -> bool:
+    if personnel is None or not personnel:
+        return False
+    for p in personnel:
+        model.db.session.delete(p)
+    model.db.session.commit()
+    return True
+
+
+def find_personnel_by_id(id: str, /) -> model.Personnel | None:
     return model.db.session.scalar(
         sqlalchemy.select(model.Personnel).filter(model.Personnel.id == id)
     )
 
 
-def find_personnel_by_first_name(first_name: str) -> model.Personnel | None:
+def find_personnel_by_first_name(first_name: str, /) -> model.Personnel | None:
     return model.db.session.scalar(
         sqlalchemy.select(model.Personnel).filter(
             model.Personnel.first_name == first_name
@@ -19,7 +59,7 @@ def find_personnel_by_first_name(first_name: str) -> model.Personnel | None:
     )
 
 
-def find_personnel_by_last_name(last_name: str) -> model.Personnel | None:
+def find_personnel_by_last_name(last_name: str, /) -> model.Personnel | None:
     return model.db.session.scalar(
         sqlalchemy.select(model.Personnel).filter(
             model.Personnel.last_name == last_name

@@ -3,6 +3,45 @@ from onereport.data import model, misc
 import sqlalchemy
 import datetime
 
+def save(report: model.Report, /) -> bool:
+    if report is None:
+        return False
+    model.db.session.add(report)
+    model.db.session.commit()
+    return True
+
+
+def update(report: model.Report, /) -> bool:
+    if report is None:
+        return False
+    model.db.session.commit()
+    return True
+
+
+def save_all(reports: list[model.Report], /) -> bool:
+    if reports is None or not reports:
+        return False
+    model.db.session.add_all(reports)
+    model.db.session.commit()
+    return True
+
+
+def delete(report: model.Report, /) -> bool:
+    if report is None:
+        return False
+    model.db.session.delete(report)
+    model.db.session.commit()
+    return True
+
+
+def delete_all(reports: list[model.Report], /) -> bool:
+    if reports is None or not reports:
+        return False
+    for report in reports:
+        model.db.session.delete(report)
+    model.db.session.commit()
+    return True
+
 
 def find_report_by_id(id: int, /) -> model.Report | None:
     return model.db.session.scalar(
@@ -55,6 +94,4 @@ def delete_all_empty_reports_by_company(company: misc.Company) -> None:
         .order_by(model.Report.id.asc)
     ).all()
     
-    for report in empty_reports:
-        model.db.session.delete(report)
-    model.db.session.commit()
+    delete_all(empty_reports)
