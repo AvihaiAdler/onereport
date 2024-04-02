@@ -9,9 +9,10 @@ from data.model import Personnel, Report
 from dal.order_attr import Order, PersonnelOrderBy
 from onereport.dal import personnel_dal, report_dal
 from onereport.exceptions.exceptions import (
-    NotFoundException,
-    UnsupportedActionException,
-    InternalErrorException,
+    BadRequestError,
+    ForbiddenError,
+    NotFoundError,
+    InternalServerError,
 )
 from forms import PersonnelListForm, PersonnelUpdateForm, UpdateReportForm
 from onereport.dto.report_dto import ReportDTO
@@ -20,37 +21,40 @@ from onereport.dto.report_dto import ReportDTO
 def get_all_personnel(
     form: PersonnelListForm, company: str, order_by: str, order: str, /
 ) -> list[PersonnelDTO]:
+    """
+    Raises:
+        BadRequestError,
+        NotFoundError
+    """
     if form is None:
         app.logger.error(f"invalid form {form}")
-        raise ValueError("form must not be None")
+        raise BadRequestError("form must not be None")
 
     if not Company.is_valid(company):
         app.logger.error(f"invalid company {company}")
-        raise ValueError("פלוגה אינה תקינה")
+        raise BadRequestError("פלוגה אינה תקינה")
 
     if not PersonnelOrderBy.is_valid(order_by):
         app.logger.error(f"invalid order_by {order_by}")
-        raise ValueError(f"מיון לפי {order_by} אינו נתמך")
+        raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
 
     if not Order.is_valid(order):
         app.logger.error(f"invalid order {order}")
-        raise ValueError(f"מיון בסדר {order} אינו נתמך")
-
-    app.logger.debug(
-        f"query all personnel for {current_user}\nquery params: order by: {order_by}, order: {order}"
-    )
+        raise BadRequestError(f"סדר {order} אינו נתמך")
 
     if form.validate_on_submit():
-        order_by = PersonnelOrderBy[form.order_by.data]
-        order = Order[form.order.data]
+        order_by = form.order_by.data
+        order = form.order.data
 
-    company = Company[company]
     personnel = personnel_dal.find_all_active_personnel_by_company(
-        company, order_by, order
+        Company[company], PersonnelOrderBy[order_by], Order[order]
     )
 
     if not personnel:
         app.logger.debug(f"there are no visible personnel for {current_user}")
+        raise NotFoundError(
+            f"אין חיילים.ות במאגר השייכים לפלוגה {Company[company].value}"
+        )
 
     app.logger.debug(
         f"passing {len(personnel)} personnel to personnel_list.html for {current_user}"
@@ -62,16 +66,22 @@ def get_all_personnel(
 def update_personnel(
     form: PersonnelUpdateForm, id: str, /
 ) -> Tuple[PersonnelDTO, bool]:
+    """
+    Raises:
+        BadRequestError,
+        NotFoundError,
+        ForbiddenError
+    """
     if form is None:
         app.logger.error(f"invalid form {form}")
-        raise ValueError("form must not be None")
+        raise BadRequestError("form must not be None")
 
     old_personnel = personnel_dal.find_personnel_by_id(id)
     if old_personnel is None:
         app.logger.error(
             f"{current_user} tried to update a non exisiting personnel with id {id}"
         )
-        raise NotFoundException(f"החייל {id} אינו במסד הנתונים")
+        raise NotFoundError(f"החייל {id} אינו במסד הנתונים")
 
     if form.validate_on_submit():
         personnel = Personnel(
@@ -88,7 +98,7 @@ def update_personnel(
             and Active[form.active.data] != current_user.active
         ):
             app.logger.warning(f"{current_user} tried to deactivate themselves")
-            raise UnsupportedActionException("אינך רשאי.ת לבצע פעולה זו")
+            raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
         personnel.active = Active[form.active.data] == Active.ACTIVE
         # to ensure users cannot update Personnel::company
@@ -105,21 +115,27 @@ def update_personnel(
 def report(
     form: UpdateReportForm, company: str, order_by: str, order: str, /
 ) -> list[PersonnelDTO]:
+    """
+    Raises:
+        BadRequestError,
+        InternalServerError,
+        NotFoundError
+    """
     if form is None:
         app.logger.error(f"invalid form {form}")
-        raise ValueError("form must not be None")
+        raise BadRequestError("form must not be None")
 
     if not Company.is_valid(company):
         app.logger.error(f"invalid company {company}")
-        raise ValueError("פלוגה אינה תקינה")
+        raise BadRequestError("פלוגה אינה תקינה")
 
     if not PersonnelOrderBy.is_valid(order_by):
         app.logger.error(f"invalid order_by {order_by}")
-        raise ValueError(f"מיון לפי {order_by} אינו נתמך")
+        raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
 
     if not Order.is_valid(order):
         app.logger.error(f"invalid order {order}")
-        raise ValueError(f"מיון בסדר {order} אינו נתמך")
+        raise BadRequestError(f"סדר {order} אינו נתמך")
 
     report = report_dal.find_report_by_date_and_company(
         datetime.date.today(), Company[company]
@@ -134,13 +150,16 @@ def report(
             app.logger.error(
                 f"{current_user} failed to create a report for company: {company} at {datetime.date.today()}"
             )
-            raise InternalErrorException("שגיאת שרת")
+            raise InternalServerError("שגיאת שרת")
 
     personnel = personnel_dal.find_all_active_personnel_by_company(
         Company[company], PersonnelOrderBy[order_by], Order[order]
     )
     if not personnel:
-        app.logger.debug(f"no visibale users for {current_user}")
+        app.logger.debug(f"no visibale personnel for {current_user}")
+        raise NotFoundError(
+            f"אין חיילים.ות במאגר השייכים לפלוגה {Company[company].value}"
+        )
 
     # there is an exisitng report for the day
     if form.validate_on_submit():
@@ -149,7 +168,7 @@ def report(
             app.logger.info(f"{current_user} successfully updated the report {report}")
         else:
             app.logger.error(f"{current_user} failed to update the report {report}")
-            raise InternalErrorException(
+            raise InternalServerError(
                 f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger"
             )
 
@@ -157,33 +176,44 @@ def report(
 
 
 def get_report(id: int, company: str, /) -> ReportDTO:
+    """
+    Raises:
+        BadRequestError,
+        NotFoundError
+    """
     if not Company.is_valid(company):
         app.logger.error(f"invalid company {company}")
-        raise ValueError("פלוגה אינה תקינה")
+        raise BadRequestError("פלוגה אינה תקינה")
 
     report = report_dal.find_report_by_id_and_company(id, Company[company])
     if report is None:
         app.logger.error(
             f"{current_user} tried to get a non existing report with id {id} for company {current_user.company}"
         )
-        raise NotFoundException(f"הדוח {id} אינו במסד הנתונים")
+        raise NotFoundError(f"הדוח {id} אינו במסד הנתונים")
 
     return ReportDTO(report)
 
 
 def get_all_reports(company: str, order: str, /) -> list[ReportDTO]:
+    """
+    Raises:
+        BadRequestError,
+        NotFoundError
+    """
     if not Company.is_valid(company):
         app.logger.error(f"invalid company {company}")
-        raise ValueError("פלוגה אינה תקינה")
+        raise BadRequestError("פלוגה אינה תקינה")
 
     if not Order.is_valid(order):
         app.logger.error(f"invalid order {order}")
-        raise ValueError(f"מיון בסדר {order} אינו נתמך")
+        raise BadRequestError(f"סדר {order} אינו נתמך")
 
     reports = report_dal.find_all_reports_by_company(Company[company], Order[order])
     if not reports:
         app.logger.debug(
             f"no reports for company: {company}, requested by: {current_user}"
         )
+        raise NotFoundError(f"אין דוחות עבור פלוגה {Company[company].value}")
 
     return [ReportDTO(report) for report in reports]

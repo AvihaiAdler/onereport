@@ -1,11 +1,11 @@
 from onereport import app, forms, generate_urlstr
 from onereport.data import misc
-from onereport.dal import order_attr
 from onereport.bl import users_service
 from onereport.exceptions.exceptions import (
-    NotFoundException,
-    UnsupportedActionException,
-    InternalErrorException,
+    BadRequestError,
+    ForbiddenError,
+    InternalServerError,
+    NotFoundError,
 )
 from flask import url_for, redirect, flash, render_template, request
 from flask_login import current_user, login_required
@@ -35,17 +35,16 @@ def u_get_all_personnel() -> str:
         personnel = users_service.get_all_personnel(
             form, current_user.company, order_by, order
         )
-        if request.method == "GET":
-            order_by = order_attr.PersonnelOrderBy[order_by]
-            order = order_attr.Order[order]
         return render_template(
             "personnel/personnel_list.html",
             form=form,
             personnel=personnel,
         )
-    except ValueError as e:
-        flash(str(e), category="danger")
-        return render_template("personnel/personnel_list.html", form=form, personnel=[])
+    except BadRequestError as be:
+        flash(str(be), category="danger")
+    except NotFoundError as ne:
+        flash(str(ne), category="info")
+    return render_template("personnel/personnel_list.html", form=form, personnel=[])
 
 
 @app.route("/onereport/users/personnel/<id>/update", methods=["GET", "POST"])
@@ -83,10 +82,12 @@ def u_update_personnel(id: str) -> str:
                 f"הפעולה עבור החייל.ת {personnel.first_name} {personnel.last_name} לא הושלמה",
                 category="danger",
             )
-    except NotFoundException as not_found:
-        flash(str(not_found), category="danger")
-    except UnsupportedActionException as not_supported:
-        flash(str(not_supported), category="danger")
+    except BadRequestError as be:
+        flash(str(be), category="danger")
+    except NotFoundError as ne:
+        flash(str(ne), category="danger")
+    except ForbiddenError as fe:
+        flash(str(fe), category="danger")
     return redirect(url_for(generate_urlstr(current_user.role, "get_all_personnel")))
 
 
@@ -112,9 +113,11 @@ def u_create_report() -> str:
 
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
         return redirect(url_for(generate_urlstr(current_user.role, "create_report")))
-    except ValueError as ve:
-        flash(str(ve), category="danger")
-    except InternalErrorException as ie:
+    except BadRequestError as be:
+        flash(str(be), category="danger")
+    except NotFoundError as ne:
+        flash(str(ne), category="danger")
+    except InternalServerError as ie:
         flash(str(ie), category="danger")
 
     return redirect(url_for("home"))
@@ -129,8 +132,15 @@ def u_get_all_reports() -> str:
 
     order = request.args.get("order", default="DESC")
 
-    reports = users_service.get_all_reports(current_user.company, order)
-    return render_template("reports/reports.html", reports=reports)
+    try:
+        reports = users_service.get_all_reports(current_user.company, order)
+        return render_template("reports/reports.html", reports=reports)
+    except BadRequestError as be:
+        flash(str(be), category="danger")
+    except NotFoundError as ne:
+        flash(str(ne), category="info")
+
+    return redirect(url_for("home"))
 
 
 @app.get("/onereport/users/report/<int:id>")
@@ -143,9 +153,9 @@ def u_get_report(id: int) -> str:
     try:
         report = users_service.get_report(id, current_user.company)
         return render_template("reports/old_report.html", report=report)
-    except ValueError as ve:
-        flash(str(ve), category="danger")
-    except NotFoundException as ne:
+    except BadRequestError as be:
+        flash(str(be), category="danger")
+    except NotFoundError as ne:
         flash(str(ne), category="danger")
 
     return redirect(url_for(generate_urlstr(current_user.role, "get_all_reports")))
