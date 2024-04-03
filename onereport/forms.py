@@ -111,6 +111,12 @@ class UserRegistrationFrom(flask_wtf.FlaskForm):
 
 
 class PersonnelListForm(flask_wtf.FlaskForm):
+    company = wtforms.SelectField(
+        "פלוגה",
+        choices=[
+            (name, member.value) for name, member in misc.Company._member_map_.items()
+        ],
+    )
     order_by = wtforms.SelectField(
         "סדר לפי",
         choices=[
@@ -251,4 +257,34 @@ class UserUpdateForm(flask_wtf.FlaskForm):
 
 
 class UpdateReportForm(flask_wtf.FlaskForm):
+    company = wtforms.SelectField(
+        "פלוגה",
+        choices=[
+            (name, member.value) for name, member in misc.Company._member_map_.items()
+        ],
+    )
+    order_by = wtforms.SelectField(
+        "סדר לפי",
+        choices=[
+            (name, member.value)
+            for name, member in order_attr.PersonnelOrderBy._member_map_.items()
+        ],
+    )
+    order = wtforms.SelectField(
+        "בסדר",
+        choices=[
+            (name, member.value)
+            for name, member in order_attr.Order._member_map_.items()
+        ],
+    )
+
+    order_submit = wtforms.SubmitField("סדר")
     submit = wtforms.SubmitField("שלח")
+    
+    def validate_order_by(self: Self, order_by: wtforms.SelectField) -> None:
+        if not order_attr.PersonnelOrderBy.is_valid(order_by.data):
+            raise wtforms.ValidationError("ערך לא תקין")
+
+    def validate_order(self: Self, order: wtforms.SelectField) -> None:
+        if not order_attr.Order.is_valid(order.data):
+            raise wtforms.ValidationError("ערך לא תקין")
