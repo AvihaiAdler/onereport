@@ -20,10 +20,10 @@
   {% endif %}
   <div class="container content-section">
     {% for report in reports %}
-    <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_report" ), id=report[0] ) }}
-      class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }} hover-row">
-      <div class="">{{ report[1]] }}</div>
-    </a>
+      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_report" ), id=report[0] ) }}
+        class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }} hover-row">
+        <div class="">{{ report[1] }}</div>
+      </a>
     {% endfor %}
   </div>
 </div>
