@@ -254,9 +254,5 @@ class UserUpdateForm(flask_wtf.FlaskForm):
         if current_user_role_level is None:
             raise wtforms.ValidationError("הרשאתך אינה תקינה")
 
-        if current_user_role_level > misc.Role.get_level(role.data):
-            raise wtforms.ValidationError("אינך רשאי.ת ליצור משתמש עם הרשאה זו")
-
-
 class UpdateReportForm(flask_wtf.FlaskForm):
     submit = wtforms.SubmitField("שלח")
