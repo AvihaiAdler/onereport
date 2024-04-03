@@ -190,10 +190,20 @@ def get_report(id: int, company: str, /) -> ReportDTO:
         )
         raise NotFoundError(f"הדוח {id} אינו במסד הנתונים")
 
-    return ReportDTO(report)
+    personnel = personnel_dal.find_all_active_personnel_by_company(
+        Company[company], PersonnelOrderBy.LAST_NAME, Order.ASC
+    )
+    if personnel is None:
+        app.logger.debug(
+            f"no visibale personnel in company {company} for {current_user}"
+        )
+        raise NotFoundError(
+            f"אין חיילים.ות במאגר השייכים לפלוגה {Company[company].value}"
+        )
+    return ReportDTO(report, personnel)
 
 
-def get_all_reports(company: str, order: str, /) -> list[ReportDTO]:
+def get_all_reports(company: str, order: str, /) -> list[Tuple[str, datetime.date]]:
     """
     Raises:
         BadRequestError,
@@ -214,4 +224,4 @@ def get_all_reports(company: str, order: str, /) -> list[ReportDTO]:
         )
         raise NotFoundError(f"אין דוחות עבור פלוגה {Company[company].value}")
 
-    return [ReportDTO(report) for report in reports]
+    return [(report.id, report.date) for report in reports]

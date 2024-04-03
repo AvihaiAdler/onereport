@@ -1,3 +1,4 @@
+from ast import Tuple
 from onereport import app
 from flask import request
 from flask_login import current_user
@@ -334,7 +335,6 @@ def get_all_personnel(
     return [PersonnelDTO(p) for p in personnel]
 
 
-# TODO: test thoroughly
 def report(
     form: UpdateReportForm, company: str, order_by: str, order: str, /
 ) -> list[PersonnelDTO]:
@@ -386,38 +386,8 @@ def report(
             f"אין חיילים.ות במאגר השייכים לפלוגה {Company[company].value}"
         )
 
-    # there is an exisitung report for the day
+    # there is an exisiting report for the day
     if form.validate_on_submit():
-        # manager wants to see the current report for another company
-        if form.order_submit.data:
-            company = form.company.data
-            order_by = form.order_by.data
-            order = form.order.data
-
-            report = report_dal.find_report_by_date_and_company(
-                datetime.date.today(), Company[company]
-            )
-            if not report:
-                app.logger.debug(
-                    f"no report for company {company} for {datetime.date.today()} for {current_user}"
-                )
-                raise NotFoundError(
-                    f"אין לפלוגה {Company[company]} דוח לתאריך {datetime.date.today()}"
-                )
-
-            peronnel = personnel_dal.find_all_active_personnel_by_company(
-                Company[company], PersonnelOrderBy[order_by], Order[order]
-            )
-            if not personnel:
-                app.logger.debug(
-                    f"no visibale personnel in company {company} for {current_user}"
-                )
-                raise NotFoundError(
-                    f"אין חיילים.ות במאגר השייכים לפלוגה {Company[company].value}"
-                )
-            return ((PersonnelDTO(p), p in report.presence) for p in peronnel)
-
-        # manager wants to edit the current report for its own company
         report.presence = {p for p in personnel if p.id in request.form}
         if not report_dal.update(report):
             app.logger.error(f"{current_user} failed to update the report {report}")
@@ -429,7 +399,7 @@ def report(
     return [(PersonnelDTO(p), p in report.presence) for p in personnel]
 
 
-def get_reprot(id: str, company: str, /) -> ReportDTO:
+def get_report(id: str, company: str, /) -> ReportDTO:
     """
     Raises:
         BadRequestError,
@@ -446,10 +416,20 @@ def get_reprot(id: str, company: str, /) -> ReportDTO:
         )
         raise NotFoundError(f"הדוח {id} אינו במסד הנתונים")
 
-    return ReportDTO(report)
+    personnel = personnel_dal.find_all_active_personnel_by_company(
+        Company[company], PersonnelOrderBy.LAST_NAME, Order.ASC
+    )
+    if personnel is None:
+        app.logger.debug(
+            f"no visibale personnel in company {company} for {current_user}"
+        )
+        raise NotFoundError(
+            f"אין חיילים.ות במאגר השייכים לפלוגה {Company[company].value}"
+        )
+    return ReportDTO(report, personnel)
 
 
-def get_all_reports(company: str, order: str, /) -> list[ReportDTO]:
+def get_all_reports(company: str, order: str, /) -> list[Tuple[str, datetime.date]]:
     """
     Raises:
         BadRequestError,
@@ -468,4 +448,4 @@ def get_all_reports(company: str, order: str, /) -> list[ReportDTO]:
         app.logger.debug(f"no visible reports for company {company} for {current_user}")
         raise NotFoundError(f"לא נמצאו דוחות עבור פלוגה {Company[company].value}")
 
-    return [ReportDTO(report) for report in reports]
+    return [(report.id, report.date) for report in reports]

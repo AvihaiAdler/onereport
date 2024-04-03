@@ -152,7 +152,7 @@ def u_get_report(id: int) -> str:
 
     try:
         report = users_service.get_report(id, current_user.company)
-        return render_template("reports/old_report.html", report=report)
+        return render_template("reports/uneditable_report.html", report=report)
     except BadRequestError as be:
         flash(str(be), category="danger")
     except NotFoundError as ne:

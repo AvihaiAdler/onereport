@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="containter content-section">
-  {% for personnel, presence in presence_list %}
+  {% for personnel, presence in report.presence %}
   <div class="row">
     <div class="col-sm-2 border-start d-flex justify-content-center">{{ personnel.id }}</div>
     <div class="col-sm-3 border-start d-flex justify-content-center">{{ personnel.last_name }}</div>

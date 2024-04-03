@@ -1,8 +1,6 @@
 from onereport import app, forms, generate_urlstr, has_permission
 from onereport.bl import managers_service
 from onereport.data import misc
-from onereport.dto import report_dto
-from onereport.dal import report_dal
 from flask import url_for, redirect, flash, render_template, request
 from flask_login import current_user, login_required
 from onereport.exceptions.exceptions import (
@@ -202,17 +200,15 @@ def m_create_report() -> str:
         app.logger.warning(f"unauthorized access by {current_user}")
         return redirect(url_for("home"))
 
-    company = request.args.get("company", current_user.company)
     order_by = request.args.get("order_by", "LAST_NAME")
     order = request.args.get("order", "ASC")
 
     form = forms.UpdateReportForm()
     try:
-        personnel = managers_service.report(form, company, order_by, order)
+        personnel = managers_service.report(form, current_user.company, order_by, order)
         if request.method == "GET":
             form.order_by = order_by
             form.order = order
-            form.company.data = company
         else:
             flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
         return render_template(
@@ -238,7 +234,7 @@ def m_get_all_reports() -> str:
         return redirect(url_for("home"))
 
     company = request.args.get("company", current_user.company)
-    order = request.args.get("order", "DESC")
+    order = request.args.get("order", "ASC")
 
     try:
         reports = managers_service.get_all_reports(company, order)
@@ -262,26 +258,14 @@ def m_get_report(id: int) -> str:
         app.logger.warning(f"unauthorized access by {current_user}")
         return redirect(url_for("home"))
 
-    company = request.args.get("company", None)
+    company = request.args.get("company", current_user.company)
 
-    if not misc.Company.is_valid(current_user.company):
-        app.logger.warning(f"{current_user} 's company is invalid")
-        flash(f"{current_user.company} אינה פלוגה בגדוד", category="info")
+    try:
+        report = managers_service.get_report(id, company)
+        return render_template("reports/unditable_report.html", report=report)
+    except BadRequestError as be:
+        flash(str(be), category="danger")
+    except NotFoundError as ne:
+        flash(str(ne), category="info")
 
-        return redirect(url_for("home"))
-
-    company = company if misc.Company.is_valid(company) else current_user.company
-    report = report_dal.find_report_by_id_and_company(id, misc.Company[company])
-
-    if report is None:
-        app.logger.error(
-            f"{current_user} tried to get a non existing report with id {id} for company {current_user.company}"
-        )
-        flash(f"הדוח {id} אינו במסד הנתונים", category="danger")
-
-        return redirect(url_for(generate_urlstr(current_user.role, "get_all_reports")))
-
-    app.logger.debug(f"sends {report} to old_report.html for {current_user}")
-    return render_template(
-        "reports/old_report.html", report=report_dto.ReportDTO(report)
-    )
+    return redirect(url_for(generate_urlstr(current_user.role, "get_all_reports")))
