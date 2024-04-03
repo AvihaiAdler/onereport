@@ -13,14 +13,14 @@
           {{ render_field(form.last_name, placeholder="שם משפחה", class="col-sm-10 form-control") }}
           
           <!-- company field -->
-          {% if current_user.role|is_not_user %}
+          {% if current_user.role|has_permission %}
             {{ render_field(form.company, class="form-control form-select") }}
           {% endif %}
 
           {{ render_field(form.platoon, class="form-control form-select") }}
           
           <!-- active field -->
-          {% if current_user.role|is_not_user %}
+          {% if current_user.role|has_permission %}
             {{ render_field(form.active, class="form-control form-select") }}
             <div class="col-sm-12">
               <li class="col-sm-10 mb-4 text-danger fs-6">קביעת ערך זה כלא פעיל שקולה למחיקת החייל</li>
@@ -31,7 +31,7 @@
             <div class="ms-auto p-2">{{ form.submit(class="btn btn-sm btn-outline-success") }}</div>
 
             <!-- register personnel as a USER/MANAGER -->
-            {% if current_user.role|is_not_user %}
+            {% if current_user.role|has_permission %}
             <div class="p-2">
               <a href={{url_for(current_user.role|generate_urlstr("register_user"), id=form.id.data)}} class="btn btn-sm btn-outline-info">רשום.י כמשתמש.ת</a>
             </div>

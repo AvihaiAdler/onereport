@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-  {% if current_user.role|is_not_user %}
+  {% if current_user.role|has_permission %}
   <div class="row mb-2">
     <div class="col-sm-2">
       <h5>{{ current_company }}</h3>
