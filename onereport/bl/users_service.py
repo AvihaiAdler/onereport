@@ -144,13 +144,12 @@ def report(
     # no existing report for the current day
     if report is None:
         report = Report(Company[company].name)
-        if report_dal.save(report):
-            app.logger.info(f"{current_user} successfully created {report}")
-        else:
+        if not report_dal.save(report):
             app.logger.error(
                 f"{current_user} failed to create a report for company: {company} at {datetime.date.today()}"
             )
             raise InternalServerError("שגיאת שרת")
+        app.logger.info(f"{current_user} successfully created {report}")
 
     personnel = personnel_dal.find_all_active_personnel_by_company(
         Company[company], PersonnelOrderBy[order_by], Order[order]
@@ -161,16 +160,15 @@ def report(
             f"אין חיילים.ות במאגר השייכים לפלוגה {Company[company].value}"
         )
 
-    # there is an exisitng report for the day
+    # there is an exisiting report for the day
     if form.validate_on_submit():
         report.presence = {p for p in personnel if p.id in request.form}
         if report_dal.update(report):
-            app.logger.info(f"{current_user} successfully updated the report {report}")
-        else:
             app.logger.error(f"{current_user} failed to update the report {report}")
             raise InternalServerError(
                 f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger"
             )
+        app.logger.info(f"{current_user} successfully updated the report {report}")
 
     return [(PersonnelDTO(p), p in report.presence) for p in personnel]
 

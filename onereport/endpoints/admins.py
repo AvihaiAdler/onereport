@@ -9,7 +9,7 @@ from onereport.exceptions.exceptions import BadRequestError, NotFoundError
 
 def not_permitted() -> bool:
     if not misc.Role.is_valid(current_user.role):
-        return False
+        return True
     return misc.Role.get_level(current_user.role) > misc.Role.get_level(
         misc.Role.ADMIN.name
     )
@@ -98,7 +98,10 @@ def a_get_all_personnel() -> str:
 
     form = forms.PersonnelListForm()
     try:
-        personnel = admins_service.get_all_personnel(form, order_by, order)
+        personnel = admins_service.get_all_personnel(form, current_user.company, order_by, order)
+        if request.method == "GET":
+            form.company.data = current_user.company
+            
         return render_template(
             "personnel/personnel_list.html",
             form=form,

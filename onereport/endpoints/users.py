@@ -44,7 +44,7 @@ def u_get_all_personnel() -> str:
         flash(str(be), category="danger")
     except NotFoundError as ne:
         flash(str(ne), category="info")
-    return render_template("personnel/personnel_list.html", form=form, personnel=[])
+    return redirect(url_for("home"))
 
 
 @app.route("/onereport/users/personnel/<id>/update", methods=["GET", "POST"])
