@@ -1,5 +1,4 @@
 from onereport import app
-from onereport.data import misc
 import flask
 import flask_login
 
@@ -21,11 +20,10 @@ def logout() -> str:
 @app.get("/onereport/home")
 @flask_login.login_required
 def home() -> str:
-    title = misc.Company[flask_login.current_user.company].value
-    return flask.render_template("home.html", title=title)
+    return flask.render_template("home.html")
 
 
 @app.get("/onereport/about")
 @flask_login.login_required
 def about() -> str:
-    return "about"
+    return flask.render_template("about.html")
