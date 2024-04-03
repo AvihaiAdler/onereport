@@ -137,4 +137,4 @@ class User(Personnel, UserMixin):
 
 @login_manager.user_loader
 def load_user(email: str) -> User | None:
-    return db.session.scalar(sqlalchemy.select(User).filter(User.email == email))#get(User, email)
+    return db.session.scalar(sqlalchemy.select(User).filter(User.email == email))
