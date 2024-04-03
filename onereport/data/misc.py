@@ -6,7 +6,7 @@ class Permission():
     def __init__(self: Self, level: int, name: str) -> None:
         self.level = level
         self.name = name
-
+    
     def __repr__(self: Self) -> str:
         return f"Permission(level: {self.level}, name: {self.name})"
 
@@ -30,6 +30,11 @@ class Role(Enum):
         if not Role.is_valid(role_name):
             return None
         return Role[role_name].value.level
+    
+    @staticmethod
+    def get_name(value_str: str) -> str | None:
+        permissions = {member.value.name : name for name, member in Role._member_map_.items()}
+        return permissions.get(value_str, None)
 
 
 class Company(Enum):
