@@ -96,6 +96,7 @@ def register_user(form: UserRegistrationFrom, id: str, /) -> PersonnelDTO:
             form.company.data,
             form.platoon.data,
         )
+
         if Role.get_level(current_user.role) > Role.get_level(user.role):
             app.logger.error(
                 f"{current_user} with permision level {Role.get_level(current_user.role)} tried to register a user with permission level {Role.get_level(form.role.data)}"
@@ -205,7 +206,7 @@ def demote(user: User) -> None:
     )
     if not personnel_dal.save(personnel):
         app.logger.error(
-            f"{current_user} failed to save the personnel {personnel}. pemotion failed"
+            f"{current_user} failed to save the personnel {personnel}. demotion failed"
         )
         user_dal.save(user)  # if this operation failed we're in an irrecoverable state
 
@@ -251,17 +252,27 @@ def update_user(form: UserUpdateForm, email: str, /) -> UserDTO:
             form.company.data,
             form.platoon.data,
         )
+
         if Role.get_level(current_user.role) > Role.get_level(user.role):
             app.logger.warning(
                 f"{current_user} with permision level {Role.get_level(current_user.role)} tried to register a user with permission level {Role.get_level(user.role)}"
             )
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
-        if user.id == current_user.id and Active[form.active.data]:
-            app.logger.warning(f"{current_user} tried to deactivate themselves")
+        if (
+            user.id == current_user.id
+            and Active[form.active.data].name != Active.ACTIVE.name
+        ):
+            app.logger.warning(f"{current_user} tried to deactivate themselves {user}")
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
         user.active = Active[form.active.data] == Active.ACTIVE
+
+        if user.id == current_user.id and Role.get_level(
+            current_user.role
+        ) != Role.get_level(user.role):
+            app.logger.warning(f"{current_user} change their role {user}")
+            raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
         old_user.update(user)
         if not user_dal.save(old_user):
@@ -291,7 +302,7 @@ def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
         app.logger.debug(f"there are no visible users for {current_user}")
         raise NotFoundError("לא נמצאו משתמשים")
 
-    return [UserDTO[user] for user in users]
+    return [UserDTO(user) for user in users]
 
 
 def get_all_personnel(
