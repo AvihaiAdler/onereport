@@ -25,8 +25,11 @@ def m_register_personnel() -> str:
         personnel = managers_service.register_personnel(form)
         if request.method == "GET":
             return render_template("personnel/personnel_registration.html", form=form)
-        
-        flash(f"החייל.ת {' '.join((personnel.first_name, personnel.last_name))} נוסף.ה בהצלחה", category="success")
+
+        flash(
+            f"החייל.ת {' '.join((personnel.first_name, personnel.last_name))} נוסף.ה בהצלחה",
+            category="success",
+        )
         return redirect(url_for("home"))
     except BadRequestError as be:
         flash(str(be), category="danger")
@@ -126,11 +129,15 @@ def m_update_user(email: str) -> str:
             form.id.data = user.id
             form.email.data = user.email
             form.first_name.data, form.last_name.data = user.first_name, user.last_name
-            form.company.data, form.platoon.data = user.company, user.platoon
-            form.role.data = user.role
+            form.company.data, form.platoon.data = (
+                misc.Company(user.company).name,
+                misc.Platoon(user.platoon).name,
+            )
+            form.role.data = misc.Role.get_name(user.role)
             form.active.data = user.active
 
             return render_template("users/user.html", form=form)
+        
         flash(
             f"המשתמש.ת {' '.join((user.first_name, user.last_name))} עודכן בהצלחה",
             category="success",
@@ -156,7 +163,7 @@ def m_get_all_users() -> str:
         app.logger.warning(f"unauthorized access by {current_user}")
         return redirect(url_for("home"))
 
-    order_by = request.args.get("order_by", default="COMPANY")
+    order_by = request.args.get("order_by", "COMPANY")
     order = request.args.get("order", "ASC")
 
     try:
@@ -178,18 +185,18 @@ def m_get_all_personnel() -> str:
         app.logger.warning(f"unauthorized access by {current_user}")
         return redirect(url_for("home"))
 
-    order_by = request.args.get("order_by", default="LAST_NAME")
+    order_by = request.args.get("order_by", "LAST_NAME")
     order = request.args.get("order", "ASC")
 
     form = forms.PersonnelListForm()
     try:
         personnel = managers_service.get_all_personnel(
-            current_user.company, order_by, order
+            form, current_user.company, order_by, order
         )
         if request.method == "GET":
             form.company.data = current_user.company
 
-        render_template("personnel/personnel_list.html", form=form, personnel=personnel)
+        return render_template("personnel/personnel_list.html", form=form, personnel=personnel)
     except BadRequestError as be:
         flash(str(be), category="danger")
     except NotFoundError as ne:
@@ -247,7 +254,9 @@ def m_get_all_reports() -> str:
             "reports/reports.html",
             reports=reports,
             company=misc.Company,
-            current_company=misc.Company[company].value if misc.Company.is_valid(company) else "",
+            current_company=(
+                misc.Company[company].value if misc.Company.is_valid(company) else ""
+            ),
         )
     except BadRequestError as be:
         flash(str(be), category="danger")
