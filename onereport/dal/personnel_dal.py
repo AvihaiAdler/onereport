@@ -20,6 +20,7 @@ def update(personnel: model.Personnel, /) -> bool:
     model.db.session.commit()
     return True
 
+
 def save_all(personnel: list[model.Personnel], /) -> bool:
     if personnel is None or not personnel:
         return False
@@ -106,3 +107,14 @@ def find_all_personnel(
     order_by: order_attr.PersonnelOrderBy, order: order_attr.Order, /
 ) -> List[model.Personnel]:
     return model.db.session.scalars(construct_statement(order_by, order)).all()
+
+
+def find_all_personnel_by_company(
+    company: misc.Company,
+    order_by: order_attr.PersonnelOrderBy,
+    order: order_attr.Order,
+    /,
+) -> List[model.Personnel]:
+    return model.db.session.scalars(
+        construct_statement(order_by, order).filter(model.User.company == company.name)
+    ).all()
