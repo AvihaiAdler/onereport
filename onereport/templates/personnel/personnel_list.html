@@ -7,6 +7,9 @@
     {{ form.hidden_tag() }}
     <fieldset>
       <div class="row">
+        {% if current_user.role|has_permission %}
+          <div class="col-sm-3">{{ render_field(form.company, class="form-select") }}</div>
+        {% endif %}
         <div class="col-sm-4">{{ render_field(form.order_by, class="form-select") }}</div>
         <div class="col-sm-3">{{ render_field(form.order, class="form-select") }}</div>
         <div class="col-sm-2">{{ form.submit(class="btn btn-outline-info") }}</div>
