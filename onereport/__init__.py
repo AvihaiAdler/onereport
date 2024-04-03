@@ -43,12 +43,6 @@ app.config["OAUTH2_PROVIDERS"] = {
 app.config["PHONE"] = os.environ.get("PHONE", None)
 app.config["EMAIL"] = os.environ.get("EMAIL", None)
 
-
-@app.template_filter()
-def check_user(role: str) -> bool:
-    return misc.Role[role] == misc.Role.USER
-
-
 @app.template_filter()
 def generate_urlstr(role_name: str, urlstr: str) -> str:
     if misc.Role[role_name] == misc.Role.USER:
@@ -61,8 +55,10 @@ def generate_urlstr(role_name: str, urlstr: str) -> str:
 
 
 @app.template_filter()
-def is_not_user(role: str) -> bool:
-    return misc.Role[role] != misc.Role.USER
+def has_permission(role_name: str) -> bool:
+    if not misc.Role.is_valid(role_name):
+        return False
+    return misc.Role.get_level(role_name) <= misc.Role.get_level(misc.Role.MANAGER.name)
 
 
 @app.template_filter()
