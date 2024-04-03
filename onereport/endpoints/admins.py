@@ -132,7 +132,7 @@ def a_get_all_reports() -> str:
         app.logger.warning(f"unauthorized access by {current_user}")
         return redirect("home")
 
-    company = request.args.get("company", default="")
+    company = request.args.get("company", default=current_user.company)
     order = request.args.get("order", default="DESC")
 
     return redirect(

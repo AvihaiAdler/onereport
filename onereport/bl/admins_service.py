@@ -1,7 +1,7 @@
 from onereport import app
+from onereport.data.misc import Company
 from onereport.dal import personnel_dal, user_dal
 from onereport.dal.order_attr import Order, PersonnelOrderBy, UserOrderBy
-from onereport.data.misc import Company
 from onereport.dto.user_dto import UserDTO
 from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.exceptions.exceptions import (
@@ -60,13 +60,13 @@ def get_all_personnel(
     if form.validate_on_submit():
         order_by = form.order_by.data
         order = form.order.data
-        form.company.data
+        company = form.company.data
 
     personnel = personnel_dal.find_all_personnel_by_company(
-        PersonnelOrderBy[order_by], Order[order]
+        Company[company], PersonnelOrderBy[order_by], Order[order]
     )
     if not personnel:
         app.logger.warning(f"there are no personnel for company {company}")
-        raise NotFoundError(f"לא נמצאו חיילים.ות עבור פלוגה {Company[Company].value}")
+        # raise NotFoundError(f"לא נמצאו חיילים.ות עבור פלוגה {Company[company].value}")
 
     return [PersonnelDTO(p) for p in personnel]
