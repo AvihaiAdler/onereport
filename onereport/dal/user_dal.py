@@ -58,7 +58,7 @@ def construct_statement(order_by: order_attr.UserOrderBy, order: order_attr.Orde
 def find_all_active_users(order_by: order_attr.UserOrderBy, order: order_attr.Order, /) -> List[model.User]:
   statement = construct_statement(order_by, order)
   
-  return model.db.session.scalars(statement.filter(model.User.active).filter(model.User.role != misc.Role.ADMIN)).all()
+  return model.db.session.scalars(statement.filter(model.User.active).filter(model.User.role != misc.Role.ADMIN.name)).all()
 
 def find_all_users(order_by: order_attr.UserOrderBy, order: order_attr.Order, /) -> List[model.User]:
   statement = construct_statement(order_by, order)
