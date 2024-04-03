@@ -22,7 +22,11 @@ def m_register_personnel() -> str:
 
     form = forms.PersonnelRegistrationFrom()
     try:
-        managers_service.register_personnel(form)
+        personnel = managers_service.register_personnel(form)
+        if request.method == "GET":
+            return render_template("personnel/personnel_registration.html", form=form)
+        
+        flash(f"החייל.ת {' '.join((personnel.first_name, personnel.last_name))} נוסף.ה בהצלחה", category="success")
         return redirect(url_for("home"))
     except BadRequestError as be:
         flash(str(be), category="danger")
@@ -31,7 +35,7 @@ def m_register_personnel() -> str:
     except InternalServerError as ie:
         flash(str(ie), category="danger")
 
-    return render_template("personnel/personnel_registration.html", form=form)
+    return redirect(url_for(generate_urlstr(current_user.role, "register_personnel")))
 
 
 @app.route("/onereport/managers/users/<id>/register", methods=["GET", "POST"])
@@ -89,10 +93,11 @@ def m_update_personnel(id: str) -> str:
                 personnel.last_name,
             )
             form.company.data, form.platoon.data = (
-                personnel.company,
-                personnel.platoon,
+                misc.Company(personnel.company).name,
+                misc.Platoon(personnel.platoon).name,
             )
             form.active.data = personnel.active
+
             return render_template("personnel/personnel.html", form=form)
         flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
     except BadRequestError as be:
@@ -242,7 +247,7 @@ def m_get_all_reports() -> str:
             "reports/reports.html",
             reports=reports,
             company=misc.Company,
-            current_company=company.value,
+            current_company=misc.Company[company].value if misc.Company.is_valid(company) else "",
         )
     except BadRequestError as be:
         flash(str(be), category="danger")
@@ -262,7 +267,7 @@ def m_get_report(id: int) -> str:
 
     try:
         report = managers_service.get_report(id, company)
-        return render_template("reports/unditable_report.html", report=report)
+        return render_template("reports/uneditable_report.html", report=report)
     except BadRequestError as be:
         flash(str(be), category="danger")
     except NotFoundError as ne:

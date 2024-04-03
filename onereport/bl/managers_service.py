@@ -1,13 +1,13 @@
-from ast import Tuple
+from typing import Tuple
 from onereport import app
 from flask import request
 from flask_login import current_user
-from onereport.dal import personnel_dal, user_dal, report_dal
 from onereport.data.misc import Active, Company, Role
 from onereport.data.model import Personnel, User, Report
 from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.dto.report_dto import ReportDTO
 from onereport.dto.user_dto import UserDTO
+from onereport.dal import personnel_dal, user_dal, report_dal
 from onereport.dal.order_attr import PersonnelOrderBy, Order, UserOrderBy
 from onereport.exceptions.exceptions import (
     BadRequestError,
@@ -330,7 +330,7 @@ def get_all_personnel(
         app.logger.debug(
             f"there are no visible personnel in company {company} for {current_user}"
         )
-        raise NotFoundError(f"לא נמצאו חיילים.ות עבור פלוגה {Company[Company].value}")
+        # raise NotFoundError(f"לא נמצאו חיילים.ות עבור פלוגה {Company[Company].value}")
 
     return [PersonnelDTO(p) for p in personnel]
 
@@ -436,14 +436,14 @@ def get_all_reports(company: str, order: str, /) -> list[Tuple[str, datetime.dat
         NotFoundError:
     """
     if not Company.is_valid(company):
-        app.logger.error(f"invalid company {company}")
+        app.logger.error(f"invalid company {company} for {current_user}")
         raise BadRequestError("פלוגה אינה תקינה")
 
     if not Order.is_valid(order):
         app.logger.error(f"invalid order {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
 
-    reports = report_dal.find_all_reports_by_company(company, Order[order])
+    reports = report_dal.find_all_reports_by_company(Company[company], Order[order])
     if not reports:
         app.logger.debug(f"no visible reports for company {company} for {current_user}")
         raise NotFoundError(f"לא נמצאו דוחות עבור פלוגה {Company[company].value}")
