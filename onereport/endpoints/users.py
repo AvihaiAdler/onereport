@@ -63,7 +63,7 @@ def u_update_personnel(id: str) -> str:
                 personnel.first_name,
                 personnel.last_name,
             )
-            form.company.data = personnel.company
+            form.company.data = misc.Company(personnel.company).name
             form.active.data = personnel.active
 
             return render_template(

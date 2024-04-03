@@ -3,19 +3,19 @@ from typing import Tuple
 from onereport import app
 from flask import request
 from flask_login import current_user
-from dto.personnel_dto import PersonnelDTO
-from data.misc import Company, Active
-from data.model import Personnel, Report
-from dal.order_attr import Order, PersonnelOrderBy
+from onereport.dto.personnel_dto import PersonnelDTO
+from onereport.dto.report_dto import ReportDTO
+from onereport.data.misc import Company, Active
+from onereport.data.model import Personnel, Report
 from onereport.dal import personnel_dal, report_dal
+from onereport.dal.order_attr import Order, PersonnelOrderBy
 from onereport.exceptions.exceptions import (
     BadRequestError,
     ForbiddenError,
     NotFoundError,
     InternalServerError,
 )
-from forms import PersonnelListForm, PersonnelUpdateForm, UpdateReportForm
-from onereport.dto.report_dto import ReportDTO
+from onereport.forms import PersonnelListForm, PersonnelUpdateForm, UpdateReportForm
 
 
 def get_all_personnel(
