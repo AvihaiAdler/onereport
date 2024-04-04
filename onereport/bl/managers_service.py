@@ -170,7 +170,7 @@ def update_personnel(form: PersonnelUpdateForm, id: str, /) -> PersonnelDTO:
         )
         if (
             personnel.id == current_user.id
-            and Active[form.active.date] != current_user.active
+            and Active[form.active.data] != current_user.active
         ):
             app.logger.warning(f"{current_user} tried to deactivate themselves")
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
@@ -278,7 +278,7 @@ def update_user(form: UserUpdateForm, email: str, /) -> UserDTO:
         if user.id == current_user.id and Role.get_level(
             current_user.role
         ) != Role.get_level(user.role):
-            app.logger.warning(f"{current_user} change their role {user}")
+            app.logger.warning(f"{current_user} tried to change their role to {user}")
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
         if not user_dal.update(old_user, user):
@@ -463,6 +463,6 @@ def get_all_reports(company: str, order: str, /) -> list[Tuple[str, datetime.dat
     reports = report_dal.find_all_reports_by_company(Company[company], Order[order])
     if not reports:
         app.logger.debug(f"no visible reports for company {company} for {current_user}")
-        raise NotFoundError(f"לא נמצאו דוחות עבור פלוגה {Company[company].value}")
+        # raise NotFoundError(f"לא נמצאו דוחות עבור פלוגה {Company[company].value}")
 
     return [(report.id, report.date) for report in reports]
