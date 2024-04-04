@@ -99,7 +99,8 @@ def m_update_personnel(id: str) -> str:
                 misc.Company(personnel.company).name,
                 misc.Platoon(personnel.platoon).name,
             )
-            form.active.data = personnel.active
+            form.active.data = misc.Active.get_name(personnel.active)
+            print(personnel)
 
             return render_template("personnel/personnel.html", form=form)
         flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
@@ -219,8 +220,6 @@ def m_create_report() -> str:
     try:
         personnel = managers_service.report(form, current_user.company, order_by, order)
         if request.method == "GET":
-            form.order_by = order_by
-            form.order = order
             return render_template(
                 "reports/editable_report.html",
                 form=form,
