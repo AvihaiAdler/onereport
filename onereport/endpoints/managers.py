@@ -32,11 +32,11 @@ def m_register_personnel() -> str:
         )
         return redirect(url_for("home"))
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except ForbiddenError as fe:
-        flash(str(fe), category="info")
+        flash(f"{fe}", category="info")
     except InternalServerError as ie:
-        flash(str(ie), category="danger")
+        flash(f"{ie}", category="danger")
 
     return redirect(url_for(generate_urlstr(current_user.role, "register_personnel")))
 
@@ -68,13 +68,13 @@ def m_register_user(id: str) -> str:
             url_for(generate_urlstr(current_user.role, "get_all_personnel"), id=id)
         )
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="danger")
+        flash(f"{ne}", category="danger")
     except ForbiddenError as fe:
-        flash(str(fe), category="info")
+        flash(f"{fe}", category="info")
     except InternalServerError as ie:
-        flash(str(ie), category="danger")
+        flash(f"{ie}", category="danger")
 
     return redirect(url_for("home"))
 
@@ -104,13 +104,13 @@ def m_update_personnel(id: str) -> str:
             return render_template("personnel/personnel.html", form=form)
         flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="danger")
+        flash(f"{ne}", category="danger")
     except ForbiddenError as fe:
-        flash(str(fe), category="info")
+        flash(f"{fe}", category="info")
     except InternalServerError as ie:
-        flash(str(ie), category="danger")
+        flash(f"{ie}", category="danger")
 
     return redirect(url_for(generate_urlstr(current_user.role, "get_all_personnel")))
 
@@ -143,13 +143,13 @@ def m_update_user(email: str) -> str:
             category="success",
         )
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="info")
+        flash(f"{ne}", category="info")
     except ForbiddenError as fe:
-        flash(str(fe), category="info")
+        flash(f"{fe}", category="info")
     except InternalServerError as ie:
-        flash(str(ie), category="danger")
+        flash(f"{ie}", category="danger")
 
     return redirect(url_for(generate_urlstr(current_user.role, "get_all_users")))
 
@@ -170,9 +170,9 @@ def m_get_all_users() -> str:
         users = managers_service.get_all_users(order_by, order)
         return render_template("users/users.html", users=users)
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="info")
+        flash(f"{ne}", category="info")
     return redirect(url_for("home"))
 
 
@@ -198,9 +198,9 @@ def m_get_all_personnel() -> str:
 
         return render_template("personnel/personnel_list.html", form=form, personnel=personnel)
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="info")
+        flash(f"{ne}", category="info")
 
     return redirect(url_for("home"))
 
@@ -221,19 +221,20 @@ def m_create_report() -> str:
         if request.method == "GET":
             form.order_by = order_by
             form.order = order
-        else:
-            flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
-        return render_template(
-            "reports/editable_report.html",
-            form=form,
-            personnel_presence_list=personnel,
-        )
+            return render_template(
+                "reports/editable_report.html",
+                form=form,
+                personnel_presence_list=personnel,
+            )
+        
+        flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
+        return redirect(url_for(generate_urlstr(current_user.role, "create_report")))
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="info")
+        flash(f"{ne}", category="info")
     except InternalServerError as ie:
-        flash(str(ie), category="danger")
+        flash(f"{ie}", category="danger")
 
     return redirect(url_for("home"))
 
@@ -259,9 +260,9 @@ def m_get_all_reports() -> str:
             ),
         )
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="info")
+        flash(f"{ne}", category="info")
     return redirect(url_for("home"))
 
 
@@ -278,8 +279,8 @@ def m_get_report(id: int) -> str:
         report = managers_service.get_report(id, company)
         return render_template("reports/uneditable_report.html", report=report)
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="info")
+        flash(f"{ne}", category="info")
 
     return redirect(url_for(generate_urlstr(current_user.role, "get_all_reports")))

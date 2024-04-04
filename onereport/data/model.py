@@ -37,6 +37,7 @@ class Personnel(db.Model):
     company: orm.Mapped[str]
     platoon: orm.Mapped[str]
     active: orm.Mapped[bool] = orm.mapped_column(default=True)
+    date_added: orm.Mapped[datetime.date] = orm.mapped_column(datetime.date.today)
 
     type: orm.Mapped[str]
     __mapper_args__ = {
@@ -91,6 +92,9 @@ class Report(db.Model):
 
     def __repr__(self: Self) -> str:
         return f"Report(date: {self.date.day}/{self.date.month}/{self.date.year}, company: {self.company})"
+    
+    def update(self: Self, presence: set[Personnel], /) -> None:
+        self.presence = presence
 
 
 class User(Personnel, UserMixin):

@@ -1,46 +1,83 @@
 from typing import List, Tuple
+from onereport import app
 from onereport.data import model
 from onereport.data import misc
 from onereport.dal import order_attr
 import sqlalchemy
+from sqlalchemy.exc import SQLAlchemyError
 
 def save(user: model.User, /) -> bool:
     if user is None:
         return False
-    model.db.session.add(user)
-    model.db.session.commit()
+      
+    try:
+      model.db.session.add(user)
+      model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False
     return True
 
 
-def update(user: model.User, /) -> bool:
-    if user is None:
+def update(original: model.User, new: model.User, /) -> bool:
+    if original is None or new is None:
         return False
-    model.db.session.commit()
+      
+    try:
+      original.update(new)
+      model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
 def save_all(users: list[model.User], /) -> bool:
     if users is None or not users:
         return False
-    model.db.session.add_all(users)
-    model.db.session.commit()
+    
+    try:
+      model.db.session.add_all(users)
+      model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
 def delete(user: model.User, /) -> bool:
     if user is None:
         return False
-    model.db.session.delete(user)
-    model.db.session.commit()
+      
+    try:  
+      model.db.session.delete(user)
+      model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
 def delete_all(users: list[model.User], /) -> bool:
     if users is None or not users:
         return False
-    for user in users:
-        model.db.session.delete(user)
-    model.db.session.commit()
+      
+    try:
+      try:
+        for user in users:
+            model.db.session.delete(user)
+      except SQLAlchemyError as se:
+        app.logger.error(f"{se}")
+        model.db.session.rollback()
+      model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 def find_users_by_first_name(first_name: str, /) -> model.User | None:

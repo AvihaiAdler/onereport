@@ -30,7 +30,8 @@ def register_personnel(form: PersonnelRegistrationFrom) -> PersonnelDTO | None:
     """
     Raises:
         BadRequestError,
-        ForbiddenError
+        ForbiddenError,
+        InternalServerError
     """
     if form is None:
         app.logger.error(f"invalid form {form}")
@@ -49,13 +50,13 @@ def register_personnel(form: PersonnelRegistrationFrom) -> PersonnelDTO | None:
             case None:  # no such personnel exists
                 if not personnel_dal.save(personnel):
                     app.logger.error(f"failed to save {personnel} for {current_user}")
-                    raise InternalServerError("הפעולה לא התבצעה בהצלחה")
+                    raise InternalServerError("שגיאת שרת")
 
                 app.logger.debug(f"{current_user} successfully registered {personnel}")
             case op if not op.active:  # such personnel exists but is inactive
-                op.update(personnel)
-                if not personnel_dal.update(op):
+                if not personnel_dal.update(op, personnel):
                     app.logger.error(f"{current_user} failed to update {op}")
+                    raise InternalServerError("שגיאת שרת")
 
                 app.logger.info(f"{current_user} successfully updated {op}")
             case _:  # such personnel exists and active
@@ -109,7 +110,7 @@ def register_user(form: UserRegistrationFrom, id: str, /) -> PersonnelDTO:
                 # delete the personnel since it has the same id as the newly created user
                 if not personnel_dal.delete(personnel):
                     app.logger.error(f"failed to delete {personnel} for {current_user}")
-                    raise InternalServerError("הפעולה לא התבצעה בהצלחה")
+                    raise InternalServerError("שגיאת שרת")
 
                 app.logger.info(f"{current_user} successfully deleted {personnel}")
 
@@ -117,17 +118,18 @@ def register_user(form: UserRegistrationFrom, id: str, /) -> PersonnelDTO:
                 if not user_dal.save(user):
                     app.logger.error(f"failed to save {personnel} for {current_user}")
                     # try to reinstate personnel
-                    personnel_dal.save(
-                        personnel
-                    )  # if this fails we're in as irrecoverable state
-                    raise InternalServerError("הפעולה לא התבצעה בהצלחה")
+                    # if this fails we're in as irrecoverable state
+                    if not personnel_dal.save(personnel):
+                        app.logger.critical(
+                            f"failed to reinstate previous state. personnel has been deleted yet no user has been saved, and attemps to resave the old personnel fails\n{personnel}"
+                        )
+                    raise InternalServerError("שגיאת שרת")
 
                 app.logger.info(f"{current_user} successfully deleted {personnel}")
             case ou if not ou.active:  # such user exists but is inactive
-                old_user.update(user)
-                if not user_dal.update(old_user):
+                if not user_dal.update(ou, user):
                     app.logger.error(f"{current_user} failed to update {old_user}")
-                    raise InternalServerError("הפעולה לא התבצעה בהצלחה")
+                    raise InternalServerError("שגיאת שרת")
 
                 app.logger.info(f"{current_user} successfully updated {old_user}")
             case _:
@@ -175,10 +177,9 @@ def update_personnel(form: PersonnelUpdateForm, id: str, /) -> PersonnelDTO:
 
         personnel.active = Active[form.active.data] == Active.ACTIVE
 
-        old_personnel.update(personnel)
-        if not personnel_dal.update(old_personnel):
+        if not personnel_dal.update(old_personnel, personnel):
             app.logger.error(f"{current_user} failed to update {old_personnel}")
-            raise InternalServerError("הפעולה לא הושלמה בהצלחה")
+            raise InternalServerError("שגיאת שרת")
 
         app.logger.info(f"{current_user} successfully updated {old_personnel}")
 
@@ -195,11 +196,11 @@ def demote(user: User) -> None:
         app.logger.warning(f"{current_user} tried to demote themselves")
         raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
-    if user_dal.delete(user):  # delete user since it has the same id
-        app.logger.info(f"{current_user} successfully deleted {user}")
-    else:
+    if not user_dal.delete(user):  # delete user since it has the same id
         app.logger.error(f"{current_user} failed to delete {user}")
         raise InternalServerError("הפעולה לא הושלמה בהצלחה")
+
+    app.logger.info(f"{current_user} successfully deleted {user}")
 
     personnel = Personnel(
         user.id, user.first_name, user.last_name, user.company, user.platoon
@@ -208,7 +209,13 @@ def demote(user: User) -> None:
         app.logger.error(
             f"{current_user} failed to save the personnel {personnel}. demotion failed"
         )
-        user_dal.save(user)  # if this operation failed we're in an irrecoverable state
+
+        # if this operation failed we're in an irrecoverable state
+        if not user_dal.save(user):
+            app.logger.critical(
+                f"failed to reinstate previous state. user has been deleted yet no personnel has been saved, and attemps to resave the old user fails\n{user}"
+            )
+        raise InternalServerError("שגיאת שרת")
 
     app.logger.info(
         f"{current_user} successfuly demoted {user} to a personnel {personnel}"
@@ -274,10 +281,9 @@ def update_user(form: UserUpdateForm, email: str, /) -> UserDTO:
             app.logger.warning(f"{current_user} change their role {user}")
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
-        old_user.update(user)
-        if not user_dal.save(old_user):
+        if not user_dal.update(old_user, user):
             app.logger.error(f"{current_user} failed to update {old_user}")
-            raise InternalServerError("הפעולה לא הושלמה בהצלחה")
+            raise InternalServerError("שגיאת שרת")
         app.logger.info(f"{current_user} successfully updated {old_user}")
 
     return UserDTO(old_user)
@@ -399,8 +405,8 @@ def report(
 
     # there is an exisiting report for the day
     if form.validate_on_submit():
-        report.presence = {p for p in personnel if p.id in request.form}
-        if not report_dal.update(report):
+        presence = {p for p in personnel if p.id in request.form}
+        if not report_dal.update(report, presence):
             app.logger.error(f"{current_user} failed to update the report {report}")
             raise InternalServerError(
                 f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger"
@@ -427,8 +433,8 @@ def get_report(id: str, company: str, /) -> ReportDTO:
         )
         raise NotFoundError(f"הדוח {id} אינו במסד הנתונים")
 
-    personnel = personnel_dal.find_all_active_personnel_by_company(
-        Company[company], PersonnelOrderBy.LAST_NAME, Order.ASC
+    personnel = personnel_dal.find_all_personnel_by_company_dated_before(
+        Company[company], datetime.date.today(), PersonnelOrderBy.LAST_NAME, Order.ASC
     )
     if personnel is None:
         app.logger.debug(

@@ -41,9 +41,9 @@ def u_get_all_personnel() -> str:
             personnel=personnel,
         )
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="info")
+        flash(f"{ne}", category="info")
     return redirect(url_for("home"))
 
 
@@ -83,11 +83,13 @@ def u_update_personnel(id: str) -> str:
                 category="danger",
             )
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="danger")
+        flash(f"{ne}", category="danger")
     except ForbiddenError as fe:
-        flash(str(fe), category="danger")
+        flash(f"{fe}", category="danger")
+    except InternalServerError as ie:
+        flash(f"{ie}", category="danger")
     return redirect(url_for(generate_urlstr(current_user.role, "get_all_personnel")))
 
 
@@ -114,11 +116,11 @@ def u_create_report() -> str:
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
         return redirect(url_for(generate_urlstr(current_user.role, "create_report")))
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="danger")
+        flash(f"{ne}", category="danger")
     except InternalServerError as ie:
-        flash(str(ie), category="danger")
+        flash(f"{ie}", category="danger")
 
     return redirect(url_for("home"))
 
@@ -136,9 +138,9 @@ def u_get_all_reports() -> str:
         reports = users_service.get_all_reports(current_user.company, order)
         return render_template("reports/reports.html", reports=reports)
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="info")
+        flash(f"{ne}", category="info")
 
     return redirect(url_for("home"))
 
@@ -154,8 +156,8 @@ def u_get_report(id: int) -> str:
         report = users_service.get_report(id, current_user.company)
         return render_template("reports/uneditable_report.html", report=report)
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        flash(f"{be}", category="danger")
     except NotFoundError as ne:
-        flash(str(ne), category="danger")
+        flash(f"{ne}", category="danger")
 
     return redirect(url_for(generate_urlstr(current_user.role, "get_all_reports")))

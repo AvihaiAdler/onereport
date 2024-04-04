@@ -1,45 +1,82 @@
+from onereport import app
 from onereport.dal import order_attr
 from onereport.data import model, misc
 import sqlalchemy
+from sqlalchemy.exc import SQLAlchemyError
 import datetime
 
 def save(report: model.Report, /) -> bool:
     if report is None:
         return False
-    model.db.session.add(report)
-    model.db.session.commit()
+    
+    try:
+        model.db.session.add(report)
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
-def update(report: model.Report, /) -> bool:
+def update(report: model.Report, presence: set[model.Personnel], /) -> bool:
     if report is None:
         return False
-    model.db.session.commit()
+    
+    try:
+        report.update(presence)
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
 def save_all(reports: list[model.Report], /) -> bool:
     if reports is None or not reports:
         return False
-    model.db.session.add_all(reports)
-    model.db.session.commit()
+    
+    try:
+        model.db.session.add_all(reports)
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
 def delete(report: model.Report, /) -> bool:
     if report is None:
         return False
-    model.db.session.delete(report)
-    model.db.session.commit()
+    
+    try:
+        model.db.session.delete(report)
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
 def delete_all(reports: list[model.Report], /) -> bool:
     if reports is None or not reports:
         return False
-    for report in reports:
-        model.db.session.delete(report)
-    model.db.session.commit()
+    
+    try:
+        try:
+            for report in reports:
+                model.db.session.delete(report)
+        except SQLAlchemyError as se:
+            app.logger.error(f"{se}")
+            model.db.session.rollback()
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 

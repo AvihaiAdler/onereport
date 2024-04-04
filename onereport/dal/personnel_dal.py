@@ -1,48 +1,85 @@
+import datetime
 from typing import List, Tuple
-
+from onereport import app
 from onereport.dal import order_attr
 from onereport.data import model
 from onereport.data import misc
 import sqlalchemy
+from sqlalchemy.exc import SQLAlchemyError
 
 
 def save(personnel: model.Personnel, /) -> bool:
     if personnel is None:
         return False
-    model.db.session.add(personnel)
-    model.db.session.commit()
+
+    try:
+        model.db.session.add(personnel)
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+        app.logger.error(f"{se}")
+        model.db.session.rollback()
+        return False
     return True
 
 
-def update(personnel: model.Personnel, /) -> bool:
-    if personnel is None:
+def update(original: model.Personnel, new: model.Personnel, /) -> bool:
+    if original is None or new is None:
         return False
-    model.db.session.commit()
+    
+    try:
+        original.update(new)
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
 def save_all(personnel: list[model.Personnel], /) -> bool:
     if personnel is None or not personnel:
         return False
-    model.db.session.add_all(personnel)
-    model.db.session.commit()
+    
+    try:
+        model.db.session.add_all(personnel)
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
 def delete(personnel: model.Personnel, /) -> bool:
     if personnel is None:
         return False
-    model.db.session.delete(personnel)
-    model.db.session.commit()
+    
+    try:
+        model.db.session.delete(personnel)
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
 def delete_all(personnel: list[model.Personnel], /) -> bool:
     if personnel is None or not personnel:
         return False
-    for p in personnel:
-        model.db.session.delete(p)
-    model.db.session.commit()
+    
+    try:
+        try:
+            for p in personnel:
+                model.db.session.delete(p)
+        except SQLAlchemyError as se:
+            app.logger.error(f"{se}")
+            model.db.session.rollback()
+        model.db.session.commit()
+    except SQLAlchemyError as se:
+      app.logger.error(f"{se}")
+      model.db.session.rollback()
+      return False 
     return True
 
 
@@ -117,4 +154,18 @@ def find_all_personnel_by_company(
 ) -> List[model.Personnel]:
     return model.db.session.scalars(
         construct_statement(order_by, order).filter(model.User.company == company.name)
+    ).all()
+
+
+def find_all_personnel_by_company_dated_before(
+    company: misc.Company,
+    date: datetime.date,
+    order_by: order_attr.PersonnelOrderBy,
+    order: order_attr.Order,
+    /,
+) -> list[model.Personnel]:
+    return model.db.session.scalars(
+        construct_statement(order_by, order)
+        .filter(model.Personnel.company == company.name)
+        .filter(model.Personnel.date_added < date)
     ).all()

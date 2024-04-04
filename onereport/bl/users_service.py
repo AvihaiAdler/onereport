@@ -70,7 +70,8 @@ def update_personnel(
     Raises:
         BadRequestError,
         NotFoundError,
-        ForbiddenError
+        ForbiddenError,
+        InternalServerError
     """
     if form is None:
         app.logger.error(f"invalid form {form}")
@@ -103,12 +104,14 @@ def update_personnel(
         personnel.active = Active[form.active.data] == Active.ACTIVE
         # to ensure users cannot update Personnel::company
         personnel.company = old_personnel.company
-        old_personnel.update(personnel)
-        if personnel_dal.update(personnel):
-            app.logger.info(f"{current_user} successfully updated {old_personnel}")
-            return (PersonnelDTO(old_personnel), True)
 
-    app.logger.error(f"{current_user} failed to update {old_personnel}")
+        if not personnel_dal.update(old_personnel, personnel):
+            app.logger.error(f"{current_user} failed to update {old_personnel}")
+            raise InternalServerError("שגיאת שרת")
+        
+        app.logger.info(f"{current_user} successfully updated {old_personnel}")
+        return (PersonnelDTO(old_personnel), True)
+
     return (PersonnelDTO(old_personnel), False)
 
 
@@ -149,6 +152,7 @@ def report(
                 f"{current_user} failed to create a report for company: {company} at {datetime.date.today()}"
             )
             raise InternalServerError("שגיאת שרת")
+        
         app.logger.info(f"{current_user} successfully created {report}")
 
     personnel = personnel_dal.find_all_active_personnel_by_company(
@@ -162,12 +166,13 @@ def report(
 
     # there is an exisiting report for the day
     if form.validate_on_submit():
-        report.presence = {p for p in personnel if p.id in request.form}
-        if report_dal.update(report):
+        presence = {p for p in personnel if p.id in request.form}
+        if not report_dal.update(report, presence):
             app.logger.error(f"{current_user} failed to update the report {report}")
             raise InternalServerError(
                 f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger"
             )
+            
         app.logger.info(f"{current_user} successfully updated the report {report}")
 
     return [(PersonnelDTO(p), p in report.presence) for p in personnel]
@@ -190,8 +195,8 @@ def get_report(id: int, company: str, /) -> ReportDTO:
         )
         raise NotFoundError(f"הדוח {id} אינו במסד הנתונים")
 
-    personnel = personnel_dal.find_all_active_personnel_by_company(
-        Company[company], PersonnelOrderBy.LAST_NAME, Order.ASC
+    personnel = personnel_dal.find_all_personnel_by_company_dated_before(
+        Company[company], datetime.date.today(), PersonnelOrderBy.LAST_NAME, Order.ASC
     )
     if personnel is None:
         app.logger.debug(
