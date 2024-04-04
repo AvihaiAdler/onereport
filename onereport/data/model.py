@@ -37,7 +37,7 @@ class Personnel(db.Model):
     company: orm.Mapped[str]
     platoon: orm.Mapped[str]
     active: orm.Mapped[bool] = orm.mapped_column(default=True)
-    date_added: orm.Mapped[datetime.date] = orm.mapped_column(datetime.date.today)
+    date_added: orm.Mapped[datetime.date] = orm.mapped_column(default=datetime.date.today)
 
     type: orm.Mapped[str]
     __mapper_args__ = {
