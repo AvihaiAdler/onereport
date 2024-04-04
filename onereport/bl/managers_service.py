@@ -170,7 +170,7 @@ def update_personnel(form: PersonnelUpdateForm, id: str, /) -> PersonnelDTO:
         )
         if (
             personnel.id == current_user.id
-            and Active[form.active.data] != current_user.active
+            and Active.get_value_as_bool(form.active.data) != current_user.active
         ):
             app.logger.warning(f"{current_user} tried to deactivate themselves")
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
@@ -268,7 +268,7 @@ def update_user(form: UserUpdateForm, email: str, /) -> UserDTO:
 
         if (
             user.id == current_user.id
-            and Active[form.active.data].name != Active.ACTIVE.name
+            and Active.get_value_as_bool(form.active.data) != current_user.active
         ):
             app.logger.warning(f"{current_user} tried to deactivate themselves {user}")
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")

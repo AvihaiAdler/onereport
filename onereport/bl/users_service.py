@@ -96,7 +96,7 @@ def update_personnel(
         # User tries to set itself to 'inactive' state
         if (
             personnel.id == current_user.id
-            and Active[form.active.data] != current_user.active
+            and Active.get_value_as_bool(form.active.data) != current_user.active
         ):
             app.logger.warning(f"{current_user} tried to deactivate themselves")
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")

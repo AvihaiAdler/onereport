@@ -68,11 +68,15 @@ class Personnel(db.Model):
             **kwargs,
         )
 
-    def update(self: Self, other: Self) -> None:
+    def update(self: Self, other: Self) -> Self:
         self.first_name, self.last_name = other.first_name, other.last_name
         self.company = other.company
         self.platoon = other.platoon
         self.active = other.active
+        return self
+        
+    def update_personnel(self: Self, other: Self) -> Self:
+        return self.update(other)
 
     def __repr__(self: Self) -> str:
         return f"Personnel(id: {self.id}, full name:{' '.join((self.first_name, self.last_name))}, company: {self.company}, platoon: {self.platoon}, active: {self.active})"
@@ -125,12 +129,10 @@ class User(Personnel, UserMixin):
             id, first_name, last_name, company, platoon, email=email, role=role
         )
 
-    def update(self: Self, other: Self) -> None:
-        self.first_name, self.last_name = other.first_name, other.last_name
-        self.company = other.company
-        self.platoon = other.platoon
-        self.active = other.active
+    def update_user(self: Self, other: Self) -> Self:
+        self.update(other)
         self.role = other.role
+        return self
 
     def __repr__(self: Self) -> str:
         repr_str = super().__repr__()
