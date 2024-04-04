@@ -75,8 +75,12 @@ class Active(Enum):
         return active in Active._member_names_
     
     @staticmethod
-    def get_name(value: bool) -> str:
+    def get_name(value: bool, /) -> str:
         return Active.ACTIVE.name if value else Active.INACTIVE.name
+    
+    @staticmethod
+    def get_value_as_bool(name: str, /) -> bool:
+        return Active.is_valid(name) and name == Active.ACTIVE.name 
 
 
 class Presence(Enum):
