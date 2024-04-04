@@ -10,4 +10,4 @@ class ReportDTO():
     self.presence = [(PersonnelDTO(p), p in report.presence) for p in personnel]
     
   def __repr__(self: Self) -> str:
-    return "Report(id: {self.id}, date: {self.date}, company: {self.company})"
+    return f"Report(id: {self.id}, date: {self.date}, company: {self.company})"
