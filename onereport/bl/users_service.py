@@ -63,9 +63,7 @@ def get_all_personnel(
     return [PersonnelDTO(p) for p in personnel]
 
 
-def update_personnel(
-    form: PersonnelUpdateForm, id: str, /
-) -> Tuple[PersonnelDTO, bool]:
+def update_personnel(form: PersonnelUpdateForm, id: str, /) -> PersonnelDTO:
     """
     Raises:
         BadRequestError,
@@ -82,7 +80,7 @@ def update_personnel(
         app.logger.error(
             f"{current_user} tried to update a non exisiting personnel with id {id}"
         )
-        raise NotFoundError(f"החייל {id} אינו במסד הנתונים")
+        raise NotFoundError(f"המס' האישי {id} אינו במסד הנתונים")
 
     if form.validate_on_submit():
         personnel = Personnel(
@@ -102,17 +100,16 @@ def update_personnel(
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
         personnel.active = Active[form.active.data] == Active.ACTIVE
-        # to ensure users cannot update Personnel::company
+        # to ensure USERs cannot update Personnel::company
         personnel.company = old_personnel.company
 
         if not personnel_dal.update(old_personnel, personnel):
             app.logger.error(f"{current_user} failed to update {old_personnel}")
             raise InternalServerError("שגיאת שרת")
-        
-        app.logger.info(f"{current_user} successfully updated {old_personnel}")
-        return (PersonnelDTO(old_personnel), True)
 
-    return (PersonnelDTO(old_personnel), False)
+        app.logger.info(f"{current_user} successfully updated {old_personnel}")
+
+    return PersonnelDTO(old_personnel)
 
 
 def report(
@@ -152,7 +149,7 @@ def report(
                 f"{current_user} failed to create a report for company: {company} at {datetime.date.today()}"
             )
             raise InternalServerError("שגיאת שרת")
-        
+
         app.logger.info(f"{current_user} successfully created {report}")
 
     personnel = personnel_dal.find_all_active_personnel_by_company(
@@ -172,7 +169,7 @@ def report(
             raise InternalServerError(
                 f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger"
             )
-            
+
         app.logger.info(f"{current_user} successfully updated the report {report}")
 
     return [(PersonnelDTO(p), p in report.presence) for p in personnel]

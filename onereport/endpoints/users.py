@@ -56,32 +56,25 @@ def u_update_personnel(id: str) -> str:
 
     form = forms.PersonnelUpdateForm()
     try:
-        personnel, ret = users_service.update_personnel(form, id)
+        personnel = users_service.update_personnel(form, id)
         if request.method == "GET":
             form.id.data = personnel.id
             form.first_name.data, form.last_name.data = (
                 personnel.first_name,
                 personnel.last_name,
             )
-            form.company.data = misc.Company(personnel.company).name
-            form.active.data = personnel.active
+            form.company.data, form.platoon.data = (
+                misc.Company(personnel.company).name,
+                misc.Platoon(personnel.platoon).name,
+            )
+            form.active.data = misc.Active.get_name(personnel.active)
 
-            return render_template(
-                "personnel/personnel.html",
-                form=form,
-                personnel=[personnel],
-            )
+            return render_template("personnel/personnel.html", form=form)
 
-        if ret:
-            flash(
-                f"החייל.ת {personnel.first_name} {personnel.last_name} עודכן בהצלחה",
-                category="success",
-            )
-        else:
-            flash(
-                f"הפעולה עבור החייל.ת {personnel.first_name} {personnel.last_name} לא הושלמה",
-                category="danger",
-            )
+        flash(
+            f"החייל.ת {' '.join((personnel.first_name, personnel.last_name))} עודכן בהצלחה",
+            category="success",
+        )
     except BadRequestError as be:
         flash(f"{be}", category="danger")
     except NotFoundError as ne:

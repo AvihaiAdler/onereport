@@ -100,10 +100,12 @@ def m_update_personnel(id: str) -> str:
                 misc.Platoon(personnel.platoon).name,
             )
             form.active.data = misc.Active.get_name(personnel.active)
-            print(personnel)
 
             return render_template("personnel/personnel.html", form=form)
-        flash(f"החייל.ת {id} עודכן בהצלחה", category="success")
+        flash(
+            f"החייל.ת {' '.join((personnel.first_name, personnel.last_name))} עודכן בהצלחה",
+            category="success",
+        )
     except BadRequestError as be:
         flash(f"{be}", category="danger")
     except NotFoundError as ne:
@@ -138,7 +140,7 @@ def m_update_user(email: str) -> str:
             form.active.data = user.active
 
             return render_template("users/user.html", form=form)
-        
+
         flash(
             f"המשתמש.ת {' '.join((user.first_name, user.last_name))} עודכן בהצלחה",
             category="success",
@@ -197,7 +199,9 @@ def m_get_all_personnel() -> str:
         if request.method == "GET":
             form.company.data = current_user.company
 
-        return render_template("personnel/personnel_list.html", form=form, personnel=personnel)
+        return render_template(
+            "personnel/personnel_list.html", form=form, personnel=personnel
+        )
     except BadRequestError as be:
         flash(f"{be}", category="danger")
     except NotFoundError as ne:
@@ -225,7 +229,7 @@ def m_create_report() -> str:
                 form=form,
                 personnel_presence_list=personnel,
             )
-        
+
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
         return redirect(url_for(generate_urlstr(current_user.role, "create_report")))
     except BadRequestError as be:

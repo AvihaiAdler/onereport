@@ -38,6 +38,7 @@ def register_personnel(form: PersonnelRegistrationFrom) -> PersonnelDTO | None:
         raise BadRequestError("form must not be None")
 
     if form.validate_on_submit():
+        # "      1" will be technically valid - but i couldn't care less
         personnel = Personnel(
             form.id.data.strip(),
             form.first_name.data.strip(),
@@ -168,6 +169,8 @@ def update_personnel(form: PersonnelUpdateForm, id: str, /) -> PersonnelDTO:
             form.company.data,
             form.platoon.data,
         )
+
+        # User tries to set itself to 'inactive' state
         if (
             personnel.id == current_user.id
             and Active.get_value_as_bool(form.active.data) != current_user.active
