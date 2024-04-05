@@ -151,6 +151,8 @@ def a_get_report(id: int) -> str:
         app.logger.warning(f"unauthorized access by {current_user}")
         return redirect("home")
 
+    company = request.args.get("company", current_user.company)
+    
     return redirect(
-        url_for(generate_urlstr(misc.Role.MANAGER.name, "get_report"), id=id)
+        url_for(generate_urlstr(misc.Role.MANAGER.name, "get_report"), id=id, company=company)
     )

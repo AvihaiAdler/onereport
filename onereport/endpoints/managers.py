@@ -286,4 +286,4 @@ def m_get_report(id: int) -> str:
     except NotFoundError as ne:
         flash(f"{ne}", category="info")
 
-    return redirect(url_for(generate_urlstr(current_user.role, "get_all_reports")))
+    return redirect(url_for(generate_urlstr(current_user.role, "get_all_reports"), company=company))

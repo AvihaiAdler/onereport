@@ -11,8 +11,7 @@
       <select class="form-control form-select" onChange="window.location.href=this.value">
         <option value="#">בחר פלוגה</option>
         {% for name, enum in company.__members__.items() %}
-        <option value={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_reports" ), company=name) }}>{{
-          enum.value }}</option>
+        <option value={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_reports" ), company=name) }}>{{ enum.value }}</option>
         {% endfor %}
       </select>
     </div>
@@ -20,7 +19,7 @@
   {% endif %}
   <div class="container content-section">
     {% for report in reports %}
-      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_report" ), id=report[0] ) }}
+      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_report" ), id=report[0], company=current_company|get_company_name_by_value ) }}
         class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }} hover-row">
         <div class="">{{ report[1] }}</div>
       </a>
