@@ -1,3 +1,5 @@
+import json
+import logging.config
 import flask
 from onereport.data import model, misc
 import dotenv
@@ -9,9 +11,14 @@ import os
 # Hosts cannot be raw IP addresses. Localhost IP addresses are exempted from this rule.
 # Redirect URIs must use the HTTPS scheme, not plain HTTP
 
-if not dotenv.load_dotenv():
+# since its a relative path - a better solution should be in place
+if not dotenv.load_dotenv(dotenv_path="resources/.env"):   
     logging.error("failed to load environment variables")
     exit(1)
+
+with open(os.environ.get("LOGGING_CONFIG"), "r") as file_config:
+    config = json.load(file_config)
+logging.config.dictConfig(config)
 
 app = flask.Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", None)
@@ -69,6 +76,10 @@ def checked(present: bool) -> str:
 @app.template_filter()
 def is_active(active: bool) -> str:
     return "checked" if active else ""
+
+@app.template_filter()
+def get_company_name_by_value(company_value: str) -> str:
+    return misc.Company(company_value).name
 
 model.db.init_app(app=app)
 model.login_manager.init_app(app=app)
