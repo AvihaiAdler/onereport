@@ -1,4 +1,4 @@
 .*
-config/
+log
 instance/
 __pycache__/
