@@ -35,7 +35,7 @@
 
   <main role="main" class="container">
     <div class="row">
-      <div class="col-md-3">
+      <div class="col-sm-2">
         <div class="content-section">
           <h6>שלום,</h6>
           <p class="text-muted">{{ current_user.first_name }} {{ current_user.last_name }}
@@ -43,7 +43,7 @@
             {% if current_user.role|has_permission %}
               <a href={{ url_for(current_user.role|generate_urlstr(urlstr="register_personnel" )) }}
                 class="link-underline link-underline-opacity-0">
-                <li class="list-group-item list-group-item-light hover">הוסף חייל</li>
+                <li class="list-group-item list-group-item-light hover">הוסף.י חייל.ת</li>
               </a>
 
               <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_users" )) }}
@@ -57,11 +57,11 @@
             </a>
             <a href={{ url_for(current_user.role|generate_urlstr(urlstr="create_report" )) }}
               class="link-underline link-underline-opacity-0">
-              <li class="list-group-item list-group-item-light hover">שמ"פ נוכחי</li>
+              <li class="list-group-item list-group-item-light hover">דו"ח נוכחי</li>
             </a>
             <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_reports" )) }}
               class="link-underline link-underline-opacity-0">
-              <li class="list-group-item list-group-item-light hover">שמפי"ם קודמים</li>
+              <li class="list-group-item list-group-item-light hover">כל הדוחו"ת</li>
             </a>
           </ul>
           </p>
