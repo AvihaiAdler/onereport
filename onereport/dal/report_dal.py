@@ -66,12 +66,12 @@ def delete_all(reports: list[model.Report], /) -> bool:
         return False
     
     try:
-        try:
-            for report in reports:
+        for report in reports:
+            try:
                 model.db.session.delete(report)
-        except SQLAlchemyError as se:
-            app.logger.error(f"{se}")
-            model.db.session.rollback()
+            except SQLAlchemyError as se:
+                app.logger.error(f"{se}")
+                model.db.session.rollback()
         model.db.session.commit()
     except SQLAlchemyError as se:
       app.logger.error(f"{se}")
@@ -132,3 +132,7 @@ def delete_all_empty_reports_by_company(company: misc.Company) -> None:
     ).all()
     
     delete_all(empty_reports)
+
+
+def find_all_reports() -> list[model.Report]:
+    return model.db.session.scalars(sqlalchemy.select(model.Report)).all()
