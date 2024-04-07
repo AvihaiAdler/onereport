@@ -62,7 +62,8 @@ def m_register_user(id: str) -> str:
             return render_template("users/user_registration.html", form=form)
 
         flash(
-            f"המשתמש.ת {' '.join((personnel.first_name, personnel.last_name))} נרשמה בהצלחה"
+            f"המשתמש.ת {' '.join((personnel.first_name, personnel.last_name))} נרשמה בהצלחה",
+            category="success"
         )
         return redirect(
             url_for(generate_urlstr(current_user.role, "get_all_personnel"), id=id)
@@ -231,7 +232,7 @@ def m_create_report() -> str:
             )
 
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
-        return redirect(url_for(generate_urlstr(current_user.role, "create_report")))
+        return redirect(url_for(generate_urlstr(current_user.role, "create_report"), order_by=order_by, order=order))
     except BadRequestError as be:
         flash(f"{be}", category="danger")
     except NotFoundError as ne:

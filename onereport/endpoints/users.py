@@ -107,7 +107,7 @@ def u_create_report() -> str:
             )
 
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
-        return redirect(url_for(generate_urlstr(current_user.role, "create_report")))
+        return redirect(url_for(generate_urlstr(current_user.role, "create_report"),order_by=order_by, order=order))
     except BadRequestError as be:
         flash(f"{be}", category="danger")
     except NotFoundError as ne:
