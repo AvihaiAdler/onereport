@@ -9,7 +9,7 @@ from onereport.dto.report_dto import ReportDTO
 from onereport.dto.user_dto import UserDTO
 from onereport.dal import personnel_dal, user_dal, report_dal
 from onereport.dal.order_attr import PersonnelOrderBy, Order, UserOrderBy
-from onereport.exceptions.exceptions import (
+from onereport.exceptions import (
     BadRequestError,
     ForbiddenError,
     InternalServerError,

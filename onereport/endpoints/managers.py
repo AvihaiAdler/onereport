@@ -3,7 +3,7 @@ from onereport.bl import managers_service
 from onereport.data import misc
 from flask import url_for, redirect, flash, render_template, request
 from flask_login import current_user, login_required
-from onereport.exceptions.exceptions import (
+from onereport.exceptions import (
     BadRequestError,
     ForbiddenError,
     InternalServerError,

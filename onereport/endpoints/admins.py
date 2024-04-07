@@ -3,7 +3,7 @@ from onereport.bl import admins_service
 from onereport.data import misc
 from flask import url_for, redirect, flash, render_template, request
 from flask_login import current_user, login_required
-from onereport.exceptions.exceptions import BadRequestError, InternalServerError, NotFoundError
+from onereport.exceptions import BadRequestError, InternalServerError, NotFoundError
 
 
 def not_permitted() -> bool:
@@ -97,10 +97,12 @@ def a_get_all_personnel() -> str:
 
     form = forms.PersonnelListForm()
     try:
-        personnel = admins_service.get_all_personnel(form, current_user.company, order_by, order)
+        personnel = admins_service.get_all_personnel(
+            form, current_user.company, order_by, order
+        )
         if request.method == "GET":
             form.company.data = current_user.company
-            
+
         return render_template(
             "personnel/personnel_list.html",
             form=form,
@@ -150,29 +152,33 @@ def a_get_report(id: int) -> str:
         return redirect(url_for("home"))
 
     company = request.args.get("company", current_user.company)
-    
+
     return redirect(
-        url_for(generate_urlstr(misc.Role.MANAGER.name, "get_report"), id=id, company=company)
+        url_for(
+            generate_urlstr(misc.Role.MANAGER.name, "get_report"),
+            id=id,
+            company=company,
+        )
     )
-    
-    
+
+
 @app.route("/onereport/admins/personnel/upload", methods=["GET", "POST"])
 @login_required
 def upload_personnel() -> str:
     if not_permitted():
         app.logger.warning(f"unauthorized access by {current_user}")
         return redirect(url_for("home"))
-    
+
     form = forms.UploadPersonnelForm()
     try:
         admins_service.upload_personnel(form)
-        
+
         return render_template("personnel/upload_personnel.html", form=form)
     except BadRequestError as be:
         flash(f"{be}", category="danger")
     except InternalServerError as ie:
         flash(f"{ie}", category="danger")
-        
+
     return redirect(url_for("home"))
 
 
@@ -182,7 +188,6 @@ def delete_all_reports() -> str:
     if not_permitted():
         app.logger.warning(f"unauthorized access by {current_user}")
         return redirect(url_for("home"))
-    
 
     if admins_service.delete_all_reports():
         flash("כל הדוחות נמחקו בהצלחה", category="success")
@@ -190,13 +195,13 @@ def delete_all_reports() -> str:
         flash("שגיאת שרת", category="danger")
     return redirect(url_for("home"))
 
+
 @app.get("/onereport/admins/personnel/delete")
 @login_required
 def delete_all_personnel() -> str:
     if not_permitted():
         app.logger.warning(f"unauthorized access by {current_user}")
         return redirect(url_for("home"))
-    
 
     if admins_service.delete_all_personnel():
         flash("כל הדוחות נמחקו בהצלחה", category="success")

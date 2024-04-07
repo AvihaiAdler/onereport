@@ -6,10 +6,10 @@ from onereport.dal.order_attr import Order, PersonnelOrderBy, UserOrderBy
 from onereport.data.model import Personnel, User
 from onereport.dto.user_dto import UserDTO
 from onereport.dto.personnel_dto import PersonnelDTO
-from onereport.exceptions.exceptions import (
+from onereport.exceptions import (
     BadRequestError,
-    InternalServerError,
     NotFoundError,
+    InternalServerError
 )
 from onereport.forms import PersonnelListForm, UploadPersonnelForm
 from flask_login import current_user

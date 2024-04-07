@@ -1,7 +1,7 @@
 from onereport import app, forms, generate_urlstr
 from onereport.data import misc
 from onereport.bl import users_service
-from onereport.exceptions.exceptions import (
+from onereport.exceptions import (
     BadRequestError,
     ForbiddenError,
     InternalServerError,

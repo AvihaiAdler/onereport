@@ -9,7 +9,7 @@ from onereport.data.misc import Company, Active
 from onereport.data.model import Personnel, Report
 from onereport.dal import personnel_dal, report_dal
 from onereport.dal.order_attr import Order, PersonnelOrderBy
-from onereport.exceptions.exceptions import (
+from onereport.exceptions import (
     BadRequestError,
     ForbiddenError,
     NotFoundError,
