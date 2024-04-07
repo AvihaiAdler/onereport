@@ -38,17 +38,10 @@
       "level": "DEBUG",
       "handlers": [
         "console_handler",
-        "file_handler"
+        "file_handler",
+        "wsgi"
       ],
       "propagate": "True"
     }
-  },
-  "root": {
-    "level": "INFO",
-    "handlers": [
-      "console_handler",
-      "file_handler",
-      "wsgi"
-    ]
   }
 }
