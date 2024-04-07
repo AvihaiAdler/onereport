@@ -1,14 +1,18 @@
+import json
 from onereport import app
 from onereport.data.misc import Company
-from onereport.dal import personnel_dal, user_dal
+from onereport.dal import personnel_dal, user_dal, report_dal
 from onereport.dal.order_attr import Order, PersonnelOrderBy, UserOrderBy
+from onereport.data.model import Personnel, User
 from onereport.dto.user_dto import UserDTO
 from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.exceptions.exceptions import (
     BadRequestError,
+    InternalServerError,
     NotFoundError,
 )
-from onereport.forms import PersonnelListForm
+from onereport.forms import PersonnelListForm, UploadPersonnelForm
+from flask_login import current_user
 
 
 def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
@@ -48,7 +52,7 @@ def get_all_personnel(
     if not Company.is_valid(company):
         app.logger.error(f"invalid company {company}")
         raise BadRequestError("פלוגה אינה תקינה")
-    
+
     if not PersonnelOrderBy.is_valid(order_by):
         app.logger.error(f"invalid order_by: {order_by}")
         raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
@@ -70,3 +74,107 @@ def get_all_personnel(
         # raise NotFoundError(f"לא נמצאו חיילים.ות עבור פלוגה {Company[company].value}")
 
     return [PersonnelDTO(p) for p in personnel]
+
+
+def delete_all_reports() -> None:
+    reports = report_dal.find_all_reports()
+    report_dal.delete_all(reports)
+
+
+def delete_all_personnel() -> None:
+    personnel = personnel_dal.find_all_personnel(PersonnelOrderBy.ID, Order.ASC)
+    users = user_dal.find_all_users(UserOrderBy.LAST_NAME, Order.ASC)
+    
+    user_dal.delete_all([u for u in users if u.id != current_user.id])
+    personnel_dal.delete_all([p for p in personnel if p.id != current_user.id])
+
+
+def dict_to_personnel(personnel_dict: dict[str]) -> Personnel | None:
+    if not personnel_dict:
+        return None
+
+    if personnel_dict.get("id", None) is None:
+        return None
+    if personnel_dict.get("first_name", None) is None:
+        return None
+    if personnel_dict.get("last_name", None) is None:
+        return None
+    if personnel_dict.get("company", None) is None:
+        return None
+    if personnel_dict.get("platoon", None) is None:
+        return None
+
+    return Personnel(
+        personnel_dict["id"],
+        personnel_dict["first_name"],
+        personnel_dict["last_name"],
+        personnel_dict["company"],
+        personnel_dict["platoon"],
+    )
+
+
+def dict_to_user(user_dict: dict[str]) -> User | None:
+    if not user_dict:
+        return None
+
+    if user_dict.get("id", None) is None:
+        return None
+    if user_dict.get("email", None) is None:
+        return None
+    if user_dict.get("first_name", None) is None:
+        return None
+    if user_dict.get("last_name", None) is None:
+        return None
+    if user_dict.get("role", None) is None:
+        return None
+    if user_dict.get("company", None) is None:
+        return None
+    if user_dict.get("platoon", None) is None:
+        return None
+
+    return User(
+        user_dict["id"],
+        user_dict["email"],
+        user_dict["first_name"],
+        user_dict["last_name"],
+        user_dict["role"],
+        user_dict["company"],
+        user_dict["platoon"],
+    )
+
+
+def upload_personnel(form: UploadPersonnelForm) -> None:
+    if form is None:
+        app.logger.error(f"invalid form {form}")
+        raise BadRequestError("form must not be None")
+
+    if form.validate_on_submit():
+        file = form.file.data
+        if file is None or not file:
+            raise InternalServerError("שגיאת שרת")
+
+        data = json.load(file.stream)
+        personnel = list(
+            filter(
+                lambda p: p is not None,
+                map(lambda p: dict_to_personnel(p), data.get("Personnel", [])),
+            )
+        )
+        users = list(
+            filter(
+                lambda u: u is not None,
+                map(lambda u: dict_to_user(u), data.get("Users", [])),
+            )
+        )
+
+        if not personnel_dal.save_all(personnel):
+            app.logger.warning("not all personnel were saved")
+            return
+
+        app.logger.debug(f"saved {len(personnel)} personnel\n{personnel}")
+
+        if not user_dal.save_all(users):
+            app.logger.warning("not all users were saved")
+            return
+
+        app.logger.debug(f"saved {len(users)} users\n{users}")
