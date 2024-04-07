@@ -54,3 +54,6 @@ The routes are used to authenticate the user.
 | create a report for a company  | GET, POST | "/onereport/admins/report"                | order_by, order |
 | get all reports for a company  | GET       | "/onereport/admins/reports"               | company, order  |
 | get a report                   | GET       | "/onereport/admins/report/<id>"           | company         |
+| delete all reports             | GET       | "/onereport/admins/report/delete          |                 |
+| delete all personnel           | GET       | "/onereport/admins/personnel/delete       |                 |
+| add personnel                  | GET, POST | "/onereport/admins/personnel/upload"      |                 |
