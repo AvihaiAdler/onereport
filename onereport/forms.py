@@ -1,5 +1,6 @@
 from typing import Self
 import flask_wtf
+import flask_wtf.file
 import wtforms
 import flask_login
 import wtforms.validators as validators
@@ -254,5 +255,19 @@ class UserUpdateForm(flask_wtf.FlaskForm):
         if current_user_role_level is None:
             raise wtforms.ValidationError("הרשאתך אינה תקינה")
 
+
 class UpdateReportForm(flask_wtf.FlaskForm):
+    submit = wtforms.SubmitField("שלח")
+
+
+class UploadPersonnelForm(flask_wtf.FlaskForm):
+    file = wtforms.FileField(
+        "קובץ",
+        validators=[
+            flask_wtf.file.FileRequired(),
+            flask_wtf.file.FileAllowed(["json"]),
+            flask_wtf.file.FileSize(max_size=15728640),
+        ],
+        description="העלה קובץ",
+    )
     submit = wtforms.SubmitField("שלח")
