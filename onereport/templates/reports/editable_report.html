@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 
-{% from "form_helper.html" import render_field %}
+{% from "util.html" import render_field %}
 {% block content %}
 
 <form method="POST">
   {{ form.hidden_tag() }}
+  <div class="row fs-6">
+    <h5>פלוגה {{ current_user.company|get_company_value_by_name }}</h5>
+    <p>{{ today.strftime("%d/%m/%Y") }}</p>
+  </div>
   <div class="container content-section">
     <div class="row heading">
       <div class="col-sm-3 border-start d-flex justify-content-center">מס' אישי</div>

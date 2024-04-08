@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row fs-6">
   <h5>פלוגה {{ report.company }}</h5>
-  <p>{{ report.date }}</p>
+  <p>{{ report.date.strftime("%d/%m/%Y") }}</p>
 </div>
 <div class="containter content-section">
   <div class="row heading">
