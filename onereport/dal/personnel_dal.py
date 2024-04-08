@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Tuple
 from onereport import app
-from onereport.dal import order_attr
+from onereport.dal import PersonnelOrderBy, Order
 from onereport.data import model
 from onereport.data import misc
 import sqlalchemy
@@ -25,49 +25,49 @@ def save(personnel: model.Personnel, /) -> bool:
 def update(original: model.Personnel, new: model.Personnel, /) -> bool:
     if original is None or new is None:
         return False
-    
+
     try:
         original.update(new)
         model.db.session.commit()
     except SQLAlchemyError as se:
-      app.logger.error(f"{se}")
-      model.db.session.rollback()
-      return False 
+        app.logger.error(f"{se}")
+        model.db.session.rollback()
+        return False
     return True
 
 
 def save_all(personnel: list[model.Personnel], /) -> bool:
     if personnel is None or not personnel:
         return False
-    
+
     try:
         model.db.session.add_all(personnel)
         model.db.session.commit()
     except SQLAlchemyError as se:
-      app.logger.error(f"{se}")
-      model.db.session.rollback()
-      return False 
+        app.logger.error(f"{se}")
+        model.db.session.rollback()
+        return False
     return True
 
 
 def delete(personnel: model.Personnel, /) -> bool:
     if personnel is None:
         return False
-    
+
     try:
         model.db.session.delete(personnel)
         model.db.session.commit()
     except SQLAlchemyError as se:
-      app.logger.error(f"{se}")
-      model.db.session.rollback()
-      return False 
+        app.logger.error(f"{se}")
+        model.db.session.rollback()
+        return False
     return True
 
 
 def delete_all(personnel: list[model.Personnel], /) -> bool:
     if personnel is None or not personnel:
         return False
-    
+
     try:
         for p in personnel:
             try:
@@ -77,9 +77,9 @@ def delete_all(personnel: list[model.Personnel], /) -> bool:
                 model.db.session.rollback()
         model.db.session.commit()
     except SQLAlchemyError as se:
-      app.logger.error(f"{se}")
-      model.db.session.rollback()
-      return False 
+        app.logger.error(f"{se}")
+        model.db.session.rollback()
+        return False
     return True
 
 
@@ -106,13 +106,13 @@ def find_personnel_by_last_name(last_name: str, /) -> model.Personnel | None:
 
 
 def construct_statement(
-    order_by: order_attr.PersonnelOrderBy, order: order_attr.Order, /
+    order_by: PersonnelOrderBy, order: Order, /
 ) -> sqlalchemy.Select[Tuple]:
     return (
         sqlalchemy.select(model.Personnel).order_by(
             sqlalchemy.asc(order_by.name.lower())
         )
-        if order == order_attr.Order.ASC
+        if order == Order.ASC
         else sqlalchemy.select(model.Personnel).order_by(
             sqlalchemy.desc(order_by.name.lower())
         )
@@ -120,7 +120,7 @@ def construct_statement(
 
 
 def find_all_active_personnel(
-    order_by: order_attr.PersonnelOrderBy, order: order_attr.Order, /
+    order_by: PersonnelOrderBy, order: Order, /
 ) -> List[model.Personnel]:
     return model.db.session.scalars(
         construct_statement(order_by, order).filter(model.Personnel.active)
@@ -129,8 +129,8 @@ def find_all_active_personnel(
 
 def find_all_active_personnel_by_company(
     company: misc.Company,
-    order_by: order_attr.PersonnelOrderBy,
-    order: order_attr.Order,
+    order_by: PersonnelOrderBy,
+    order: Order,
     /,
 ) -> List[model.Personnel]:
     return model.db.session.scalars(
@@ -141,15 +141,15 @@ def find_all_active_personnel_by_company(
 
 
 def find_all_personnel(
-    order_by: order_attr.PersonnelOrderBy, order: order_attr.Order, /
+    order_by: PersonnelOrderBy, order: Order, /
 ) -> List[model.Personnel]:
     return model.db.session.scalars(construct_statement(order_by, order)).all()
 
 
 def find_all_personnel_by_company(
     company: misc.Company,
-    order_by: order_attr.PersonnelOrderBy,
-    order: order_attr.Order,
+    order_by: PersonnelOrderBy,
+    order: Order,
     /,
 ) -> List[model.Personnel]:
     return model.db.session.scalars(
@@ -160,8 +160,8 @@ def find_all_personnel_by_company(
 def find_all_personnel_by_company_dated_before(
     company: misc.Company,
     date: datetime.date,
-    order_by: order_attr.PersonnelOrderBy,
-    order: order_attr.Order,
+    order_by: PersonnelOrderBy,
+    order: Order,
     /,
 ) -> list[model.Personnel]:
     return model.db.session.scalars(

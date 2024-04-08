@@ -229,6 +229,7 @@ def m_create_report() -> str:
                 "reports/editable_report.html",
                 form=form,
                 personnel_presence_list=personnel,
+                today=datetime.date.today(),
             )
 
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
@@ -251,17 +252,21 @@ def m_get_all_reports() -> str:
         return redirect(url_for("home"))
 
     company = request.args.get("company", current_user.company)
-    order = request.args.get("order", "ASC")
+    order = request.args.get("order", "DESC")
+    page = request.args.get("page", "1")
+    per_page = request.args.get("per_page", "20")
 
     try:
-        reports = managers_service.get_all_reports(company, order)
+        pagination = managers_service.get_all_reports(company, order, page, per_page)
         return render_template(
             "reports/reports.html",
-            reports=reports,
+            pagination=pagination,
             company=misc.Company,
             current_company=(
                 misc.Company[company].value if misc.Company.is_valid(company) else ""
             ),
+            page=page,
+            per_page=per_page,
         )
     except BadRequestError as be:
         flash(f"{be}", category="danger")

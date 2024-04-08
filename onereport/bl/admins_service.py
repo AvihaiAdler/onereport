@@ -1,16 +1,18 @@
 import json
 from onereport import app
 from onereport.data.misc import Company
-from onereport.dal import personnel_dal, user_dal, report_dal
-from onereport.dal.order_attr import Order, PersonnelOrderBy, UserOrderBy
+from onereport.dal import (
+    personnel_dal,
+    user_dal,
+    report_dal,
+    Order,
+    UserOrderBy,
+    PersonnelOrderBy,
+)
 from onereport.data.model import Personnel, User
 from onereport.dto.user_dto import UserDTO
 from onereport.dto.personnel_dto import PersonnelDTO
-from onereport.exceptions import (
-    BadRequestError,
-    NotFoundError,
-    InternalServerError
-)
+from onereport.exceptions import BadRequestError, NotFoundError, InternalServerError
 from onereport.forms import PersonnelListForm, UploadPersonnelForm
 from flask_login import current_user
 
@@ -84,7 +86,7 @@ def delete_all_reports() -> None:
 def delete_all_personnel() -> None:
     personnel = personnel_dal.find_all_personnel(PersonnelOrderBy.ID, Order.ASC)
     users = user_dal.find_all_users(UserOrderBy.LAST_NAME, Order.ASC)
-    
+
     user_dal.delete_all([u for u in users if u.id != current_user.id])
     personnel_dal.delete_all([p for p in personnel if p.id != current_user.id])
 

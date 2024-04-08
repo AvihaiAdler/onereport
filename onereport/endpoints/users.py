@@ -104,6 +104,7 @@ def u_create_report() -> str:
                 "reports/editable_report.html",
                 form=form,
                 personnel_presence_list=personnel,
+                today=datetime.date.today(),
             )
 
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
@@ -126,10 +127,12 @@ def u_get_all_reports() -> str:
         return redirect(url_for("home"))
 
     order = request.args.get("order", default="DESC")
+    page = request.args.get("page", "1")
+    per_page = request.args.get("per_page", "20")
 
     try:
-        reports = users_service.get_all_reports(current_user.company, order)
-        return render_template("reports/reports.html", reports=reports)
+        pagination = users_service.get_all_reports(current_user.company, order, page, per_page)
+        return render_template("reports/reports.html", pagination=pagination, page=page, per_page=per_page)
     except BadRequestError as be:
         flash(f"{be}", category="danger")
     except NotFoundError as ne:

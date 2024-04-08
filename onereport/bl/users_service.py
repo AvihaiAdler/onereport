@@ -1,5 +1,6 @@
 import datetime
-from typing import Tuple
+
+from flask_sqlalchemy.pagination import Pagination
 from onereport import app
 from flask import request
 from flask_login import current_user
@@ -7,8 +8,7 @@ from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.dto.report_dto import ReportDTO
 from onereport.data.misc import Company, Active
 from onereport.data.model import Personnel, Report
-from onereport.dal import personnel_dal, report_dal
-from onereport.dal.order_attr import Order, PersonnelOrderBy
+from onereport.dal import personnel_dal, report_dal, Order, PersonnelOrderBy
 from onereport.exceptions import (
     BadRequestError,
     ForbiddenError,
@@ -205,7 +205,7 @@ def get_report(id: int, company: str, /) -> ReportDTO:
     return ReportDTO(report, personnel)
 
 
-def get_all_reports(company: str, order: str, /) -> list[Tuple[str, datetime.date]]:
+def get_all_reports(company: str, order: str, page: str, per_page: str, /) -> Pagination:
     """
     Raises:
         BadRequestError,
@@ -218,12 +218,22 @@ def get_all_reports(company: str, order: str, /) -> list[Tuple[str, datetime.dat
     if not Order.is_valid(order):
         app.logger.error(f"invalid order {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
+    
+    try:
+        int(page)
+    except ValueError:
+        raise BadRequestError(f"הערך {page} עבור דף הינו שגוי")
 
-    reports = report_dal.find_all_reports_by_company(Company[company], Order[order])
-    if not reports:
+    try:
+        int(per_page)
+    except ValueError:
+        raise BadRequestError(f"הערך {page} עבור כמות עצמים בדף הינו שגוי")
+
+    reports = report_dal.find_all_reports_by_company(Company[company], Order[order], int(page), int(per_page))
+    if not reports.items:
         app.logger.debug(
             f"no reports for company: {company}, requested by: {current_user}"
         )
         raise NotFoundError(f"אין דוחות עבור פלוגה {Company[company].value}")
 
-    return [(report.id, report.date) for report in reports]
+    return reports

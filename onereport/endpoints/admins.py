@@ -134,12 +134,16 @@ def a_get_all_reports() -> str:
 
     company = request.args.get("company", default=current_user.company)
     order = request.args.get("order", default="DESC")
+    page = request.args.get("page", "1")
+    per_page = request.args.get("per_page", "20")
 
     return redirect(
         url_for(
             generate_urlstr(misc.Role.MANAGER.name, "get_all_reports"),
             company=company,
             order=order,
+            page=page,
+            per_page=per_page,
         )
     )
 
