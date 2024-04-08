@@ -27,7 +27,7 @@
       <div class="col-sm-3 border-start d-flex justify-content-center">{{ personnel.first_name }}</div>
       <div class="col-sm-2 border-start d-flex justify-content-center">{{ personnel.platoon }}</div>
       <div class="col-sm-1 form-check d-flex justify-content-center">
-        <input type="checkbox" class="form-check-input" name={{ personnel.id }} {{ present|checked }}>
+        <input type="checkbox" class="form-check-input" name={{ personnel.id }} {{ present|is_present }}>
       </div>
     </div>
     {% endfor %}

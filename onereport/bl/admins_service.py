@@ -1,5 +1,4 @@
 import json
-from onereport import app
 from onereport.data.misc import Company
 from onereport.dal import (
     personnel_dal,
@@ -13,8 +12,9 @@ from onereport.data.model import Personnel, User
 from onereport.dto.user_dto import UserDTO
 from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.exceptions import BadRequestError, NotFoundError, InternalServerError
-from onereport.forms import PersonnelListForm, UploadPersonnelForm
+from onereport.controller.forms import PersonnelListForm, UploadPersonnelForm
 from flask_login import current_user
+from flask import current_app
 
 
 def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
@@ -24,16 +24,16 @@ def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
         NotFoundError
     """
     if not UserOrderBy.is_valid(order_by):
-        app.logger.error(f"invalid order_by: {order_by}")
+        current_app.logger.error(f"invalid order_by: {order_by}")
         raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
 
     if not Order.is_valid(order):
-        app.logger.error(f"invalid order: {order}")
+        current_app.logger.error(f"invalid order: {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
 
     users = user_dal.find_all_users(UserOrderBy[order_by], Order[order])
     if not users:
-        app.logger.warning("USER table is empty")
+        current_app.logger.warning("USER table is empty")
         raise NotFoundError("רשימת המשתמשים הינה ריקה")
 
     return [UserDTO(user) for user in users]
@@ -48,19 +48,19 @@ def get_all_personnel(
         NotFoundError
     """
     if form is None:
-        app.logger.error(f"invalid form {form}")
+        current_app.logger.error(f"invalid form {form}")
         raise BadRequestError("form must not be None")
 
     if not Company.is_valid(company):
-        app.logger.error(f"invalid company {company}")
+        current_app.logger.error(f"invalid company {company}")
         raise BadRequestError("פלוגה אינה תקינה")
 
     if not PersonnelOrderBy.is_valid(order_by):
-        app.logger.error(f"invalid order_by: {order_by}")
+        current_app.logger.error(f"invalid order_by: {order_by}")
         raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
 
     if not Order.is_valid(order):
-        app.logger.error(f"invalid order: {order}")
+        current_app.logger.error(f"invalid order: {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
 
     if form.validate_on_submit():
@@ -72,7 +72,7 @@ def get_all_personnel(
         Company[company], PersonnelOrderBy[order_by], Order[order]
     )
     if not personnel:
-        app.logger.warning(f"there are no personnel for company {company}")
+        current_app.logger.warning(f"there are no personnel for company {company}")
         # raise NotFoundError(f"לא נמצאו חיילים.ות עבור פלוגה {Company[company].value}")
 
     return [PersonnelDTO(p) for p in personnel]
@@ -147,7 +147,7 @@ def dict_to_user(user_dict: dict[str]) -> User | None:
 
 def upload_personnel(form: UploadPersonnelForm) -> None:
     if form is None:
-        app.logger.error(f"invalid form {form}")
+        current_app.logger.error(f"invalid form {form}")
         raise BadRequestError("form must not be None")
 
     if form.validate_on_submit():
@@ -170,13 +170,13 @@ def upload_personnel(form: UploadPersonnelForm) -> None:
         )
 
         if not personnel_dal.save_all(personnel):
-            app.logger.warning("not all personnel were saved")
+            current_app.logger.warning("not all personnel were saved")
             return
 
-        app.logger.debug(f"saved {len(personnel)} personnel\n{personnel}")
+        current_app.logger.debug(f"saved {len(personnel)} personnel\n{personnel}")
 
         if not user_dal.save_all(users):
-            app.logger.warning("not all users were saved")
+            current_app.logger.warning("not all users were saved")
             return
 
-        app.logger.debug(f"saved {len(users)} users\n{users}")
+        current_app.logger.debug(f"saved {len(users)} users\n{users}")

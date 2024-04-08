@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from onereport import app
+from flask import current_app
 from onereport.data import model
 from onereport.data import misc
 from onereport.dal import UserOrderBy, Order
@@ -15,7 +15,7 @@ def save(user: model.User, /) -> bool:
         model.db.session.add(user)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -29,7 +29,7 @@ def update(original: model.User, new: model.User, /) -> bool:
         original.update(new)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -43,7 +43,7 @@ def save_all(users: list[model.User], /) -> bool:
         model.db.session.add_all(users)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -57,7 +57,7 @@ def delete(user: model.User, /) -> bool:
         model.db.session.delete(user)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -72,11 +72,11 @@ def delete_all(users: list[model.User], /) -> bool:
             try:
                 model.db.session.delete(user)
             except SQLAlchemyError as se:
-                app.logger.error(f"{se}")
+                current_app.logger.error(f"{se}")
                 model.db.session.rollback()
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True

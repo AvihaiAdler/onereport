@@ -1,5 +1,5 @@
 from flask_sqlalchemy.pagination import Pagination
-from onereport import app
+from flask import current_app
 from onereport.dal import Order
 from onereport.data import model, misc
 import sqlalchemy
@@ -15,7 +15,7 @@ def save(report: model.Report, /) -> bool:
         model.db.session.add(report)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -29,7 +29,7 @@ def update(report: model.Report, presence: set[model.Personnel], /) -> bool:
         report.update(presence)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -43,7 +43,7 @@ def save_all(reports: list[model.Report], /) -> bool:
         model.db.session.add_all(reports)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -57,7 +57,7 @@ def delete(report: model.Report, /) -> bool:
         model.db.session.delete(report)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -72,11 +72,11 @@ def delete_all(reports: list[model.Report], /) -> bool:
             try:
                 model.db.session.delete(report)
             except SQLAlchemyError as se:
-                app.logger.error(f"{se}")
+                current_app.logger.error(f"{se}")
                 model.db.session.rollback()
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True

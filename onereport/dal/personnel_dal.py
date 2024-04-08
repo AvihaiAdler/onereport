@@ -1,6 +1,6 @@
 import datetime
 from typing import List, Tuple
-from onereport import app
+from flask import current_app
 from onereport.dal import PersonnelOrderBy, Order
 from onereport.data import model
 from onereport.data import misc
@@ -16,7 +16,7 @@ def save(personnel: model.Personnel, /) -> bool:
         model.db.session.add(personnel)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -30,7 +30,7 @@ def update(original: model.Personnel, new: model.Personnel, /) -> bool:
         original.update(new)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -44,7 +44,7 @@ def save_all(personnel: list[model.Personnel], /) -> bool:
         model.db.session.add_all(personnel)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -58,7 +58,7 @@ def delete(personnel: model.Personnel, /) -> bool:
         model.db.session.delete(personnel)
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
@@ -73,11 +73,11 @@ def delete_all(personnel: list[model.Personnel], /) -> bool:
             try:
                 model.db.session.delete(p)
             except SQLAlchemyError as se:
-                app.logger.error(f"{se}")
+                current_app.logger.error(f"{se}")
                 model.db.session.rollback()
         model.db.session.commit()
     except SQLAlchemyError as se:
-        app.logger.error(f"{se}")
+        current_app.logger.error(f"{se}")
         model.db.session.rollback()
         return False
     return True
