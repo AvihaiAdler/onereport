@@ -28,11 +28,11 @@ users = Blueprint("users", __name__)
 @users.route("/onereport/users/personnel", methods=["GET", "POST"])
 @login_required
 def get_all_personnel() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    order_by = request.args.get("order_by", default="ID")
+    order_by = request.args.get("order_by", default="LAST_NAME")
     order = request.args.get("order", default="ASC")
 
     form = forms.PersonnelListForm()
@@ -40,6 +40,9 @@ def get_all_personnel() -> str:
         personnel = users_service.get_all_personnel(
             form, current_user.company, order_by, order
         )
+        if request.method == "GET":
+            form.company.data = "F"
+        
         return render_template(
             "personnel/personnel_list.html",
             form=form,
@@ -55,7 +58,7 @@ def get_all_personnel() -> str:
 @users.route("/onereport/users/personnel/<id>/update", methods=["GET", "POST"])
 @login_required
 def update_personnel(id: str) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -94,7 +97,7 @@ def update_personnel(id: str) -> str:
 @users.route("/onereport/users/report", methods=["GET", "POST"])
 @login_required
 def create_report() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -127,7 +130,7 @@ def create_report() -> str:
 @users.get("/onereport/users/reports")
 @login_required
 def get_all_reports() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -140,7 +143,7 @@ def get_all_reports() -> str:
             current_user.company, order, page, per_page
         )
         return render_template(
-            "reports/reports.html", pagination=pagination, page=page, per_page=per_page
+            "reports/reports.html", current_company=current_user.company, pagination=pagination, page=page, per_page=per_page
         )
     except BadRequestError as be:
         flash(f"{be}", category="danger")
@@ -153,7 +156,7 @@ def get_all_reports() -> str:
 @users.get("/onereport/users/report/<int:id>")
 @login_required
 def get_report(id: int) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 

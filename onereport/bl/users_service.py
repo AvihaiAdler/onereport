@@ -5,7 +5,7 @@ from flask import request, current_app
 from flask_login import current_user
 from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.dto.report_dto import ReportDTO
-from onereport.data.misc import Company, Active
+from onereport.data.misc import Company, Active, Platoon
 from onereport.data.model import Personnel, Report
 from onereport.dal import personnel_dal, report_dal, Order, PersonnelOrderBy
 from onereport.exceptions import (
@@ -32,6 +32,10 @@ def get_all_personnel(
     if not Company.is_valid(company):
         current_app.logger.error(f"invalid company {company}")
         raise BadRequestError("פלוגה אינה תקינה")
+    
+    if form.is_submitted():
+        order_by = form.order_by.data
+        order = form.order.data
 
     if not PersonnelOrderBy.is_valid(order_by):
         current_app.logger.error(f"invalid order_by {order_by}")
@@ -40,11 +44,7 @@ def get_all_personnel(
     if not Order.is_valid(order):
         current_app.logger.error(f"invalid order {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
-
-    if form.validate_on_submit():
-        order_by = form.order_by.data
-        order = form.order.data
-
+    
     personnel = personnel_dal.find_all_active_personnel_by_company(
         Company[company], PersonnelOrderBy[order_by], Order[order]
     )
@@ -54,10 +54,6 @@ def get_all_personnel(
         raise NotFoundError(
             f"אין חיילים.ות במאגר השייכים לפלוגה {Company[company].value}"
         )
-
-    current_app.logger.debug(
-        f"passing {len(personnel)} personnel to personnel_list.html for {current_user}"
-    )
 
     return [PersonnelDTO(p) for p in personnel]
 
@@ -81,12 +77,20 @@ def update_personnel(form: PersonnelUpdateForm, id: str, /) -> PersonnelDTO:
         )
         raise NotFoundError(f"המס' האישי {id} אינו במסד הנתונים")
 
-    if form.validate_on_submit():
+    if form.is_submitted():
+        if not Active.is_valid(form.active.data):
+            current_app.logger.error(f"invalid active {form.active.data}")
+            raise BadRequestError("ערך פעיל אינו תקין")
+        
+        if not Platoon.is_valid(form.platoon.data):
+            current_app.logger.error(f"invalid company {form.platoon.data}")
+            raise BadRequestError("מחלקה אינה תקינה")
+        
         personnel = Personnel(
             old_personnel.id,
             form.first_name.data.strip(),
             form.last_name.data.strip(),
-            form.company.data,
+            current_user.company,
             form.platoon.data,
         )
 
