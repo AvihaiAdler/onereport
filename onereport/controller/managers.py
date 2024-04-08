@@ -1,7 +1,16 @@
 from onereport.bl import managers_service
 from onereport.controller import forms
 from onereport.data import misc
-from flask import Blueprint, url_for, redirect, flash, render_template, request, current_app, abort
+from flask import (
+    Blueprint,
+    url_for,
+    redirect,
+    flash,
+    render_template,
+    request,
+    current_app,
+    abort,
+)
 from flask_login import current_user, login_required
 from onereport.exceptions import (
     BadRequestError,
@@ -20,7 +29,7 @@ managers = Blueprint("managers", __name__)
 @managers.route("/onereport/managers/personnel/register", methods=["GET", "POST"])
 @login_required
 def register_personnel() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -48,7 +57,7 @@ def register_personnel() -> str:
 @managers.route("/onereport/managers/users/<id>/register", methods=["GET", "POST"])
 @login_required
 def register_user(id: str) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -67,7 +76,7 @@ def register_user(id: str) -> str:
 
         flash(
             f"המשתמש.ת {' '.join((personnel.first_name, personnel.last_name))} נרשמה בהצלחה",
-            category="success"
+            category="success",
         )
         return redirect(
             url_for(generate_url(current_user.role, "get_all_personnel"), id=id)
@@ -87,7 +96,7 @@ def register_user(id: str) -> str:
 @managers.route("/onereport/managers/personnel/<id>/update", methods=["GET", "POST"])
 @login_required
 def update_personnel(id: str) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -126,7 +135,7 @@ def update_personnel(id: str) -> str:
 @managers.route("/onereport/managers/users/<email>/update", methods=["GET", "POST"])
 @login_required
 def update_user(email: str) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -167,7 +176,7 @@ def update_user(email: str) -> str:
 @managers.route("/onereport/managers/users", methods=["GET", "POST"])
 @login_required
 def get_all_users() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -189,7 +198,7 @@ def get_all_users() -> str:
 @managers.route("/onereport/managers/personnel", methods=["GET", "POST"])
 @login_required
 def get_all_personnel() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -218,7 +227,7 @@ def get_all_personnel() -> str:
 @managers.route("/onereport/managers/report", methods=["GET", "POST"])
 @login_required
 def create_report() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -237,7 +246,13 @@ def create_report() -> str:
             )
 
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
-        return redirect(url_for(generate_url(current_user.role, "create_report"), order_by=order_by, order=order))
+        return redirect(
+            url_for(
+                generate_url(current_user.role, "create_report"),
+                order_by=order_by,
+                order=order,
+            )
+        )
     except BadRequestError as be:
         flash(f"{be}", category="danger")
     except NotFoundError as ne:
@@ -251,7 +266,7 @@ def create_report() -> str:
 @managers.get("/onereport/managers/reports")
 @login_required
 def get_all_reports() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -282,7 +297,7 @@ def get_all_reports() -> str:
 @managers.get("/onereport/managers/report/<int:id>")
 @login_required
 def get_report(id: int) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -296,4 +311,6 @@ def get_report(id: int) -> str:
     except NotFoundError as ne:
         flash(f"{ne}", category="info")
 
-    return redirect(url_for(generate_url(current_user.role, "get_all_reports"), company=company))
+    return redirect(
+        url_for(generate_url(current_user.role, "get_all_reports"), company=company)
+    )

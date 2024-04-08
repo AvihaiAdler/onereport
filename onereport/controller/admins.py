@@ -1,5 +1,6 @@
 from onereport.controller import forms
 from onereport.bl import admins_service
+from onereport.data import misc
 from onereport.controller.util import not_permitted
 from flask import (
     abort,
@@ -20,7 +21,7 @@ admins = Blueprint("admins", __name__)
 @admins.route("/onereport/admins/personnel/register", methods=["GET", "POST"])
 @login_required
 def register_personnel() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -30,7 +31,7 @@ def register_personnel() -> str:
 @admins.route("/onereport/admins/users/<id>/register", methods=["GET", "POST"])
 @login_required
 def register_user(id: str) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -40,7 +41,7 @@ def register_user(id: str) -> str:
 @admins.route("/onereport/admins/personnel/<id>/update", methods=["GET", "POST"])
 @login_required
 def update_personnel(id: str) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -50,7 +51,7 @@ def update_personnel(id: str) -> str:
 @admins.route("/onereport/admins/users/<email>/update", methods=["GET", "POST"])
 @login_required
 def update_user(email: str) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -62,7 +63,7 @@ def update_user(email: str) -> str:
 @admins.route("/onereport/admins/users", methods=["GET", "POST"])
 @login_required
 def get_all_users() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -83,12 +84,12 @@ def get_all_users() -> str:
 @admins.route("/onereport/admins/personnel", methods=["GET", "POST"])
 @login_required
 def get_all_personnel() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
     order_by = request.args.get("order_by", default="LAST_NAME")
-    order = request.args.get("order", "ASC")
+    order = request.args.get("order", default="ASC")
 
     form = forms.PersonnelListForm()
     try:
@@ -114,7 +115,7 @@ def get_all_personnel() -> str:
 @admins.route("/onereport/admins/report", methods=["GET", "POST"])
 @login_required
 def create_report() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
     return redirect(url_for("managers.create_report"))
@@ -123,7 +124,7 @@ def create_report() -> str:
 @admins.get("/onereport/admins/reports")
 @login_required
 def get_all_reports() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -146,7 +147,7 @@ def get_all_reports() -> str:
 @admins.get("/onereport/admins/report/<int:id>")
 @login_required
 def get_report(id: int) -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -164,7 +165,7 @@ def get_report(id: int) -> str:
 @admins.route("/onereport/admins/personnel/upload", methods=["GET", "POST"])
 @login_required
 def upload_personnel() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -184,7 +185,7 @@ def upload_personnel() -> str:
 @admins.get("/onereport/admins/report/delete")
 @login_required
 def delete_all_reports() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
@@ -198,7 +199,7 @@ def delete_all_reports() -> str:
 @admins.get("/onereport/admins/personnel/delete")
 @login_required
 def delete_all_personnel() -> str:
-    if not_permitted(current_user.role):
+    if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
