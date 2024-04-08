@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-  {% from "form_helper.html" import render_field %}
+  {% from "util.html" import render_field %}
   <form method="POST" , class="form-inline">
     {{ form.hidden_tag() }}
     <fieldset>
