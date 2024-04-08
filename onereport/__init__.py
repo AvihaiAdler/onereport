@@ -20,17 +20,7 @@ def create_logger(logger_config: str="logger.json", /) -> None:
     logging.config.dictConfig(config)
     
 
-def create_app(config: Config = Config, /) -> flask.Flask:
-    # since its a relative path - a better solution should be in place
-    if not dotenv.load_dotenv("resources/.env"):
-        logging.error("failed to load environment variables")
-        exit(1)
-    
-    create_logger(os.environ.get("LOGGING_CONFIG"))
-    
-    app = flask.Flask(__name__)
-    app.config.from_object(config)
-
+def register_filters(app: flask.Flask, /) -> None:
     @app.template_filter()
     def generate_urlstr(role_name: str, urlstr: str) -> str:
         return f"{role_name.lower()}s.{urlstr}"
@@ -67,6 +57,17 @@ def create_app(config: Config = Config, /) -> flask.Flask:
         )
 
 
+def create_app(config: Config = Config, /) -> flask.Flask:
+    # since its a relative path - a better solution should be in place
+    if not dotenv.load_dotenv("resources/.env"):
+        logging.error("failed to load environment variables")
+        exit(1)
+    
+    create_logger(os.environ.get("LOGGING_CONFIG"))
+    
+    app = flask.Flask(__name__)
+    app.config.from_object(config)
+
     model.db.init_app(app=app)
     model.login_manager.init_app(app=app)
 
@@ -82,5 +83,7 @@ def create_app(config: Config = Config, /) -> flask.Flask:
     app.register_blueprint(auth)
     app.register_blueprint(managers)
     app.register_blueprint(admins)
+    
+    register_filters(app)
     
     return app
