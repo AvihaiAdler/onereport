@@ -1,7 +1,8 @@
 from onereport.controller import forms
 from onereport.bl import admins_service
+from onereport.dal.order_attr import Order, PersonnelOrderBy, UserOrderBy
 from onereport.data import misc
-from onereport.controller.util import not_permitted
+from onereport.controller.util import generate_url, not_permitted
 from flask import (
     abort,
     url_for,
@@ -25,7 +26,7 @@ def register_personnel() -> str:
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    return redirect(url_for("managers.register_personnel"))
+    return redirect(url_for(generate_url(misc.Role.MANAGER.name, "register_personnel")))
 
 
 @admins.route("/onereport/admins/users/<id>/register", methods=["GET", "POST"])
@@ -35,7 +36,9 @@ def register_user(id: str) -> str:
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    return redirect(url_for("managers.register_user", id=id))
+    return redirect(
+        url_for(generate_url(misc.Role.MANAGER.name, "register_user"), id=id)
+    )
 
 
 @admins.route("/onereport/admins/personnel/<id>/update", methods=["GET", "POST"])
@@ -45,7 +48,9 @@ def update_personnel(id: str) -> str:
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    return redirect(url_for("managers.update_personnel", id=id))
+    return redirect(
+        url_for(generate_url(misc.Role.MANAGER.name, "update_personnel"), id=id)
+    )
 
 
 @admins.route("/onereport/admins/users/<email>/update", methods=["GET", "POST"])
@@ -55,11 +60,11 @@ def update_user(email: str) -> str:
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    return redirect(url_for("managers.update_user", email=email))
+    return redirect(
+        url_for(generate_url(misc.Role.MANAGER.name, "update_user"), email=email)
+    )
 
 
-# TODO:
-# pagination
 @admins.route("/onereport/admins/users", methods=["GET", "POST"])
 @login_required
 def get_all_users() -> str:
@@ -67,8 +72,8 @@ def get_all_users() -> str:
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    order_by = request.args.get("order_by", default="COMPANY")
-    order = request.args.get("order", "ASC")
+    order_by = request.args.get("order_by", default=UserOrderBy.COMPANY.name)
+    order = request.args.get("order", default=Order.ASC.name)
 
     try:
         users = admins_service.get_all_users(order_by, order)
@@ -88,8 +93,8 @@ def get_all_personnel() -> str:
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    order_by = request.args.get("order_by", default="LAST_NAME")
-    order = request.args.get("order", default="ASC")
+    order_by = request.args.get("order_by", default=PersonnelOrderBy.LAST_NAME.name)
+    order = request.args.get("order", default=Order.ASC.name)
 
     form = forms.PersonnelListForm()
     try:
@@ -118,7 +123,16 @@ def create_report() -> str:
     if not_permitted(current_user.role, misc.Role.ADMIN):
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
-    return redirect(url_for("managers.create_report"))
+
+    order_by = request.args.get("order_by", default=PersonnelOrderBy.LAST_NAME.name)
+    order = request.args.get("order", default=Order.ASC.name)
+    return redirect(
+        url_for(
+            generate_url(misc.Role.MANAGER.name, "create_report"),
+            order_by=order_by,
+            order=order,
+        )
+    )
 
 
 @admins.get("/onereport/admins/reports")
@@ -129,13 +143,13 @@ def get_all_reports() -> str:
         abort(401)
 
     company = request.args.get("company", default=current_user.company)
-    order = request.args.get("order", default="DESC")
+    order = request.args.get("order", default=Order.DESC.name)
     page = request.args.get("page", "1")
     per_page = request.args.get("per_page", "20")
 
     return redirect(
         url_for(
-            "managers.get_all_reports",
+            generate_url(misc.Role.MANAGER.name, "get_all_reports"),
             company=company,
             order=order,
             page=page,
@@ -155,9 +169,50 @@ def get_report(id: int) -> str:
 
     return redirect(
         url_for(
-            "managers.get_report",
+            generate_url(misc.Role.MANAGER.name, "get_report"),
             id=id,
             company=company,
+        )
+    )
+
+
+@admins.get("onereport/admins/reports/unified")
+@login_required
+def get_all_unified_reports() -> str:
+    if not_permitted(current_user.role, misc.Role.ADMIN):
+        current_app.logger.warning(f"unauthorized access by {current_user}")
+        abort(401)
+
+    order = request.args.get("order", Order.DESC.name)
+    page = request.args.get("page", "1")
+    per_page = request.args.get("per_page", "20")
+
+    return redirect(
+        url_for(
+            generate_url(misc.Role.MANAGER.name, "get_all_unified_reports"),
+            order=order,
+            page=page,
+            per_pageg=per_page,
+        )
+    )
+
+
+@admins.get("/onereport/admins/report/unified/<date>")
+@login_required
+def get_unified_report(date: str) -> str:
+    if not_permitted(current_user.role, misc.Role.ADMIN):
+        current_app.logger.warning(f"unauthorized access by {current_user}")
+        abort(401)
+
+    order_by = request.args.get("order_by", default=PersonnelOrderBy.LAST_NAME.name)
+    order = request.args.get("order", default=Order.ASC.name)
+
+    return redirect(
+        url_for(
+            generate_url(misc.Role.MANAGER.name, "get_unified_report"),
+            date=date,
+            order_by=order_by,
+            order=order,
         )
     )
 

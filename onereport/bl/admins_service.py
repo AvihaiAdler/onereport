@@ -44,8 +44,7 @@ def get_all_personnel(
 ) -> list[PersonnelDTO]:
     """
     Raises:
-        BadRequestError,
-        NotFoundError
+        BadRequestError
     """
     if form is None:
         current_app.logger.error(f"invalid form {form}")
@@ -73,7 +72,6 @@ def get_all_personnel(
     )
     if not personnel:
         current_app.logger.warning(f"there are no personnel for company {company}")
-        # raise NotFoundError(f"לא נמצאו חיילים.ות עבור פלוגה {Company[company].value}")
 
     return [PersonnelDTO(p) for p in personnel]
 

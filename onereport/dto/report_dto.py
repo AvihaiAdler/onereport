@@ -1,3 +1,4 @@
+import datetime
 from typing import Self
 from onereport.data import misc, model
 from onereport.dto.personnel_dto import PersonnelDTO
@@ -11,3 +12,11 @@ class ReportDTO():
     
   def __repr__(self: Self) -> str:
     return f"Report(id: {self.id}, date: {self.date}, company: {self.company})"
+  
+  
+  
+class UnifiedReportDTO():
+  def __init__(self: Self, date: datetime.date, presence: set[model.Personnel], personnel: list[model.Personnel], /) -> None:
+    self.date = date
+    self.presence = [(PersonnelDTO(p), p in presence) for p in personnel]
+    

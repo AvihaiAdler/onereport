@@ -1,11 +1,12 @@
 
+from time import strptime
 from flask_sqlalchemy.pagination import Pagination
 from flask import request, current_app
 from flask_login import current_user
 from onereport.data.misc import Active, Company, Role
 from onereport.data.model import Personnel, User, Report
 from onereport.dto.personnel_dto import PersonnelDTO
-from onereport.dto.report_dto import ReportDTO
+from onereport.dto.report_dto import UnifiedReportDTO, ReportDTO
 from onereport.dto.user_dto import UserDTO
 from onereport.dal import (
     personnel_dal,
@@ -455,11 +456,41 @@ def get_report(id: str, company: str, /) -> ReportDTO:
     return ReportDTO(report, personnel)
 
 
-def get_all_reports(company: str, order: str, page: str, per_page: str, /) -> Pagination:
+def get_unified_report(date: str, order_by: str, order: str, /) -> UnifiedReportDTO:
+    if not PersonnelOrderBy.is_valid(order_by):
+        current_app.logger.error(f"invalid order_by {order_by}")
+        raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
+
+    if not Order.is_valid(order):
+        current_app.logger.error(f"invalid order {order}")
+        raise BadRequestError(f"סדר {order} אינו נתמך")
+    
+    date = strptime(date, "%d/%m/%Y") # TODO: check for exceptions
+    reports = report_dal.find_all_reports_by_date(date)
+    if reports is None:
+        current_app.logger.error(
+            f"{current_user} tried to get a non existing report with for date{date}"
+        )
+        raise NotFoundError(f"לא נמצאו דוחות לתאריך {date.strftime("%d/%m/%Y")}")
+    
+    personnel = personnel_dal.find_all_personnel_dated_before(date, PersonnelOrderBy[order_by], Order[order])
+    if personnel is None:
+        current_app.logger.debug(
+            f"personnel registered prior to {date} for {current_user}"
+        )
+        raise NotFoundError(
+            f"אין חיילים רשומים במאגר עד תאריך {date}"
+        )
+    
+    # couldn't think of something smarter
+    presence = {personnel for report in reports for personnel in report.presence}
+    return UnifiedReportDTO(date, presence,personnel)
+
+
+def get_all_reports_for(company: str, order: str, page: str, per_page: str, /) -> Pagination:
     """
     Raises:
-        BadRequestError,
-        NotFoundError:
+        BadRequestError
     """
     if not Company.is_valid(company):
         current_app.logger.error(f"invalid company {company} for {current_user}")
@@ -477,11 +508,37 @@ def get_all_reports(company: str, order: str, page: str, per_page: str, /) -> Pa
     try:
         int(per_page)
     except ValueError:
-        raise BadRequestError(f"הערך {page} עבור כמות עצמים בדף הינו שגוי")
+        raise BadRequestError(f"הערך {per_page} עבור כמות עצמים בדף הינו שגוי")
 
     reports = report_dal.find_all_reports_by_company(Company[company], Order[order], int(page), int(per_page))
     if not reports.items:
         current_app.logger.debug(f"no visible reports for company {company} for {current_user}")
-        # raise NotFoundError(f"לא נמצאו דוחות עבור פלוגה {Company[company].value}")
+
+
+    return reports
+
+
+def get_all_reports(order: str, page: str, per_page: str, /) -> Pagination:
+    """
+    Raises:
+        BadRequestError
+    """
+    if not Order.is_valid(order):
+        current_app.logger.error(f"invalid order {order}")
+        raise BadRequestError(f"סדר {order} אינו נתמך")
+    
+    try:
+        int(page)
+    except ValueError:
+        raise BadRequestError(f"הערך {page} עבור דף הינו שגוי")
+
+    try:
+        int(per_page)
+    except ValueError:
+        raise BadRequestError(f"הערך {per_page} עבור כמות עצמים בדף הינו שגוי")
+    
+    reports = report_dal.find_all_distinct_reports(order, int(page), int(per_page))
+    if not reports.items:
+        current_app.logger.debug(f"no visible reports across all companies for {current_user}")
 
     return reports
