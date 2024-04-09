@@ -31,3 +31,12 @@ class PersonnelOrderBy(Enum):
     @staticmethod
     def is_valid(order: str) -> bool:
         return order in PersonnelOrderBy._member_names_
+    
+    
+class ReportOrderBy(Enum):
+    ID = "מס' זיהוי"
+    DATE = "תאריך"
+    
+    @staticmethod
+    def is_valid(order: str) -> bool:
+        return order in ReportOrderBy._member_names_
