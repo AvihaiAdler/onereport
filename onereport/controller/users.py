@@ -1,5 +1,6 @@
 from onereport.controller import forms
 from onereport.controller.util import not_permitted
+from onereport.dal.order_attr import Order, PersonnelOrderBy
 from onereport.data import misc
 from onereport.bl import users_service
 from onereport.exceptions import (
@@ -32,8 +33,8 @@ def get_all_personnel() -> str:
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    order_by = request.args.get("order_by", default="LAST_NAME")
-    order = request.args.get("order", default="ASC")
+    order_by = request.args.get("order_by", default=PersonnelOrderBy.LAST_NAME.name)
+    order = request.args.get("order", default=Order.ASC.name)
 
     form = forms.PersonnelListForm()
     try:
@@ -101,8 +102,8 @@ def create_report() -> str:
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    order_by = request.args.get("order_by", "LAST_NAME")
-    order = request.args.get("order", "ASC")
+    order_by = request.args.get("order_by", default=PersonnelOrderBy.LAST_NAME.name)
+    order = request.args.get("order", default=Order.ASC.name)
 
     form = forms.UpdateReportForm()
     try:
@@ -134,7 +135,7 @@ def get_all_reports() -> str:
         current_app.logger.warning(f"unauthorized access by {current_user}")
         abort(401)
 
-    order = request.args.get("order", default="DESC")
+    order = request.args.get("order", default=Order.DESC.name)
     page = request.args.get("page", "1")
     per_page = request.args.get("per_page", "20")
 
