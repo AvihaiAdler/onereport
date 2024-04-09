@@ -63,7 +63,11 @@
             </a>
             <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_reports" )) }}
               class="link-underline link-underline-opacity-0">
-              <li class="list-group-item list-group-item-light hover">כל הדוחו"ת</li>
+              <li class="list-group-item list-group-item-light hover">כל הדוחו"ת - מחולק</li>
+            </a>
+            <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_unified_reports" )) }}
+              class="link-underline link-underline-opacity-0">
+              <li class="list-group-item list-group-item-light hover">כל הדוחו"ת - מאוחד</li>
             </a>
           </ul>
           </p>
