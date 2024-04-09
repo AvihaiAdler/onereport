@@ -3,9 +3,9 @@ import click
 from onereport.data.model import db, User, Personnel
 from onereport.dal import personnel_dal, user_dal
 from flask.cli import FlaskGroup  
-from onereport import create_app  
+from onereport import create_app
 
-cli = FlaskGroup(create_app=create_app)
+cli = FlaskGroup(create_app=create_app, load_dotenv=True)
 
 
 def user_converter(_json: dict[str, str], /) -> User:
@@ -96,5 +96,5 @@ def main() -> None:
     cli()
 
 
-if __name__ == "__main___":
+if __name__ == "__main__":
     main()
