@@ -144,6 +144,11 @@ def dict_to_user(user_dict: dict[str]) -> User | None:
 
 
 def upload_personnel(form: UploadPersonnelForm) -> None:
+    """
+    Raises:
+        BadRequestError,
+        InternalServerError
+    """
     if form is None:
         current_app.logger.error(f"invalid form {form}")
         raise BadRequestError("form must not be None")
