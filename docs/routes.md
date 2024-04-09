@@ -21,39 +21,43 @@ The routes are used to authenticate the user.
 | authenticating against the provider   | GET     | `/onereport/callback/<provider>`  |
 
 ##### Users
-| Description                           | methods   | URL                                      | Query pamaeters |
-| ------------------------------------- | --------- | ---------------------------------------- | --------------- |
-| get all active personnel in a company | GET, POST | `/onereport/users/personnel`             | order_by, order |
-| update a personnel in a company       | GET, POST | `/onereport/users/personnel/<id>/update` |                 |
-| create a report for a company         | GET, POST | `/onereport/users/report`                | order_by, order |
-| get all reports of a company          | GET       | `/onereport/users/reports`               | order           |
-| get a report                          | GET       | `/onereport/users/report/<id>`           |                 |
+| Description                           | methods   | URL                                      | Query pamaeters       |
+| ------------------------------------- | --------- | ---------------------------------------- | --------------------- |
+| get all active personnel in a company | GET, POST | `/onereport/users/personnel`             | order_by, order       |
+| update a personnel in a company       | GET, POST | `/onereport/users/personnel/<id>/update` |                       |
+| create a report for a company         | GET, POST | `/onereport/users/report`                | order_by, order       |
+| get all reports of a company          | GET       | `/onereport/users/reports`               | order, page, per_page |
+| get a report                          | GET       | `/onereport/users/report/<id>`           |                       |
 
 ##### Managers
-| Description                           | methods   | URL                                         | Query pamaeters |
-| ------------------------------------- | --------- | ------------------------------------------- | --------------- |
-| register a personnel                  | GET, POST | `/onereport/managers/personnel/register`    |                 |
-| register a user                       | GET, POST | `/onereport/managers/users/<id>/register`   |                 |
-| update a personnel                    | GET, POST | `/onereport/managers/personnel/<id>/update` |                 |
-| update a user                         | GET, POST | `/onereport/managers/users/<email>/update`  |                 |
-| get all active users                  | GET, POST | `/onereport/managers/users`                 | order_by, order |
-| get all active personnel of a company | GET, POST | `/onereport/managers/personnel`             | order_by, order |
-| create a report for a company         | GET, POST | `/onereport/managers/report`                | order_by, order |
-| get all reports for a company         | GET       | `/onereport/managers/reports`               | company, order  |
-| get a report                          | GET       | `/onereport/managers/report/<id>`           | company         |
+| Description                           | methods   | URL                                         | Query pamaeters                 |
+| ------------------------------------- | --------- | ------------------------------------------- | ------------------------------- |
+| register a personnel                  | GET, POST | `/onereport/managers/personnel/register`    |                                 |
+| register a user                       | GET, POST | `/onereport/managers/users/<id>/register`   |                                 |
+| update a personnel                    | GET, POST | `/onereport/managers/personnel/<id>/update` |                                 |
+| update a user                         | GET, POST | `/onereport/managers/users/<email>/update`  |                                 |
+| get all active users                  | GET, POST | `/onereport/managers/users`                 | order_by, order                 |
+| get all active personnel of a company | GET, POST | `/onereport/managers/personnel`             | order_by, order                 |
+| create a report for a company         | GET, POST | `/onereport/managers/report`                | order_by, order                 |
+| get all reports for a company         | GET       | `/onereport/managers/reports`               | company, order, page, page_page |
+| get all unified reports               | GET       | `/onereport/managers/reports/unified`       | order, page, per_page           |
+| get a report                          | GET       | `/onereport/managers/report/<id>`           | company                         |
+| get a unified report                  | GET       | `/onereport/managers/report/unified/<date>` | order_by, order                 |
 
 ##### Admins
-| Description                    | methods   | URL                                       | Query pamaeters |
-| ------------------------------ | --------- | ----------------------------------------- | --------------- |
-| register a personnel           | GET, POST | `/onereport/admins/personnel/register`    |                 |
-| register a user                | GET, POST | `/onereport/admins/users/<id>/register`   |                 |
-| update a personnel             | GET, POST | `/onereport/admins/personnel/<id>/updat`e |                 |
-| update a user                  | GET, POST | `/onereport/admins/users/<email>/update`  |                 |
-| get all users                  | GET, POST | `/onereport/admins/users`                 | order_by, order |
-| get all personnel of a company | GET, POST | `/onereport/admins/personnel`             | order_by, order |
-| create a report for a company  | GET, POST | `/onereport/admins/report`                | order_by, order |
-| get all reports for a company  | GET       | `/onereport/admins/reports`               | company, order  |
-| get a report                   | GET       | `/onereport/admins/report/<id>`           | company         |
-| delete all reports             | GET       | `/onereport/admins/report/delete`         |                 |
-| delete all personnel           | GET       | `/onereport/admins/personnel/delete`      |                 |
-| add personnel                  | GET, POST | `/onereport/admins/personnel/upload`      |                 |
+| Description                    | methods   | URL                                       | Query pamaeters                |
+| ------------------------------ | --------- | ----------------------------------------- | ------------------------------ |
+| register a personnel           | GET, POST | `/onereport/admins/personnel/register`    |                                |
+| register a user                | GET, POST | `/onereport/admins/users/<id>/register`   |                                |
+| update a personnel             | GET, POST | `/onereport/admins/personnel/<id>/update` |                                |
+| update a user                  | GET, POST | `/onereport/admins/users/<email>/update`  |                                |
+| get all users                  | GET, POST | `/onereport/admins/users`                 | order_by, order                |
+| get all personnel of a company | GET, POST | `/onereport/admins/personnel`             | order_by, order                |
+| create a report for a company  | GET, POST | `/onereport/admins/report`                | order_by, order                |
+| get all reports for a company  | GET       | `/onereport/admins/reports`               | company, order, page, per_page |
+| get all unified reports        | GET       | `/onereport/admins/reports/unified`       | order, page, per_page          |
+| get a report                   | GET       | `/onereport/admins/report/<id>`           | company                        |
+| get a unified report           | GET       | `/onereport/admins/report/unified/<date>` | order_by, order                |
+| delete all reports             | GET       | `/onereport/admins/report/delete`         |                                |
+| delete all personnel           | GET       | `/onereport/admins/personnel/delete`      |                                |
+| add personnel                  | GET, POST | `/onereport/admins/personnel/upload`      |                                |
