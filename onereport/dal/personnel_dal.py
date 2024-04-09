@@ -169,3 +169,11 @@ def find_all_personnel_by_company_dated_before(
         .filter(model.Personnel.company == company.name)
         .filter(model.Personnel.date_added <= date)
     ).all()
+
+
+def find_all_personnel_dated_before(
+    date: datetime.date, order_by: PersonnelOrderBy, order: Order, /
+) -> list[model.Personnel]:
+    return model.db.session.scalars(
+        construct_statement(order_by, order).filter(model.Personnel.date_added <= date)
+    ).all()
