@@ -305,7 +305,7 @@ def get_all_unified_reports() -> str:
     try:
         pagination = managers_service.get_all_reports(order, page, per_page)
         return render_template(
-            "reports/reports_unified.html",
+            "reports/unified_reports.html",
             pagination=pagination,
             page=page,
             per_page=per_page,
@@ -350,7 +350,7 @@ def get_unified_report(date: str) -> str:
     try:
         report = managers_service.get_unified_report(date, order_by, order)
         return render_template(
-            "reports/uneditable_report_unified.html", report=report
+            "reports/unified_report.html", report=report
         )
     except BadRequestError as be:
         flash(f"{be}", category="danger")
@@ -358,5 +358,5 @@ def get_unified_report(date: str) -> str:
         flash(f"{ne}", category="info")
 
     return redirect(
-        url_for(generate_url(current_user.role, "get_all_reports_alternate"))
+        url_for(generate_url(current_user.role, "get_all_unified_reports"))
     )

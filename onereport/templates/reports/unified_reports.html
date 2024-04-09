@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  <div class="container content-section">
+    {% for report in pagination.items %}
+      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_unified_report" ), id=report.date ) }}
+        class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }} hover-row">
+        <div class="">{{ report.date.strftime("%d/%m/%Y") }}</div>
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="d-flex justify-content-center">
+    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+      {% if page_num %}
+        {% if pagination.page == page_num %}
+          <a class="btn btn-sm btn-info mb-4">{{ page_num }}</a>
+        {% else %}
+          <a class="btn btn-sm btn-outline-info mb-4" href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_unified_reports" ), page=page_num, per_page=per_page) }}>{{ page_num }}</a>
+        {% endif %}
+      {% else %}
+        ...
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row fs-6">
+  <p>{{ report.date.strftime("%d/%m/%Y") }}</p>
+</div>
+<div class="containter content-section">
+  <div class="row heading">
+    <div class="col-sm-2 border-start d-flex justify-content-center">מס' אישי</div>
+    <div class="col-sm-3 border-start d-flex justify-content-center">שם משפחה</div>
+    <div class="col-sm-3 border-start d-flex justify-content-center">שם פרטי</div>
+    <div class="col-sm-2 border-start d-flex justify-content-center">פלוגה</div>
+    <div class="col-sm-1 border-start d-flex justify-content-center">מחלקה</div>
+    <div class="col-sm-1 d-flex justify-content-center">נוכח.ת</div>
+  </div>
+
+  {% for personnel, presence in report.presence %}
+  <div class="row {{ loop.cycle('even', 'odd' )}}">
+    <div class="col-sm-2 border-start d-flex justify-content-center">{{ personnel.id }}</div>
+    <div class="col-sm-3 border-start d-flex justify-content-center">{{ personnel.last_name }}</div>
+    <div class="col-sm-3 border-start d-flex justify-content-center">{{ personnel.first_name }}</div>
+    <div class="col-sm-2 border-start d-flex justify-content-center">{{ personnel.company }}</div>
+    <div class="col-sm-1 border-start d-flex justify-content-center">{{ personnel.platoon }}</div>
+    <div class="col-sm-1 form-check d-flex justify-content-center">
+      <input type="checkbox" class="form-check-input border-3" name={{ personnel.id }} {{ presence|is_present }} disabled>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
