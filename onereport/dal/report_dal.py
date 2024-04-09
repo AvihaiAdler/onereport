@@ -152,7 +152,7 @@ def find_all_distinct_reports(
     return model.db.paginate(
         sqlalchemy.select(model.Report)
         .filter(model.Report.presence.any())
-        .distinct(model.Report.date)  # TODO: ?
+        .distinct(model.Report.date)  # only works for postgres!
         .order_by(
             sqlalchemy.asc(model.Report.date)
             if order == Order.ASC
