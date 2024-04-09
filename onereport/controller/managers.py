@@ -19,7 +19,6 @@ from onereport.exceptions import (
     InternalServerError,
     NotFoundError,
 )
-
 import datetime
 from onereport.controller.util import generate_url, not_permitted
 
@@ -44,15 +43,14 @@ def register_personnel() -> str:
             f"החייל.ת {' '.join((personnel.first_name, personnel.last_name))} נוסף.ה בהצלחה",
             category="success",
         )
-        return redirect(url_for("common.home"))
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except ForbiddenError as fe:
-        flash(f"{fe}", category="info")
+        return render_template("errors/error.html", error=fe)
     except InternalServerError as ie:
-        flash(f"{ie}", category="danger")
+        return render_template("errors/error.html", error=ie)
 
-    return redirect(url_for(generate_url(current_user.role, "register_personnel")))
+    return redirect(url_for("common.home"))
 
 
 @managers.route("/onereport/managers/users/<id>/register", methods=["GET", "POST"])
@@ -79,19 +77,18 @@ def register_user(id: str) -> str:
             f"המשתמש.ת {' '.join((personnel.first_name, personnel.last_name))} נרשמה בהצלחה",
             category="success",
         )
-        return redirect(
-            url_for(generate_url(current_user.role, "get_all_personnel"), id=id)
-        )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="danger")
+        return render_template("errors/error.html", error=ne)
     except ForbiddenError as fe:
-        flash(f"{fe}", category="info")
+        return render_template("errors/error.html", error=fe)
     except InternalServerError as ie:
-        flash(f"{ie}", category="danger")
+        return render_template("errors/error.html", error=ie)
 
-    return redirect(url_for("common.home"))
+    return redirect(
+        url_for(generate_url(current_user.role, "get_all_personnel"), id=id)
+    )
 
 
 @managers.route("/onereport/managers/personnel/<id>/update", methods=["GET", "POST"])
@@ -122,13 +119,13 @@ def update_personnel(id: str) -> str:
             category="success",
         )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="danger")
+        return render_template("errors/error.html", error=ne)
     except ForbiddenError as fe:
-        flash(f"{fe}", category="info")
+        return render_template("errors/error.html", error=fe)
     except InternalServerError as ie:
-        flash(f"{ie}", category="danger")
+        return render_template("errors/error.html", error=ie)
 
     return redirect(url_for(generate_url(current_user.role, "get_all_personnel")))
 
@@ -161,13 +158,13 @@ def update_user(email: str) -> str:
             category="success",
         )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="info")
+        return render_template("errors/error.html", error=ne)
     except ForbiddenError as fe:
-        flash(f"{fe}", category="info")
+        return render_template("errors/error.html", error=fe)
     except InternalServerError as ie:
-        flash(f"{ie}", category="danger")
+        return render_template("errors/error.html", error=ie)
 
     return redirect(url_for(generate_url(current_user.role, "get_all_users")))
 
@@ -186,10 +183,9 @@ def get_all_users() -> str:
         users = managers_service.get_all_users(order_by, order)
         return render_template("users/users.html", users=users)
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="info")
-    return redirect(url_for("common.home"))
+        return render_template("errors/error.html", error=ne)
 
 
 @managers.route("/onereport/managers/personnel", methods=["GET", "POST"])
@@ -214,11 +210,9 @@ def get_all_personnel() -> str:
             "personnel/personnel_list.html", form=form, personnel=personnel
         )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="info")
-
-    return redirect(url_for("common.home"))
+        return render_template("errors/error.html", error=ne)
 
 
 @managers.route("/onereport/managers/report", methods=["GET", "POST"])
@@ -243,21 +237,20 @@ def create_report() -> str:
             )
 
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
-        return redirect(
-            url_for(
-                generate_url(current_user.role, "create_report"),
-                order_by=order_by,
-                order=order,
-            )
-        )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="info")
+        return render_template("errors/error.html", error=ne)
     except InternalServerError as ie:
-        flash(f"{ie}", category="danger")
+        return render_template("errors/error.html", error=ie)
 
-    return redirect(url_for("common.home"))
+    return redirect(
+        url_for(
+            generate_url(current_user.role, "create_report"),
+            order_by=order_by,
+            order=order,
+        )
+    )
 
 
 @managers.get("/onereport/managers/reports")
@@ -287,11 +280,10 @@ def get_all_reports() -> str:
             per_page=per_page,
         )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
-    return redirect(url_for("common.home"))
+        return render_template("errors/error.html", error=be)
 
 
-@managers.get("onereport/managers/reports/unified")
+@managers.get("/onereport/managers/reports/unified")
 @login_required
 def get_all_unified_reports() -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
@@ -311,8 +303,7 @@ def get_all_unified_reports() -> str:
             per_page=per_page,
         )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
-    return redirect(url_for("common.home"))
+        return render_template("errors/error.html", error=be)
 
 
 @managers.get("/onereport/managers/report/<int:id>")
@@ -328,13 +319,9 @@ def get_report(id: int) -> str:
         report = managers_service.get_report(id, company)
         return render_template("reports/uneditable_report.html", report=report)
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="info")
-
-    return redirect(
-        url_for(generate_url(current_user.role, "get_all_reports"), company=company)
-    )
+        return render_template("errors/error.html", error=ne)
 
 
 @managers.get("/onereport/managers/report/unified/<date>")
@@ -349,14 +336,10 @@ def get_unified_report(date: str) -> str:
 
     try:
         report = managers_service.get_unified_report(date, order_by, order)
-        return render_template(
-            "reports/unified_report.html", report=report
-        )
+        return render_template("reports/unified_report.html", report=report)
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="info")
-
-    return redirect(
-        url_for(generate_url(current_user.role, "get_all_unified_reports"))
-    )
+        return render_template("errors/error.html", error=ne)
+    except InternalServerError as ie:
+        return render_template("errors/error.html", error=ie)

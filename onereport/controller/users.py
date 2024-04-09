@@ -43,17 +43,16 @@ def get_all_personnel() -> str:
         )
         if request.method == "GET":
             form.company.data = "F"
-        
+
         return render_template(
             "personnel/personnel_list.html",
             form=form,
             personnel=personnel,
         )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="info")
-    return redirect(url_for("common.home"))
+        return render_template("errors/error.html", error=ne)
 
 
 @users.route("/onereport/users/personnel/<id>/update", methods=["GET", "POST"])
@@ -85,13 +84,14 @@ def update_personnel(id: str) -> str:
             category="success",
         )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="danger")
+        return render_template("errors/error.html", error=ne)
     except ForbiddenError as fe:
-        flash(f"{fe}", category="danger")
+        return render_template("errors/error.html", error=fe)
     except InternalServerError as ie:
-        flash(f"{ie}", category="danger")
+        return render_template("errors/error.html", error=ie)
+
     return redirect(url_for("users.get_all_personnel"))
 
 
@@ -119,13 +119,11 @@ def create_report() -> str:
         flash(f"הדוח ליום {datetime.date.today()} נשלח בהצלחה", category="success")
         return redirect(url_for("users.create_report", order_by=order_by, order=order))
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="danger")
+        return render_template("errors/error.html", error=ne)
     except InternalServerError as ie:
-        flash(f"{ie}", category="danger")
-
-    return redirect(url_for("common.home"))
+        return render_template("errors/error.html", error=ie)
 
 
 @users.get("/onereport/users/reports")
@@ -144,14 +142,16 @@ def get_all_reports() -> str:
             current_user.company, order, page, per_page
         )
         return render_template(
-            "reports/reports.html", current_company=current_user.company, pagination=pagination, page=page, per_page=per_page
+            "reports/reports.html",
+            current_company=current_user.company,
+            pagination=pagination,
+            page=page,
+            per_page=per_page,
         )
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="info")
-
-    return redirect(url_for("common.home"))
+        return render_template("errors/error.html", error=ne)
 
 
 @users.get("/onereport/users/report/<int:id>")
@@ -165,8 +165,6 @@ def get_report(id: int) -> str:
         report = users_service.get_report(id, current_user.company)
         return render_template("reports/uneditable_report.html", report=report)
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(f"{ne}", category="danger")
-
-    return redirect(url_for("users.get_all_reports"))
+        return render_template("errors/error.html", error=ne)

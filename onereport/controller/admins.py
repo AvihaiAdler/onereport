@@ -79,11 +79,9 @@ def get_all_users() -> str:
         users = admins_service.get_all_users(order_by, order)
         return render_template("users/users.html", users=users)
     except BadRequestError as be:
-        flash(str(be), category="danger")
+        return render_template("errors/error.html", error=be)
     except NotFoundError as ne:
-        flash(str(ne), category="info")
-
-    return redirect(url_for("common.home"))
+        return render_template("errors/error.html", error=ne)
 
 
 @admins.route("/onereport/admins/personnel", methods=["GET", "POST"])
@@ -110,11 +108,7 @@ def get_all_personnel() -> str:
             personnel=personnel,
         )
     except BadRequestError as be:
-        flash(str(be), category="danger")
-    except NotFoundError as ne:
-        flash(str(ne), category="info")
-
-    return redirect(url_for("common.home"))
+        return render_template("errors/error.html", error=be)
 
 
 @admins.route("/onereport/admins/report", methods=["GET", "POST"])
@@ -176,7 +170,7 @@ def get_report(id: int) -> str:
     )
 
 
-@admins.get("onereport/admins/reports/unified")
+@admins.get("/onereport/admins/reports/unified")
 @login_required
 def get_all_unified_reports() -> str:
     if not_permitted(current_user.role, misc.Role.ADMIN):
@@ -227,14 +221,12 @@ def upload_personnel() -> str:
     form = forms.UploadPersonnelForm()
     try:
         admins_service.upload_personnel(form)
-
-        return render_template("personnel/upload_personnel.html", form=form)
     except BadRequestError as be:
-        flash(f"{be}", category="danger")
+        return render_template("errors/error.html", error=be)
     except InternalServerError as ie:
-        flash(f"{ie}", category="danger")
+        return render_template("errors/error.html", error=ie)
 
-    return redirect(url_for("common.home"))
+    return render_template("personnel/upload_personnel.html", form=form)
 
 
 @admins.get("/onereport/admins/report/delete")
