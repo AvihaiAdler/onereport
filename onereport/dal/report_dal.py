@@ -88,6 +88,14 @@ def find_report_by_id(id: int, /) -> model.Report | None:
     )
 
 
+def find_all_reports_by_date(date: datetime.date, /) -> list[model.Report]:
+    return model.db.session.scalars(
+        sqlalchemy.select(model.Report)
+        .filter(model.Report.date == date)
+        .filter(model.Report.presence.any())
+    ).all()
+
+
 def find_report_by_id_and_company(
     id: int, company: misc.Company, /
 ) -> model.Report | None:
@@ -136,6 +144,23 @@ def delete_all_empty_reports_by_company(company: misc.Company) -> None:
     ).all()
 
     delete_all(empty_reports)
+
+
+def find_all_distinct_reports(
+    order: Order, page: int = 1, per_page: int = 20, /
+) -> Pagination:
+    return model.db.paginate(
+        sqlalchemy.select(model.Report)
+        .filter(model.Report.presence.any())
+        .distinct(model.Report.date)  # TODO: ?
+        .order_by(
+            sqlalchemy.asc(model.Report.date)
+            if order == Order.ASC
+            else sqlalchemy.desc(model.Report.date)
+        ),
+        page=page,
+        per_page=per_page,
+    )
 
 
 def find_all_reports() -> list[model.Report]:
