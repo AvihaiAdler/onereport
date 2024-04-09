@@ -12,7 +12,7 @@ class Base(orm.DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
-login_manager.login_view = "login"
+login_manager.login_view = "common.login"
 login_manager.login_message_category = "info"
 login_manager.login_message = "אנא התחבר למערכת על מנת להכנס"
 
