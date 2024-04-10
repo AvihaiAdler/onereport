@@ -1,6 +1,6 @@
 ##### running
 manually one can do `python -m flask --app onereport run --debug`.
-otherwise just launch `manage.py`. i.e. `python manage.py` the `debug` flag can be passed to it as well.
+otherwise just launch `manage.py`. i.e. `python manage.py run` the `debug` flag can be passed to it as well.
 
 ##### util
 The app comes with a manages to help start the app. the manager provide utils to:
