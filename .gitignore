@@ -2,3 +2,4 @@
 log
 instance/
 __pycache__/
+docker-compose*
