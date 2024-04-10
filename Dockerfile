@@ -3,6 +3,9 @@ WORKDIR /usr/onereport
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
-COPY . /usr/onereport/
 RUN mkdir -p /usr/onereport/log
+# give docker the chance to use the cached layer of dependencies
+COPY ./requirements.txt /usr/onereport/requirements.txt 
 RUN pip install -r requirements.txt --no-cache
+# copy the rest of the files
+COPY . /usr/onereport/
