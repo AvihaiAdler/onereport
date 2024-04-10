@@ -1,23 +1,40 @@
-version: "3.8"
 services:
   onereport:
     build: .
     command: python manage.py run -h 0.0.0.0
     volumes:
       - .:/usr/onereport
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
     ports:
       - 8080:5000
     env_file:
       - ./.env
     depends_on:
-      - postgres
-  postgres:
-    image: 16.2-alpine
+      db:
+        condition: service_healthy
+    secrets:
+      - db-password
+  db:
+    image: postgres:16.2-alpine
+    restart: always
+    user: onereport
+    secrets:
+      - db-password
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=
-      - POSTGRES_PASSWORD=
       - POSTGRES_DB=
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    expose:
+      - 5432
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
-  postgres_data:
+  db-data:
+secrets:
+  db-password:
+    file: # file goes here
