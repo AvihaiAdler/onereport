@@ -1,7 +1,7 @@
 #### Routes
-Due to the fact that i have pracitaclly 0 knowledge in frontend development (and no real intereset in learning it), and due to the fact that, in time of writing, time is a factor - the server talks in _html pages_ rather than JSONs.
+Due to the fact that i have pracitaclly 0 knowledge in frontend development (and no real interest in learning it), and due to the fact that, in time of writing, time is a factor - the server talks in _html pages_ rather than JSONs.
 
-Baring that in mind - the routes are divided into 3. Each 'section' correspond to a permission level, i.e. One with a role of `USER` may only interact with the routes listed under the users subsection. One with the role of `MANAGER` may only interact with the routes listed under the managers subsection and so on.
+Baring that in mind - the routes are divided into 5 'sections', Some have a permission level requirement to them. As an example one with a role of `USER` may only interact with the routes listed under the users subsection. One with the role of `MANAGER` may only interact with the routes listed under the managers subsection and so on.
 
 ##### Common
 These are the routes everyone have access to
@@ -37,7 +37,7 @@ The routes are used to authenticate the user.
 | update a personnel                    | GET, POST | `/onereport/managers/personnel/<id>/update` |                                 |
 | update a user                         | GET, POST | `/onereport/managers/users/<email>/update`  |                                 |
 | get all active users                  | GET, POST | `/onereport/managers/users`                 | order_by, order                 |
-| get all active personnel of a company | GET, POST | `/onereport/managers/personnel`             | order_by, order                 |
+| get all active personnel of a company | GET, POST | `/onereport/managers/personnel`             | company, order_by, order        |
 | create a report for a company         | GET, POST | `/onereport/managers/report`                | order_by, order                 |
 | get all reports for a company         | GET       | `/onereport/managers/reports`               | company, order, page, page_page |
 | get all unified reports               | GET       | `/onereport/managers/reports/unified`       | order, page, per_page           |
@@ -52,7 +52,7 @@ The routes are used to authenticate the user.
 | update a personnel             | GET, POST | `/onereport/admins/personnel/<id>/update` |                                |
 | update a user                  | GET, POST | `/onereport/admins/users/<email>/update`  |                                |
 | get all users                  | GET, POST | `/onereport/admins/users`                 | order_by, order                |
-| get all personnel of a company | GET, POST | `/onereport/admins/personnel`             | order_by, order                |
+| get all personnel of a company | GET, POST | `/onereport/admins/personnel`             | company, order_by, order       |
 | create a report for a company  | GET, POST | `/onereport/admins/report`                | order_by, order                |
 | get all reports for a company  | GET       | `/onereport/admins/reports`               | company, order, page, per_page |
 | get all unified reports        | GET       | `/onereport/admins/reports/unified`       | order, page, per_page          |
