@@ -9,13 +9,13 @@ from flask import (
     flash,
     render_template,
     request,
-    current_app,
-    abort,
+    current_app
 )
 from flask_login import current_user, login_required
 from onereport.exceptions import (
     BadRequestError,
     ForbiddenError,
+    UnauthorizedError,
     InternalServerError,
     NotFoundError,
 )
@@ -31,7 +31,7 @@ managers = Blueprint("managers", __name__)
 def register_personnel() -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     form = forms.PersonnelRegistrationFrom()
     try:
@@ -58,7 +58,7 @@ def register_personnel() -> str:
 def register_user(id: str) -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     form = forms.UserRegistrationFrom()
     try:
@@ -96,7 +96,7 @@ def register_user(id: str) -> str:
 def update_personnel(id: str) -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     form = forms.PersonnelUpdateForm()
     try:
@@ -135,7 +135,7 @@ def update_personnel(id: str) -> str:
 def update_user(email: str) -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     form = forms.UserUpdateForm()
     try:
@@ -174,7 +174,7 @@ def update_user(email: str) -> str:
 def get_all_users() -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     order_by = request.args.get("order_by", default=UserOrderBy.COMPANY.name)
     order = request.args.get("order", default=Order.ASC.name)
@@ -193,21 +193,20 @@ def get_all_users() -> str:
 def get_all_personnel() -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
+    company = request.args.get("company", default=current_user.company)
     order_by = request.args.get("order_by", default=PersonnelOrderBy.LAST_NAME.name)
     order = request.args.get("order", default=Order.ASC.name)
 
-    form = forms.PersonnelListForm()
+    form = forms.PersonnelSortForm()
     try:
         personnel = managers_service.get_all_personnel(
-            form, current_user.company, order_by, order
+            form, company, order_by, order
         )
-        if request.method == "GET":
-            form.company.data = current_user.company
 
         return render_template(
-            "personnel/personnel_list.html", form=form, personnel=personnel
+            "personnel/personnel_list.html", form=form, personnel=personnel, company=misc.Company
         )
     except BadRequestError as be:
         return render_template("errors/error.html", error=be)
@@ -220,7 +219,7 @@ def get_all_personnel() -> str:
 def create_report() -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     order_by = request.args.get("order_by", default=PersonnelOrderBy.LAST_NAME.name)
     order = request.args.get("order", default=Order.ASC.name)
@@ -258,7 +257,7 @@ def create_report() -> str:
 def get_all_reports() -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     company = request.args.get("company", current_user.company)
     order = request.args.get("order", Order.DESC.name)
@@ -288,7 +287,7 @@ def get_all_reports() -> str:
 def get_all_unified_reports() -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     order = request.args.get("order", Order.DESC.name)
     page = request.args.get("page", "1")
@@ -311,7 +310,7 @@ def get_all_unified_reports() -> str:
 def get_report(id: int) -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     company = request.args.get("company", current_user.company)
 
@@ -329,7 +328,7 @@ def get_report(id: int) -> str:
 def get_unified_report(date: str) -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
-        abort(401)
+        return render_template("errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה"))
 
     order_by = request.args.get("order_by", default=PersonnelOrderBy.LAST_NAME.name)
     order = request.args.get("order", default=Order.ASC.name)
