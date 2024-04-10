@@ -3,7 +3,7 @@
   "disable_exisiting_loggers": false,
   "formatters": {
     "default": {
-      "format": "[%(asctime)s | %(levelname)s]: %(name)s : %(module)s - %(message)s",
+      "format": "[%(asctime)s - %(name)s | %(levelname)s]: %(message)s",
       "datefmt": "%d/%m/%Y %H:%M:%S %z"
     }
   },
@@ -20,16 +20,7 @@
       "formatter": "default",
       "filename": "log/onereport.log",
       "maxBytes": 15728640,
-      "backupCount": 10,
-      "encoding": "utf-8"
-    },
-    "wsgi": {
-      "class": "logging.handlers.RotatingFileHandler",
-      "level": "INFO",
-      "formatter": "default",
-      "filename": "log/wsgi.log",
-      "maxBytes": 15728640,
-      "backupCount": 10,
+      "backupCount": 15,
       "encoding": "utf-8"
     }
   },
@@ -38,10 +29,15 @@
       "level": "DEBUG",
       "handlers": [
         "console_handler",
-        "file_handler",
-        "wsgi"
-      ],
-      "propagate": "True"
+        "file_handler"
+      ]
+    },
+    "werkzeug": {
+      "level": "DEBUG",
+      "handlers": [
+        "console_handler",
+        "file_handler"
+      ]
     }
   }
 }
