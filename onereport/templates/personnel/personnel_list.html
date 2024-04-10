@@ -8,7 +8,14 @@
     <fieldset>
       <div class="row">
         {% if current_user.role|has_permission %}
-          <div class="col-sm-3">{{ render_field(form.company, class="form-select") }}</div>
+          <div class="col-sm-3">
+            <select class="form-control form-select" onChange="window.location.href=this.value">
+              <option value="#">בחר פלוגה</option>
+              {% for name, enum in company.__members__.items() %}
+              <option value={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_personnel" ), company=name) }}>{{ enum.value }}</option>
+              {% endfor %}
+            </select>
+          </div>
         {% endif %}
         <div class="col-sm-4">{{ render_field(form.order_by, class="form-select") }}</div>
         <div class="col-sm-3">{{ render_field(form.order, class="form-select") }}</div>
