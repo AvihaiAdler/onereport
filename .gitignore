@@ -1,4 +1,5 @@
 .*
+!.dockerignore
 log
 instance/
 __pycache__/
