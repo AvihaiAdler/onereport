@@ -6,6 +6,6 @@ RUN pip install --upgrade pip
 RUN mkdir -p /usr/onereport/log
 # give docker the chance to use the cached layer of dependencies
 COPY ./requirements.txt /usr/onereport/requirements.txt 
-RUN pip install -r requirements.txt --no-cache
+RUN pip install -r requirements.txt
 # copy the rest of the files
 COPY . /usr/onereport/
