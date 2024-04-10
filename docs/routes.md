@@ -1,5 +1,5 @@
 #### Routes
-Due to the fact that i have pracitaclly 0 knowledge in frontend development (and no real interest in learning it), and due to the fact that, in time of writing, time is a factor - the server talks in _html pages_ rather than JSONs.
+Due to the fact that i have practically 0 knowledge in frontend development (and no real interest in learning it), and due to the fact that, in time of writing, time is a factor - the server talks in _html pages_ rather than JSONs.
 
 Baring that in mind - the routes are divided into 5 'sections', Some have a permission level requirement to them. As an example one with a role of `USER` may only interact with the routes listed under the users subsection. One with the role of `MANAGER` may only interact with the routes listed under the managers subsection and so on.
 
