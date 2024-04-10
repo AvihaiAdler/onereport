@@ -190,7 +190,7 @@ def get_all_unified_reports() -> str:
     )
 
 
-@admins.get("/onereport/admins/report/unified/<date>")
+@admins.route("/onereport/admins/report/unified/<date>", methods=["GET", "POST"])
 @login_required
 def get_unified_report(date: str) -> str:
     if not_permitted(current_user.role, misc.Role.ADMIN):

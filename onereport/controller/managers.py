@@ -323,7 +323,7 @@ def get_report(id: int) -> str:
         return render_template("errors/error.html", error=ne)
 
 
-@managers.get("/onereport/managers/report/unified/<date>")
+@managers.route("/onereport/managers/report/unified/<date>", methods=["GET", "POST"])
 @login_required
 def get_unified_report(date: str) -> str:
     if not_permitted(current_user.role, misc.Role.MANAGER):
@@ -333,9 +333,10 @@ def get_unified_report(date: str) -> str:
     order_by = request.args.get("order_by", default=PersonnelOrderBy.LAST_NAME.name)
     order = request.args.get("order", default=Order.ASC.name)
 
+    form = forms.PersonnelSortForm()
     try:
-        report = managers_service.get_unified_report(date, order_by, order)
-        return render_template("reports/unified_report.html", report=report)
+        report = managers_service.get_unified_report(form, date, order_by, order)
+        return render_template("reports/unified_report.html", form=form, report=report)
     except BadRequestError as be:
         return render_template("errors/error.html", error=be)
     except NotFoundError as ne:

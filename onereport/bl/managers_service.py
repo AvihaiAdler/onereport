@@ -340,6 +340,10 @@ def get_all_personnel(
         order_by = form.order_by.data
         order = form.order.data
         
+    if request.method == "GET":
+        form.order_by.data = order_by
+        form.order.data = order
+        
     if not PersonnelOrderBy.is_valid(order_by):
         current_app.logger.error(f"invalid order_by {order_by}")
         raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
@@ -453,13 +457,30 @@ def get_report(id: str, company: str, /) -> ReportDTO:
     return ReportDTO(report, personnel)
 
 
-def get_unified_report(date_string: str, order_by: str, order: str, /) -> UnifiedReportDTO:
+def get_unified_report(form: PersonnelSortForm, date_string: str, order_by: str, order: str, /) -> UnifiedReportDTO:
     """
     Raises:
         BadRequestError,
         InternalServerError,
         NotFoundError,
     """
+    if form is None:
+        current_app.logger.error(f"invalid form {form}")
+        raise BadRequestError("form must not be None")
+        
+    try:
+        date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
+    except ValueError:
+        raise InternalServerError(f"המחרוזת {date} אינה מייצגת תאריך תקין")
+
+    if form.is_submitted():
+        order_by = form.order_by.data
+        order = form.order.data
+        
+    if request.method == "GET":
+        form.order_by.data = order_by
+        form.order.data = order
+
     if not PersonnelOrderBy.is_valid(order_by):
         current_app.logger.error(f"invalid order_by {order_by}")
         raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
@@ -467,11 +488,6 @@ def get_unified_report(date_string: str, order_by: str, order: str, /) -> Unifie
     if not Order.is_valid(order):
         current_app.logger.error(f"invalid order {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
-    
-    try:
-        date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
-    except ValueError:
-        raise InternalServerError(f"המחרוזת {date} אינה מייצגת תאריך תקין")
     
     reports = report_dal.find_all_reports_by_date(date)
     if reports is None:

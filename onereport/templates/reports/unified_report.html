@@ -4,6 +4,17 @@
 <div class="row fs-6">
   <p>{{ report.date.strftime("%d/%m/%Y") }}</p>
 </div>
+{% from "util.html" import render_field %}
+<form method="POST" , class="form-inline">
+  {{ form.hidden_tag() }}
+  <fieldset>
+    <div class="row">
+      <div class="col-sm-4">{{ render_field(form.order_by, class="form-select") }}</div>
+      <div class="col-sm-3">{{ render_field(form.order, class="form-select") }}</div>
+      <div class="col-sm-2">{{ form.submit(class="btn btn-outline-info") }}</div>
+    </div>
+  </fieldset>
+</form>
 <div class="containter content-section">
   <div class="row heading">
     <div class="col-sm-2 border-start d-flex justify-content-center">מס' אישי</div>
