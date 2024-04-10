@@ -15,6 +15,7 @@ import os
 def create_logger(logger_config: str = "logger.json", /) -> None:
     with open(logger_config, "r") as file_config:
         config = json.load(file_config)
+        
     logging.config.dictConfig(config)
 
 
