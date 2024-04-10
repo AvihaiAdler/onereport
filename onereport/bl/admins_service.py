@@ -12,7 +12,7 @@ from onereport.data.model import Personnel, User
 from onereport.dto.user_dto import UserDTO
 from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.exceptions import BadRequestError, NotFoundError, InternalServerError
-from onereport.controller.forms import PersonnelListForm, UploadPersonnelForm
+from onereport.controller.forms import PersonnelSortForm, UploadPersonnelForm
 from flask_login import current_user
 from flask import current_app
 
@@ -40,7 +40,7 @@ def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
 
 
 def get_all_personnel(
-    form: PersonnelListForm, company: str, order_by: str, order: str, /
+    form: PersonnelSortForm, company: str, order_by: str, order: str, /
 ) -> list[PersonnelDTO]:
     """
     Raises:
@@ -54,6 +54,10 @@ def get_all_personnel(
         current_app.logger.error(f"invalid company {company}")
         raise BadRequestError("פלוגה אינה תקינה")
 
+    if form.is_submitted():
+        order_by = form.order_by.data
+        order = form.order.data
+        
     if not PersonnelOrderBy.is_valid(order_by):
         current_app.logger.error(f"invalid order_by: {order_by}")
         raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
@@ -61,11 +65,6 @@ def get_all_personnel(
     if not Order.is_valid(order):
         current_app.logger.error(f"invalid order: {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
-
-    if form.validate_on_submit():
-        order_by = form.order_by.data
-        order = form.order.data
-        company = form.company.data
 
     personnel = personnel_dal.find_all_personnel_by_company(
         Company[company], PersonnelOrderBy[order_by], Order[order]

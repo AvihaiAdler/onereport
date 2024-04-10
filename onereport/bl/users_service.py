@@ -14,11 +14,11 @@ from onereport.exceptions import (
     NotFoundError,
     InternalServerError,
 )
-from onereport.controller.forms import PersonnelListForm, PersonnelUpdateForm, UpdateReportForm
+from onereport.controller.forms import PersonnelSortForm, PersonnelUpdateForm, UpdateReportForm
 
 
 def get_all_personnel(
-    form: PersonnelListForm, company: str, order_by: str, order: str, /
+    form: PersonnelSortForm, company: str, order_by: str, order: str, /
 ) -> list[PersonnelDTO]:
     """
     Raises:
