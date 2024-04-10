@@ -4,7 +4,7 @@ Since in time of writing - time is a factor, and since learning how to write pro
 That said - since _some_ tests must be performed - here's a manual test suit the app must pass before deployment:
 
 ###### Common
-- as a non loged in user try to hit any route (beside `login`) specified [here](https://github.com/AvihaiAdler/onereport/tree/main/docs/routes.md) and make sure to get a 401
+- as a non logged in user try to hit any route (beside `login`) specified [here](https://github.com/AvihaiAdler/onereport/tree/main/docs/routes.md) and make sure to get a 401
 
 ###### Users
 - as a user login into the system
