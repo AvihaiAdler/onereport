@@ -112,13 +112,7 @@ class UserRegistrationFrom(flask_wtf.FlaskForm):
             raise wtforms.ValidationError("אינך רשאי.ת ליצור משתמש עם הרשאה זו")
 
 
-class PersonnelListForm(flask_wtf.FlaskForm):
-    company = wtforms.SelectField(
-        "פלוגה",
-        choices=[
-            (name, member.value) for name, member in misc.Company._member_map_.items()
-        ],
-    )
+class PersonnelSortForm(flask_wtf.FlaskForm):
     order_by = wtforms.SelectField(
         "סדר לפי",
         choices=[
@@ -135,14 +129,6 @@ class PersonnelListForm(flask_wtf.FlaskForm):
     )
 
     submit = wtforms.SubmitField("סדר")
-
-    def validate_order_by(self: Self, order_by: wtforms.SelectField) -> None:
-        if not order_attr.PersonnelOrderBy.is_valid(order_by.data):
-            raise wtforms.ValidationError("ערך לא תקין")
-
-    def validate_order(self: Self, order: wtforms.SelectField) -> None:
-        if not order_attr.Order.is_valid(order.data):
-            raise wtforms.ValidationError("ערך לא תקין")
 
 
 class PersonnelUpdateForm(flask_wtf.FlaskForm):
