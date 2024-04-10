@@ -1,10 +1,10 @@
 ##### Testing
-The most annoying thing (for me!) to write.
+The most annoying thing (for me!) to write. <br>
 Since in time of writing - time is a factor, and since learning how to write proper tests for a flask app might take some of that time (and since testing isn't something i personnaly enjoy) - there are currently no automated tests written for the project sadly.
 That said - since _some_ tests must be performed - here's a manual test suit the app must pass before deployment:
 
 ###### Common
-- as a non login user try to hit any route (not belonging to auth and aren't login) specified [here](https://github.com/AvihaiAdler/onereport/tree/main/docs/routes.md) and make sure to get a 401
+- as a non loged in user try to hit any route (beside `login`) specified [here](https://github.com/AvihaiAdler/onereport/tree/main/docs/routes.md) and make sure to get a 401
 
 ###### Users
 - as a user login into the system
