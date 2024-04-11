@@ -1,31 +1,29 @@
+name: onereport
 services:
   onereport:
     build: .
     command: python manage.py run -h 0.0.0.0
     volumes:
-      - .:/usr/onereport
+      - ./:/usr/onereport
     environment:
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+      - SQLALCHEMY_DATABASE_URI =
     ports:
-      - 8080:5000
-    env_file:
-      - ./.env
+      - "80:5000"
+    env_file: ./.env
     depends_on:
       db:
         condition: service_healthy
-    secrets:
-      - db-password
+        restart: true
   db:
     image: postgres:16.2-alpine
     restart: always
-    user: onereport
-    secrets:
-      - db-password
+    user: postgres
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_DB=
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+      - POSTGRES_USER =
+      - POSTGRES_PASSWORD =
+      - POSTGRES_DB =
     expose:
       - 5432
     healthcheck:
@@ -35,6 +33,3 @@ services:
       retries: 5
 volumes:
   db-data:
-secrets:
-  db-password:
-    file: # file goes here
