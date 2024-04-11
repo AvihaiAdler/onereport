@@ -36,6 +36,7 @@ def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
         current_app.logger.warning("USER table is empty")
         raise NotFoundError("רשימת המשתמשים הינה ריקה")
 
+    current_app.logger.debug(f"passing {len(users)} for {current_user}\n{'\n'.join([str(user) for user in users])}")
     return [UserDTO(user) for user in users]
 
 
@@ -72,6 +73,7 @@ def get_all_personnel(
     if not personnel:
         current_app.logger.warning(f"there are no personnel for company {company}")
 
+    current_app.logger.debug(f"passing {len(personnel)} for {current_user}\n{'\n'.join([str(p) for p in personnel])}")
     return [PersonnelDTO(p) for p in personnel]
 
 

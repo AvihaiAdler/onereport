@@ -317,6 +317,7 @@ def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
         current_app.logger.debug(f"there are no visible users for {current_user}")
         raise NotFoundError("לא נמצאו משתמשים")
 
+    current_app.logger.debug(f"passing {len(users)} for {current_user}\n{'\n'.join([str(user) for user in users])}")
     return [UserDTO(user) for user in users]
 
 
@@ -360,6 +361,7 @@ def get_all_personnel(
             f"there are no visible personnel in company {company} for {current_user}"
         )
 
+    current_app.logger.debug(f"passing {len(personnel)} for {current_user}\n{'\n'.join([str(p) for p in personnel])}")
     return [PersonnelDTO(p) for p in personnel]
 
 
@@ -423,7 +425,7 @@ def report(
                 f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger"
             )
         current_app.logger.info(f"{current_user} successfully updated the report {report}")
-
+    
     return [(PersonnelDTO(p), p in report.presence) for p in personnel]
 
 
@@ -537,7 +539,7 @@ def get_all_reports_for(company: str, order: str, page: str, per_page: str, /) -
     if not reports.items:
         current_app.logger.debug(f"no visible reports for company {company} for {current_user}")
 
-
+    current_app.logger.debug(f"passing {len(reports)} for {current_user}\n{'\n'.join([str(report) for report in reports])}")
     return reports
 
 
@@ -564,4 +566,5 @@ def get_all_reports(order: str, page: str, per_page: str, /) -> Pagination:
     if not reports.items:
         current_app.logger.debug(f"no visible reports across all companies for {current_user}")
 
+    current_app.logger.debug(f"passing {len(reports)} for {current_user}\n{'\n'.join([str(report) for report in reports])}")
     return reports
