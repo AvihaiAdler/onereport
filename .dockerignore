@@ -1,3 +1,4 @@
-.*/
-instance/
-log/
+.*
+instance
+log
+!.env
