@@ -84,8 +84,13 @@ def db_register_personnel(personnel_as_json: str) -> None:
     personnel_dal.save(personnel)
 
 
-@commands.cli.command("init_db")
-def db_init() -> None:
-    db.drop_all()
+@commands.cli.command("db_create")
+def db_create() -> None:
     db.create_all()
+    db.session.commit()
+
+
+@commands.cli.command("db_destroy")
+def db_destroy() -> None:
+    db.drop_all()
     db.session.commit()
