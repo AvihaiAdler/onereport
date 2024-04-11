@@ -72,6 +72,7 @@ def create_app(config: Any = None, /) -> flask.Flask:
     from onereport.controller.managers import managers  # noqa: F401
     from onereport.controller.admins import admins  # noqa: F401
     from onereport.controller.errors import errors  # noqa: F401
+    from onereport.controller.commands import commands # noqa: F401
 
     app.register_blueprint(common)
     app.register_blueprint(users)
@@ -79,6 +80,7 @@ def create_app(config: Any = None, /) -> flask.Flask:
     app.register_blueprint(managers)
     app.register_blueprint(admins)
     app.register_blueprint(errors)
+    app.register_blueprint(commands)
 
     register_filters(app)
 
