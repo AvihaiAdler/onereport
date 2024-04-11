@@ -36,7 +36,7 @@ def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
         current_app.logger.warning("USER table is empty")
         raise NotFoundError("רשימת המשתמשים הינה ריקה")
 
-    current_app.logger.debug(f"passing {len(users)} for {current_user}\n{'\n'.join([str(user) for user in users])}")
+    current_app.logger.debug(f"passing {len(users)} users for {current_user}\n{chr(10).join([str(user) for user in users])}")
     return [UserDTO(user) for user in users]
 
 
@@ -73,7 +73,7 @@ def get_all_personnel(
     if not personnel:
         current_app.logger.warning(f"there are no personnel for company {company}")
 
-    current_app.logger.debug(f"passing {len(personnel)} for {current_user}\n{'\n'.join([str(p) for p in personnel])}")
+    current_app.logger.debug(f"passing {len(personnel)} personnel for {current_user}\n{chr(10).join([str(p) for p in personnel])}")
     return [PersonnelDTO(p) for p in personnel]
 
 
@@ -81,7 +81,7 @@ def delete_all_reports() -> None:
     reports = report_dal.find_all_reports()
     report_dal.delete_all(reports)
     
-    current_app.logger.info(f"{current_user} deleted all reports\n{'\n'.join([report.__str__() for report in reports])}")
+    current_app.logger.info(f"{current_user} deleted all reports\n{chr(10).join([report.__str__() for report in reports])}")
 
 
 def delete_all_personnel() -> None:
@@ -91,7 +91,7 @@ def delete_all_personnel() -> None:
     user_dal.delete_all([u for u in users if u.id != current_user.id])
     personnel_dal.delete_all([p for p in personnel if p.id != current_user.id])
     
-    current_app.logger.info(f"{current_user} deleted all users & personnel\n{'\n'.join([user.__str__() for user in users])}\n{'\n'.join([p.__str__() for p in personnel])}")
+    current_app.logger.info(f"{current_user} deleted all users & personnel\n{chr(10).join([user.__str__() for user in users])}\n{chr(10).join([p.__str__() for p in personnel])}")
 
 
 def dict_to_personnel(personnel_dict: dict[str]) -> Personnel | None:
@@ -180,9 +180,9 @@ def upload_personnel(form: UploadPersonnelForm) -> None:
         if not personnel_dal.save_all(personnel):
             current_app.logger.warning("not all personnel were saved")
         else:
-            current_app.logger.info(f"{current_user} uploaded {len(personnel)} personnel:\n{'\n'.join([p.__str__() for p in personnel])}")
+            current_app.logger.info(f"{current_user} uploaded {len(personnel)} personnel:\n{chr(10).join([p.__str__() for p in personnel])}")
 
         if not user_dal.save_all(users):
             current_app.logger.warning("not all users were saved")
         else:
-            current_app.logger.info(f"{current_user} uploaded {len(users)} personnel:\n{'\n'.join([user.__str__() for user in users])}")
+            current_app.logger.info(f"{current_user} uploaded {len(users)} personnel:\n{chr(10).join([user.__str__() for user in users])}")
