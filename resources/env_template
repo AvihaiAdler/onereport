@@ -1,0 +1,11 @@
+GOOGLE_CLIENT_ID = 
+GOOGLE_CLIENT_SECRET = 
+SECRET_KEY = 
+# https://www.postgresql.org/docs/current/libpq-connect.html
+# the URI string consist of postgresql://[user_name]:[password]@[address]:[port]/[db_name]
+# plase make sure to expose the port the db listens on to your host
+# to use SQLITE - just delete this line or comment it out
+SQLALCHEMY_DATABASE_URI = 
+LOGGING_CONFIG = "resources/logger.json"
+PHONE = 
+EMAIL = 
