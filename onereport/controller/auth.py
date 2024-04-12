@@ -18,6 +18,7 @@ import urllib.parse as urllib_parse
 auth = Blueprint("auth", __name__)
 
 
+# https://blog.miguelgrinberg.com/post/oauth-authentication-with-flask-in-2023
 @auth.get("/onereport/authorize/<provider>")
 def oauth2_authorize(provider: str):
     if not flask_login.current_user.is_anonymous:
