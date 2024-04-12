@@ -3,4 +3,5 @@
 log
 instance/
 __pycache__/
-onereport-compose.*
+onereport-compose*.*
+nginx
