@@ -22,6 +22,7 @@ Building and launching with docker compose is slightly trickier:
   - `psql --username=your_db_username_as_written_in_onereport-compose.yaml --dbname=your_dbname_as_written_in_onereport-compose.yaml`
   - `\l` (to list all dbs)
   - `\c your_desired_db` (to list the tables in said db)
+  - `\dt`
   - `\q` to quit
 - Use `docker-compose -f path/to/your/docker-compose-file.yaml down` to terminate your containers when you're done
 If the above does work, please use `docker-compose -f path/to/your/docker-compose-file.yaml down -v` (to remove the containers alongside their attached volumes) and redo the process above
