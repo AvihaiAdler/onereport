@@ -19,7 +19,7 @@ from flask import (
     request,
     current_app,
 )
-from flask_login import current_user
+from flask_login import current_user, login_required
 import datetime
 
 
@@ -27,7 +27,7 @@ users = Blueprint("users", __name__)
 
 
 @users.route("/onereport/users/personnel", methods=["GET", "POST"])
-# @login_required
+@login_required
 def get_all_personnel() -> str:
     if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
@@ -55,7 +55,7 @@ def get_all_personnel() -> str:
 
 
 @users.route("/onereport/users/personnel/<id>/update", methods=["GET", "POST"])
-# @login_required
+@login_required
 def update_personnel(id: str) -> str:
     if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
@@ -95,7 +95,7 @@ def update_personnel(id: str) -> str:
 
 
 @users.route("/onereport/users/report", methods=["GET", "POST"])
-# @login_required
+@login_required
 def create_report() -> str:
     if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
@@ -126,7 +126,7 @@ def create_report() -> str:
 
 
 @users.get("/onereport/users/reports")
-# @login_required
+@login_required
 def get_all_reports() -> str:
     if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
@@ -154,7 +154,7 @@ def get_all_reports() -> str:
 
 
 @users.get("/onereport/users/report/<int:id>")
-# @login_required
+@login_required
 def get_report(id: int) -> str:
     if not_permitted(current_user.role, misc.Role.USER):
         current_app.logger.warning(f"unauthorized access by {current_user}")
