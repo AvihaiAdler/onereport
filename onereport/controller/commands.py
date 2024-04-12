@@ -57,7 +57,7 @@ def db_register_users(path: str) -> None:
     with open(path, "r") as f:
         json_dump = json.load(f)
 
-    users = json_dump.get("users", None)
+    users = json_dump.get("Users", None)
     bulk_register_users(users)
 
     personnel = json_dump.get("Personnel", None)
