@@ -1,29 +1,49 @@
+# https://testdriven.io/blog/dockerizing-flask-with-postgres-gunicorn-and-nginx/
 name: onereport
 services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    volumes:
+      - ./nginx/conf/:/etc/nginx/conf.d/:ro
+      - ./certbot/www/:/var/www/certbot/:ro
+    depends_on:
+      - onereport
+
+  # https://phoenixnap.com/kb/letsencrypt-docker
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+    depends_on:
+      - nginx
+
   onereport:
     build: .
-    command: python manage.py run -h 0.0.0.0
-    volumes:
-      - ./:/usr/onereport
+    command: gunicorn --bind 0.0.0.0:5000 -w 3 "onereport:create_app()"
     environment:
-      - SQLALCHEMY_DATABASE_URI =
-    ports:
-      - "80:5000"
-    env_file: ./.env
+      - SQLALCHEMY_DATABASE_URI=
+    expose:
+      - "5000"
+    env_file: ./onereport/.env
     depends_on:
       db:
         condition: service_healthy
         restart: true
+
   db:
     image: postgres:16.2-alpine
     restart: always
-    user: postgres
     volumes:
       - db-data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER =
-      - POSTGRES_PASSWORD =
-      - POSTGRES_DB =
+      - POSTGRES_USER=
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DB=
     expose:
       - 5432
     healthcheck:
