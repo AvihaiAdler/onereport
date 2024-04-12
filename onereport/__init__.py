@@ -1,10 +1,14 @@
-import json
-from typing import Any
-import flask
-from onereport.data import model, misc
-import logging
-import logging.config
 import os
+import json
+import flask
+import logging
+from typing import Any
+import logging.config
+from pathlib import Path
+from onereport.data import model, misc
+from os.path import dirname, abspath
+from dotenv import load_dotenv
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # TODO (for prod):
 # https://developers.google.com/identity/protocols/oauth2/web-server#uri-validation
@@ -53,7 +57,12 @@ def register_filters(app: flask.Flask, /) -> None:
         )
 
 
-def create_app(config: Any = None, /) -> flask.Flask:    
+def create_app(config: Any = None, /) -> flask.Flask:
+    env_file_path = Path(abspath(dirname(__file__))).absolute()    
+    if not load_dotenv(f"{env_file_path}/.env"):
+        logging.error(f"failed to load .env file from {env_file_path}")
+        exit(1)
+    
     if config is None:
         from onereport.config import Config
         config = Config() 
@@ -81,6 +90,7 @@ def create_app(config: Any = None, /) -> flask.Flask:
     app.register_blueprint(admins)
     app.register_blueprint(errors)
     app.register_blueprint(commands)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     register_filters(app)
 
