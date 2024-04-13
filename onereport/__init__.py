@@ -10,7 +10,7 @@ from os.path import dirname, abspath
 from dotenv import load_dotenv
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-# TODO (for prod):
+
 # https://developers.google.com/identity/protocols/oauth2/web-server#uri-validation
 # Hosts cannot be raw IP addresses. Localhost IP addresses are exempted from this rule.
 # Redirect URIs must use the HTTPS scheme, not plain HTTP
@@ -34,6 +34,14 @@ def register_filters(app: flask.Flask, /) -> None:
             return False
         return misc.Role.get_level(role_name) <= misc.Role.get_level(
             misc.Role.MANAGER.name
+        )
+        
+    @app.template_filter()
+    def is_admin(role_name: str) -> bool:
+        if not misc.Role.is_valid(role_name):
+            return False
+        return misc.Role.get_level(role_name) == misc.Role.get_level(
+            misc.Role.ADMIN.name
         )
 
     @app.template_filter()
