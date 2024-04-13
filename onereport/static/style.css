@@ -62,6 +62,10 @@ a.hover-row:hover {
   background-color: #8297a5;
 }
 
+.hover-row:hover {
+  background-color: #8297a5;
+}
+
 .hover:hover {
   background-color: #a7c6df;
 }
