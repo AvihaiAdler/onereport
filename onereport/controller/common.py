@@ -27,4 +27,4 @@ def home() -> str:
 @common.get("/onereport/about")
 @flask_login.login_required
 def about() -> str:
-    return render_template("about.html")
+    return render_template("about.html", email=current_app.config["EMAIL"])
