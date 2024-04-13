@@ -19,7 +19,7 @@ Installing docker-compose can be found [here](https://docs.docker.com/compose/in
 
 ##### In depth guide
 deploy:
-- `git clone https://github.com/AvihaiAdler/onereport/tree/main`
+- `git clone https://github.com/AvihaiAdler/onereport`
 - `scp` over your `.env` & `docker-compose.yaml` files
 - `cp -r onereport/nginx .` 
 - `cd onereport`
