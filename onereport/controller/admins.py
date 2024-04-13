@@ -254,3 +254,18 @@ def delete_all_personnel() -> str:
     else:
         flash("שגיאת שרת", category="danger")
     return redirect(url_for("common.home"))
+
+
+# questionalble at best
+# should be DELETE. chose GET due to my own limitations
+@admins.get("/onereport/admins/report/<int:id>/delete")
+@login_required
+def delete_report(id: int) -> str:
+    if not_permitted(current_user.role, misc.Role.ADMIN):
+        current_app.logger.warning(f"unauthorized access by {current_user}")
+        return render_template("errors/error.html", error=UnauthorizedError("אינך רשאי.ת לבצע פעולה זו"))
+    
+    if admins_service.delete_report(id):
+        flash(f"הדוח {id} נמחק בהצלחה", category="success")
+    
+    return redirect(url_for(generate_url(current_user.role, "get_all_reports"))) 

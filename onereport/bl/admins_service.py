@@ -77,6 +77,17 @@ def get_all_personnel(
     return [PersonnelDTO(p) for p in personnel]
 
 
+def delete_report(id: int) -> None:
+    report = report_dal.find_report_by_id(id)
+    
+    if report is None:
+        current_app.logger.error(f"{current_user} supplied a wrong id {id}")
+        raise NotFoundError(f"הדוח {id} אינו קיים")
+    
+    if not report_dal.delete(report):
+        raise InternalServerError(f"שגיאת שרת: הדוח {id} לא נמחק")
+
+
 def delete_all_reports() -> None:
     reports = report_dal.find_all_reports()
     report_dal.delete_all(reports)

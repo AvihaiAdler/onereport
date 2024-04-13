@@ -19,10 +19,18 @@
   {% endif %}
   <div class="container content-section">
     {% for report in pagination.items %}
-      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_report" ), id=report.id, company=current_company ) }}
-        class="link-underline link-underline-opacity-0 link-dark row {{ loop.cycle('even', 'odd') }} hover-row">
-        <div class="">{{ report.date.strftime("%d/%m/%Y") }}</div>
+    <div class="row hover-row {{ loop.cycle('even', 'odd') }} ">
+      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_report" ), id=report.id, company=current_company|get_company_name_by_value ) }}
+        class="link-underline link-underline-opacity-0 link-dark col">
+        {{ report.date.strftime("%d/%m/%Y") }}
       </a>
+
+      {% if current_user.role|is_admin %}
+      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="delete_report" ), id=report.id ) }} class="btn btn-sm btn-danger col-1">
+        מחק
+      </a>
+      {% endif %}
+    </div>
     {% endfor %}
   </div>
 
