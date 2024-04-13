@@ -5,4 +5,3 @@ instance/
 __pycache__/
 onereport-compose*.*
 docker-compose*
-nginx/nginx.conf
