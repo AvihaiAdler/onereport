@@ -1,4 +1,5 @@
 body {
+  width: 100vw;
   direction: rtl;
   margin: 10rem;
   padding: 5rem;
