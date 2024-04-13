@@ -21,8 +21,11 @@ That said - since _some_ tests must be performed - here's a manual test suit the
 - as a manager try to promote/demote yourself and make sure you get 403
 - as a manager load in the personnel list of every company
 - as a manager load in the report list of every company
+- as a manager deactivate a personnel
+- as a manager add the same personnel you previously deactivated and see it appears on the personnel list
 
 ###### Admins
+- as an admin delete a report
 - as an admin delete all personnel
 - as an admin add personnel via `/onereport/admins/personnel/upload`
 - as an admin update an active personnel to inactive and see the changes persist

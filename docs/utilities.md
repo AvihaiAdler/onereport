@@ -43,7 +43,7 @@ One can add as many personnel as they want, or as many users as they want.
 One can omit all personnel entirely (by deleting the "Personnel" and everything follows it up until and including the closing `]`).
 One can omit all users entirely (by deleting the "Users" and everything follows it up until and including the closing `]`), though it is recommended one have at least _one_ user with the role of `ADMIN` saved into the database.
 
-To use it one can simply type `flask --app onereport register_users "path/to/users_and_personnel.json"`.
+To use it one can simply type `flask --app onereport commands register_users "path/to/users_and_personnel.json"`.
 
 That said - one can do all the above manually as detailed below:
 
