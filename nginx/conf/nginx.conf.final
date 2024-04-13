@@ -1,0 +1,36 @@
+upstream flask {
+    server onereport:5000;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    
+    server_name onereport8114.site; 
+    server_tokens off;
+    
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 default_server ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name onereport8114.site;
+
+    ssl_certificate /etc/nginx/ssl/live/onereport8114.site/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/onereport8114.site/privkey.pem;
+
+    location / {
+        proxy_pass http://flask;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        proxy_redirect off;
+    }
+}
