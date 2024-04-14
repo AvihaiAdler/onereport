@@ -27,7 +27,7 @@ def update(original: model.Personnel, new: model.Personnel, /) -> bool:
         return False
 
     try:
-        original.update(new)
+        original.update_personnel(new)
         model.db.session.commit()
     except SQLAlchemyError as se:
         current_app.logger.error(f"{se}")
@@ -171,9 +171,47 @@ def find_all_personnel_by_company_dated_before(
     ).all()
 
 
+def find_all_personnel_by_company_active_in(
+    company: misc.Company,
+    date: datetime.date,
+    order_by: PersonnelOrderBy,
+    order: Order,
+    /,
+) -> list[model.Personnel]:
+    return model.db.session.scalars(
+        construct_statement(order_by, order)
+        .filter(model.Personnel.company == company.name)
+        .filter(model.Personnel.date_added <= date)
+        .filter(
+            sqlalchemy.or_(
+                model.Personnel.date_removed == None,
+                model.Personnel.date_removed >= date,
+            )
+        )
+    ).all()
+
+
 def find_all_personnel_dated_before(
     date: datetime.date, order_by: PersonnelOrderBy, order: Order, /
 ) -> list[model.Personnel]:
     return model.db.session.scalars(
         construct_statement(order_by, order).filter(model.Personnel.date_added <= date)
+    ).all()
+
+
+def find_all_personnel_active_in(
+    date: datetime.date,
+    order_by: PersonnelOrderBy,
+    order: Order,
+    /,
+) -> list[model.Personnel]:
+    return model.db.session.scalars(
+        construct_statement(order_by, order)
+        .filter(model.Personnel.date_added <= date)
+        .filter(
+            sqlalchemy.or_(
+                model.Personnel.date_removed == None,
+                model.Personnel.date_removed >= date,
+            )
+        )
     ).all()

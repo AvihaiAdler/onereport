@@ -1,4 +1,4 @@
-from typing import Self, Set
+from typing import Optional, Self, Set
 import sqlalchemy.orm as orm
 from flask_sqlalchemy import SQLAlchemy
 import datetime
@@ -38,6 +38,7 @@ class Personnel(db.Model):
     platoon: orm.Mapped[str]
     active: orm.Mapped[bool] = orm.mapped_column(default=True)
     date_added: orm.Mapped[datetime.date] = orm.mapped_column(default=datetime.date.today)
+    date_removed: orm.Mapped[Optional[datetime.date]] = orm.mapped_column(default=None)
 
     type: orm.Mapped[str]
     __mapper_args__ = {
@@ -73,6 +74,7 @@ class Personnel(db.Model):
         self.company = other.company
         self.platoon = other.platoon
         self.active = other.active
+        self.date_removed = other.date_removed
         return self
         
     def update_personnel(self: Self, other: Self) -> Self:
