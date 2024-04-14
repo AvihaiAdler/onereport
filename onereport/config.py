@@ -21,6 +21,6 @@ class Config:
             "scopes": ["https://www.googleapis.com/auth/userinfo.email"],
         }
     }
-
+    SCHEME = os.environ.get("SCHEME", "https")
     PHONE = os.environ.get("PHONE", None)
     EMAIL = os.environ.get("EMAIL", None)
