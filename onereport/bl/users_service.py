@@ -197,7 +197,7 @@ def get_report(id: int, company: str, /) -> ReportDTO:
         )
         raise NotFoundError(f"הדוח {id} אינו במסד הנתונים")
 
-    personnel = personnel_dal.find_all_personnel_by_company_dated_before(
+    personnel = personnel_dal.find_all_personnel_by_company_active_in(
         Company[company], datetime.date.today(), PersonnelOrderBy.LAST_NAME, Order.ASC
     )
     if personnel is None:
