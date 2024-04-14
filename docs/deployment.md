@@ -1,12 +1,12 @@
 #### Deployment
-The dreaded one. Below are some detail explanation & links to help with deployment. I'm not claining to know what i'm doing in that area, and there might be better methods out there - these are the step i've found to work.
+The dreaded one. Below are some detailed explanation & links to help with deployment. I'm not claiming to know what i'm doing in that area, and there might be better methods out there - these are the steps i've found to work.
 
 ##### Dockrizing
-The project comes with a `docker-compose` template with sensitive fields omitted. One must fill those up.
+The project comes with a `docker-compose` template with sensitive fields omitted, one must fill those up.
 The project also comes with an `ngnix.conf` files which, too, has to be filled (mainly switching my personal domain name with yours). 
 
 Dockerizing related link can be found [here](https://testdriven.io/blog/dockerizing-flask-with-postgres-gunicorn-and-nginx/).
-Nginx & certificate related link can be found [here](https://mindsers.blog/en/post/https-using-nginx-certbot-docker/).
+Nginx & ssl certificate related link can be found [here](https://mindsers.blog/en/post/https-using-nginx-certbot-docker/).
 
 ##### Misc
 Setting up the server can be done by following [this](https://www.youtube.com/watch?v=goToXTC96Co).
@@ -18,7 +18,7 @@ Installing docker-compose can be found [here](https://docs.docker.com/compose/in
 - `curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose`
 
 ##### In depth guide
-deploy:
+deployment:
 - `git clone https://github.com/AvihaiAdler/onereport`
 - `scp` over your `.env` & `docker-compose.yaml` files
 - `cp -r onereport/nginx .` 
