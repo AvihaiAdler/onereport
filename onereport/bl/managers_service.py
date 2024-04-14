@@ -61,6 +61,9 @@ def register_personnel(form: PersonnelRegistrationFrom) -> PersonnelDTO | None:
 
                 current_app.logger.debug(f"{current_user} successfully registered {personnel}")
             case op if not op.active:  # such personnel exists but is inactive
+                personnel.active = True
+                personnel.date_removed = None
+                    
                 if not personnel_dal.update(op, personnel):
                     current_app.logger.error(f"{current_user} failed to update {op}")
                     raise InternalServerError("שגיאת שרת")
@@ -134,6 +137,9 @@ def register_user(form: UserRegistrationFrom, id: str, /) -> PersonnelDTO:
 
                 current_app.logger.info(f"{current_user} successfully deleted {personnel}")
             case ou if not ou.active:  # such user exists but is inactive
+                user.active = True
+                user.date_removed = None
+                
                 if not user_dal.update(ou, user):
                     current_app.logger.error(f"{current_user} failed to update {old_user}")
                     raise InternalServerError("שגיאת שרת")
@@ -185,6 +191,8 @@ def update_personnel(form: PersonnelUpdateForm, id: str, /) -> PersonnelDTO:
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
         personnel.active = Active[form.active.data] == Active.ACTIVE
+        if personnel.active:
+            personnel.date_removed = None
 
         if not personnel_dal.update(old_personnel, personnel):
             current_app.logger.error(f"{current_user} failed to update {old_personnel}")
@@ -258,7 +266,7 @@ def update_user(form: UserUpdateForm, email: str, /) -> UserDTO:
                 raise
             except InternalServerError:
                 raise
-
+        
         user = User(
             old_user.id,
             form.email.data,
@@ -446,7 +454,7 @@ def get_report(id: str, company: str, /) -> ReportDTO:
         )
         raise NotFoundError(f"הדוח {id} אינו במסד הנתונים")
 
-    personnel = personnel_dal.find_all_personnel_by_company_dated_before(
+    personnel = personnel_dal.find_all_personnel_by_company_active_in(
         Company[company], datetime.date.today(), PersonnelOrderBy.LAST_NAME, Order.ASC
     )
     if personnel is None:
@@ -498,7 +506,7 @@ def get_unified_report(form: PersonnelSortForm, date_string: str, order_by: str,
         )
         raise NotFoundError(f"לא נמצאו דוחות לתאריך {date.strftime('%d/%m/%Y')}")
     
-    personnel = personnel_dal.find_all_personnel_dated_before(date, PersonnelOrderBy[order_by], Order[order])
+    personnel = personnel_dal.find_all_personnel_active_in(date, PersonnelOrderBy[order_by], Order[order])
     if personnel is None:
         current_app.logger.debug(
             f"personnel registered prior to {date} for {current_user}"
