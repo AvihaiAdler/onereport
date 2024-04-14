@@ -26,7 +26,7 @@ def update(original: model.User, new: model.User, /) -> bool:
         return False
 
     try:
-        original.update(new)
+        original.update_user(new)
         model.db.session.commit()
     except SQLAlchemyError as se:
         current_app.logger.error(f"{se}")
