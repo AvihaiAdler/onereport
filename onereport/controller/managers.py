@@ -294,7 +294,7 @@ def get_all_reports() -> str:
             pagination=pagination,
             company=misc.Company,
             current_company=(
-                misc.Company[company].value if misc.Company.is_valid(company) else ""
+                misc.Company[company].name if misc.Company.is_valid(company) else ""
             ),
             page=page,
             per_page=per_page,
