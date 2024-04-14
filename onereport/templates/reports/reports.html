@@ -5,7 +5,7 @@
   {% if current_user.role|has_permission %}
   <div class="row mb-2">
     <div class="col-sm-2">
-      <h5>{{ current_company }}</h3>
+      <h5>{{ current_company|get_company_value_by_name }}</h3>
     </div>
     <div class="col-sm-3">
       <select class="form-control form-select" onChange="window.location.href=this.value">
@@ -20,7 +20,7 @@
   <div class="container content-section">
     {% for report in pagination.items %}
     <div class="row hover-row {{ loop.cycle('even', 'odd') }} ">
-      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_report" ), id=report.id, company=current_company|get_company_name_by_value ) }}
+      <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_report" ), id=report.id, company=current_company ) }}
         class="link-underline link-underline-opacity-0 link-dark col">
         {{ report.date.strftime("%d/%m/%Y") }}
       </a>
