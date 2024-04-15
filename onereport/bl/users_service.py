@@ -154,7 +154,7 @@ def report(
 
     # no existing report for the current day
     if report is None:
-        report = Report(Company[company].name)
+        report = Report(Company[company].name, current_user)
         if not report_dal.save(report):
             current_app.logger.error(
                 f"{current_user} failed to create a report for company: {company} at {datetime.date.today()}"
@@ -175,7 +175,7 @@ def report(
     # there is an exisiting report for the day
     if form.validate_on_submit():
         presence = {p for p in personnel if p.id in request.form}
-        if not report_dal.update(report, presence):
+        if not report_dal.update(report, presence, current_user):
             current_app.logger.error(
                 f"{current_user} failed to update the report {report}"
             )

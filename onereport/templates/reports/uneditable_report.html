@@ -3,7 +3,15 @@
 {% block content %}
 <div class="row fs-6">
   <h5>פלוגה {{ report.company }}</h5>
-  <p>{{ report.date.strftime("%d/%m/%Y") }}</p>
+  <div class="d-flex">
+    <div class="p-2 flex-grow-1">{{ report.date.strftime("%d/%m/%Y") }}</div>
+    <div class="p-2">
+      <div class="col-sm">נערך לאחרונה: {{report.last_edited.strftime("%H:%M:%S")}}</div>
+      {% if report.edited_by %}
+      <div class="col-sm">ע"י: {{report.edited_by.first_name}} {{report.edited_by.last_name}}</div>
+      {% endif %}
+    </div>
+  </div>
 </div>
 <div class="containter content-section">
   <div class="row heading">

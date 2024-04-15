@@ -21,12 +21,12 @@ def save(report: model.Report, /) -> bool:
     return True
 
 
-def update(report: model.Report, presence: set[model.Personnel], /) -> bool:
+def update(report: model.Report, presence: set[model.Personnel], user: model.User=None, /) -> bool:
     if report is None:
         return False
 
     try:
-        report.update(presence)
+        report.update(presence, user)
         model.db.session.commit()
     except SQLAlchemyError as se:
         current_app.logger.error(f"{se}")
