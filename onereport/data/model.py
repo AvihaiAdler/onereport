@@ -37,7 +37,9 @@ class Personnel(db.Model):
     company: orm.Mapped[str]
     platoon: orm.Mapped[str]
     active: orm.Mapped[bool] = orm.mapped_column(default=True)
-    date_added: orm.Mapped[datetime.date] = orm.mapped_column(default=datetime.date.today)
+    date_added: orm.Mapped[datetime.date] = orm.mapped_column(
+        default=datetime.date.today
+    )
     date_removed: orm.Mapped[Optional[datetime.date]] = orm.mapped_column(default=None)
 
     type: orm.Mapped[str]
@@ -76,7 +78,7 @@ class Personnel(db.Model):
         self.active = other.active
         self.date_removed = other.date_removed
         return self
-        
+
     def update_personnel(self: Self, other: Self) -> Self:
         return self.update(other)
 
@@ -98,7 +100,7 @@ class Report(db.Model):
 
     def __repr__(self: Self) -> str:
         return f"Report(date: {self.date.day}/{self.date.month}/{self.date.year}, company: {self.company})"
-    
+
     def update(self: Self, presence: set[Personnel], /) -> None:
         self.presence = presence
 
@@ -142,6 +144,7 @@ class User(Personnel, UserMixin):
 
     def get_id(self: Self) -> str:
         return self.email
+
 
 @login_manager.user_loader
 def load_user(email: str) -> User | None:

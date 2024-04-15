@@ -14,7 +14,11 @@ from onereport.exceptions import (
     NotFoundError,
     InternalServerError,
 )
-from onereport.controller.forms import PersonnelSortForm, PersonnelUpdateForm, UpdateReportForm
+from onereport.controller.forms import (
+    PersonnelSortForm,
+    PersonnelUpdateForm,
+    UpdateReportForm,
+)
 
 
 def get_all_personnel(
@@ -32,7 +36,7 @@ def get_all_personnel(
     if not Company.is_valid(company):
         current_app.logger.error(f"invalid company {company}")
         raise BadRequestError("פלוגה אינה תקינה")
-    
+
     if form.is_submitted():
         order_by = form.order_by.data
         order = form.order.data
@@ -44,7 +48,7 @@ def get_all_personnel(
     if not Order.is_valid(order):
         current_app.logger.error(f"invalid order {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
-    
+
     personnel = personnel_dal.find_all_active_personnel_by_company(
         Company[company], PersonnelOrderBy[order_by], Order[order]
     )
@@ -56,7 +60,9 @@ def get_all_personnel(
         )
 
     # chr(10) == '\n'. \ cannot be used within an f-sting {} part prior to 3.12
-    current_app.logger.debug(f"passing {len(personnel)} for {current_user}\n{chr(10).join([str(p) for p in personnel])}")
+    current_app.logger.debug(
+        f"passing {len(personnel)} for {current_user}\n{chr(10).join([str(p) for p in personnel])}"
+    )
     return [PersonnelDTO(p) for p in personnel]
 
 
@@ -83,11 +89,11 @@ def update_personnel(form: PersonnelUpdateForm, id: str, /) -> PersonnelDTO:
         if not Active.is_valid(form.active.data):
             current_app.logger.error(f"invalid active {form.active.data}")
             raise BadRequestError("ערך פעיל אינו תקין")
-        
+
         if not Platoon.is_valid(form.platoon.data):
             current_app.logger.error(f"invalid company {form.platoon.data}")
             raise BadRequestError("מחלקה אינה תקינה")
-        
+
         personnel = Personnel(
             old_personnel.id,
             form.first_name.data.strip(),
@@ -170,12 +176,16 @@ def report(
     if form.validate_on_submit():
         presence = {p for p in personnel if p.id in request.form}
         if not report_dal.update(report, presence):
-            current_app.logger.error(f"{current_user} failed to update the report {report}")
+            current_app.logger.error(
+                f"{current_user} failed to update the report {report}"
+            )
             raise InternalServerError(
                 f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger"
             )
 
-        current_app.logger.info(f"{current_user} successfully updated the report {report}")
+        current_app.logger.info(
+            f"{current_user} successfully updated the report {report}"
+        )
 
     return [(PersonnelDTO(p), p in report.presence) for p in personnel]
 
@@ -210,7 +220,9 @@ def get_report(id: int, company: str, /) -> ReportDTO:
     return ReportDTO(report, personnel)
 
 
-def get_all_reports(company: str, order: str, page: str, per_page: str, /) -> Pagination:
+def get_all_reports(
+    company: str, order: str, page: str, per_page: str, /
+) -> Pagination:
     """
     Raises:
         BadRequestError,
@@ -223,7 +235,7 @@ def get_all_reports(company: str, order: str, page: str, per_page: str, /) -> Pa
     if not Order.is_valid(order):
         current_app.logger.error(f"invalid order {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
-    
+
     try:
         int(page)
     except ValueError:
@@ -234,12 +246,16 @@ def get_all_reports(company: str, order: str, page: str, per_page: str, /) -> Pa
     except ValueError:
         raise BadRequestError(f"הערך {page} עבור כמות עצמים בדף הינו שגוי")
 
-    reports = report_dal.find_all_reports_by_company(Company[company], Order[order], int(page), int(per_page))
+    reports = report_dal.find_all_reports_by_company(
+        Company[company], Order[order], int(page), int(per_page)
+    )
     if not reports.items:
         current_app.logger.debug(
             f"no reports for company: {company}, requested by: {current_user}"
         )
         raise NotFoundError(f"אין דוחות עבור פלוגה {Company[company].value}")
 
-    current_app.logger.debug(f"passing {reports.total} reports for {current_user}\n{chr(10).join([str(report) for report in reports.items])}")
+    current_app.logger.debug(
+        f"passing {reports.total} reports for {current_user}\n{chr(10).join([str(report) for report in reports.items])}"
+    )
     return reports

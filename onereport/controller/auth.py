@@ -40,7 +40,10 @@ def oauth2_authorize(provider: str):
         {
             "client_id": provider_data["client_id"],
             "redirect_uri": url_for(
-                "auth.oauth2_callback", _scheme = current_app.config["SCHEME"], provider=provider, _external=True,
+                "auth.oauth2_callback",
+                _scheme=current_app.config["SCHEME"],
+                provider=provider,
+                _external=True,
             ),
             "response_type": "code",
             "scope": " ".join(provider_data["scopes"]),
@@ -94,7 +97,10 @@ def oauth2_callback(provider: str):
         "code": request.args["code"],
         "grant_type": "authorization_code",
         "redirect_uri": url_for(
-            "auth.oauth2_callback", _scheme = current_app.config["SCHEME"], provider=provider, _external=True
+            "auth.oauth2_callback",
+            _scheme=current_app.config["SCHEME"],
+            provider=provider,
+            _external=True,
         ),
     }
     current_app.logger.debug(
