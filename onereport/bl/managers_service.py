@@ -1,4 +1,3 @@
-
 from flask_sqlalchemy.pagination import Pagination
 from flask import request, current_app
 from flask_login import current_user
@@ -56,14 +55,18 @@ def register_personnel(form: PersonnelRegistrationFrom) -> PersonnelDTO | None:
         match old_personnel:
             case None:  # no such personnel exists
                 if not personnel_dal.save(personnel):
-                    current_app.logger.error(f"failed to save {personnel} for {current_user}")
+                    current_app.logger.error(
+                        f"failed to save {personnel} for {current_user}"
+                    )
                     raise InternalServerError("שגיאת שרת")
 
-                current_app.logger.debug(f"{current_user} successfully registered {personnel}")
+                current_app.logger.debug(
+                    f"{current_user} successfully registered {personnel}"
+                )
             case op if not op.active:  # such personnel exists but is inactive
                 personnel.active = True
                 personnel.date_removed = None
-                    
+
                 if not personnel_dal.update(op, personnel):
                     current_app.logger.error(f"{current_user} failed to update {op}")
                     raise InternalServerError("שגיאת שרת")
@@ -76,6 +79,41 @@ def register_personnel(form: PersonnelRegistrationFrom) -> PersonnelDTO | None:
         return PersonnelDTO(personnel)
 
     return None
+
+
+def promote(personnel: Personnel, user: User, /) -> None:
+    """
+    Raises:
+        ForbiddenError,
+        InternalServerError
+    """
+    if current_user.id == personnel.id:
+        current_app.logger.warning(f"{current_user} tried to demote themselves")
+        raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
+
+    # delete the personnel since it has the same id as the newly created user
+    if not personnel_dal.delete(personnel):
+        current_app.logger.error(f"failed to delete {personnel} for {current_user}")
+        raise InternalServerError("שגיאת שרת")
+
+    current_app.logger.info(f"{current_user} successfully deleted {personnel}")
+
+    user.dates_present = personnel.dates_present
+    for report in user.dates_present:
+        report.presence.add(user)
+
+    # save the newly created user
+    if not user_dal.save(user):
+        current_app.logger.error(f"failed to save {personnel} for {current_user}")
+        # try to reinstate personnel
+        # if this fails we're in as irrecoverable state
+        if not personnel_dal.save(personnel):
+            current_app.logger.critical(
+                f"failed to reinstate previous state. personnel has been deleted yet no user has been saved, and attemps to resave the old personnel fails\n{personnel}"
+            )
+        raise InternalServerError("שגיאת שרת")
+
+    current_app.logger.info(f"{current_user} successfully deleted {personnel}")
 
 
 def register_user(form: UserRegistrationFrom, id: str, /) -> PersonnelDTO:
@@ -117,34 +155,25 @@ def register_user(form: UserRegistrationFrom, id: str, /) -> PersonnelDTO:
         old_user = user_dal.find_user_by_email(user.email)
         match old_user:
             case None:  # no such user exists
-                # delete the personnel since it has the same id as the newly created user
-                if not personnel_dal.delete(personnel):
-                    current_app.logger.error(f"failed to delete {personnel} for {current_user}")
-                    raise InternalServerError("שגיאת שרת")
-
-                current_app.logger.info(f"{current_user} successfully deleted {personnel}")
-
-                # save the newly created user
-                if not user_dal.save(user):
-                    current_app.logger.error(f"failed to save {personnel} for {current_user}")
-                    # try to reinstate personnel
-                    # if this fails we're in as irrecoverable state
-                    if not personnel_dal.save(personnel):
-                        current_app.logger.critical(
-                            f"failed to reinstate previous state. personnel has been deleted yet no user has been saved, and attemps to resave the old personnel fails\n{personnel}"
-                        )
-                    raise InternalServerError("שגיאת שרת")
-
-                current_app.logger.info(f"{current_user} successfully deleted {personnel}")
+                try:
+                    promote(personnel, user)
+                except ForbiddenError:
+                    raise
+                except InternalServerError:
+                    raise
             case ou if not ou.active:  # such user exists but is inactive
                 user.active = True
                 user.date_removed = None
-                
+
                 if not user_dal.update(ou, user):
-                    current_app.logger.error(f"{current_user} failed to update {old_user}")
+                    current_app.logger.error(
+                        f"{current_user} failed to update {old_user}"
+                    )
                     raise InternalServerError("שגיאת שרת")
 
-                current_app.logger.info(f"{current_user} successfully updated {old_user}")
+                current_app.logger.info(
+                    f"{current_user} successfully updated {old_user}"
+                )
             case _:
                 current_app.logger.error(
                     f"{current_user} tried to register {user} with the same email as {old_user}"
@@ -222,6 +251,11 @@ def demote(user: User) -> None:
     personnel = Personnel(
         user.id, user.first_name, user.last_name, user.company, user.platoon
     )
+
+    personnel.dates_present = user.dates_present
+    for report in personnel.dates_present:
+        report.presence.add(personnel)
+
     if not personnel_dal.save(personnel):
         current_app.logger.error(
             f"{current_user} failed to save the personnel {personnel}. demotion failed"
@@ -266,7 +300,7 @@ def update_user(form: UserUpdateForm, email: str, /) -> UserDTO:
                 raise
             except InternalServerError:
                 raise
-        
+
         user = User(
             old_user.id,
             form.email.data,
@@ -287,7 +321,9 @@ def update_user(form: UserUpdateForm, email: str, /) -> UserDTO:
             user.id == current_user.id
             and Active.get_value_as_bool(form.active.data) != current_user.active
         ):
-            current_app.logger.warning(f"{current_user} tried to deactivate themselves {user}")
+            current_app.logger.warning(
+                f"{current_user} tried to deactivate themselves {user}"
+            )
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
         user.active = Active[form.active.data] == Active.ACTIVE
@@ -295,7 +331,9 @@ def update_user(form: UserUpdateForm, email: str, /) -> UserDTO:
         if user.id == current_user.id and Role.get_level(
             current_user.role
         ) != Role.get_level(user.role):
-            current_app.logger.warning(f"{current_user} tried to change their role to {user}")
+            current_app.logger.warning(
+                f"{current_user} tried to change their role to {user}"
+            )
             raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
 
         if not user_dal.update(old_user, user):
@@ -325,7 +363,9 @@ def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
         current_app.logger.debug(f"there are no visible users for {current_user}")
         raise NotFoundError("לא נמצאו משתמשים")
 
-    current_app.logger.debug(f"passing {len(users)} users for {current_user}\n{chr(10).join([str(user) for user in users])}")
+    current_app.logger.debug(
+        f"passing {len(users)} users for {current_user}\n{chr(10).join([str(user) for user in users])}"
+    )
     return [UserDTO(user) for user in users]
 
 
@@ -348,11 +388,11 @@ def get_all_personnel(
     if form.is_submitted():
         order_by = form.order_by.data
         order = form.order.data
-        
+
     if request.method == "GET":
         form.order_by.data = order_by
         form.order.data = order
-        
+
     if not PersonnelOrderBy.is_valid(order_by):
         current_app.logger.error(f"invalid order_by {order_by}")
         raise BadRequestError(f"מיון לפי {order_by} אינו נתמך")
@@ -369,7 +409,9 @@ def get_all_personnel(
             f"there are no visible personnel in company {company} for {current_user}"
         )
 
-    current_app.logger.debug(f"passing {len(personnel)} personnel for {current_user}\n{chr(10).join([str(p) for p in personnel])}")
+    current_app.logger.debug(
+        f"passing {len(personnel)} personnel for {current_user}\n{chr(10).join([str(p) for p in personnel])}"
+    )
     return [PersonnelDTO(p) for p in personnel]
 
 
@@ -428,12 +470,16 @@ def report(
     if form.validate_on_submit():
         presence = {p for p in personnel if p.id in request.form}
         if not report_dal.update(report, presence):
-            current_app.logger.error(f"{current_user} failed to update the report {report}")
+            current_app.logger.error(
+                f"{current_user} failed to update the report {report}"
+            )
             raise InternalServerError(
                 f"הדוח ליום {datetime.date.today()} לא נשלח", category="danger"
             )
-        current_app.logger.info(f"{current_user} successfully updated the report {report}")
-    
+        current_app.logger.info(
+            f"{current_user} successfully updated the report {report}"
+        )
+
     return [(PersonnelDTO(p), p in report.presence) for p in personnel]
 
 
@@ -467,7 +513,9 @@ def get_report(id: str, company: str, /) -> ReportDTO:
     return ReportDTO(report, personnel)
 
 
-def get_unified_report(form: PersonnelSortForm, date_string: str, order_by: str, order: str, /) -> UnifiedReportDTO:
+def get_unified_report(
+    form: PersonnelSortForm, date_string: str, order_by: str, order: str, /
+) -> UnifiedReportDTO:
     """
     Raises:
         BadRequestError,
@@ -477,7 +525,7 @@ def get_unified_report(form: PersonnelSortForm, date_string: str, order_by: str,
     if form is None:
         current_app.logger.error(f"invalid form {form}")
         raise BadRequestError("form must not be None")
-        
+
     try:
         date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
     except ValueError:
@@ -486,7 +534,7 @@ def get_unified_report(form: PersonnelSortForm, date_string: str, order_by: str,
     if form.is_submitted():
         order_by = form.order_by.data
         order = form.order.data
-        
+
     if request.method == "GET":
         form.order_by.data = order_by
         form.order.data = order
@@ -498,29 +546,31 @@ def get_unified_report(form: PersonnelSortForm, date_string: str, order_by: str,
     if not Order.is_valid(order):
         current_app.logger.error(f"invalid order {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
-    
+
     reports = report_dal.find_all_reports_by_date(date)
     if reports is None:
         current_app.logger.error(
             f"{current_user} tried to get a non existing report with for date{date}"
         )
         raise NotFoundError(f"לא נמצאו דוחות לתאריך {date.strftime('%d/%m/%Y')}")
-    
-    personnel = personnel_dal.find_all_personnel_active_in(date, PersonnelOrderBy[order_by], Order[order])
+
+    personnel = personnel_dal.find_all_personnel_active_in(
+        date, PersonnelOrderBy[order_by], Order[order]
+    )
     if personnel is None:
         current_app.logger.debug(
             f"personnel registered prior to {date} for {current_user}"
         )
-        raise NotFoundError(
-            f"אין חיילים רשומים במאגר עד תאריך {date}"
-        )
-    
+        raise NotFoundError(f"אין חיילים רשומים במאגר עד תאריך {date}")
+
     # couldn't think of something smarter
     presence = {personnel for report in reports for personnel in report.presence}
-    return UnifiedReportDTO(date, presence,personnel)
+    return UnifiedReportDTO(date, presence, personnel)
 
 
-def get_all_reports_for(company: str, order: str, page: str, per_page: str, /) -> Pagination:
+def get_all_reports_for(
+    company: str, order: str, page: str, per_page: str, /
+) -> Pagination:
     """
     Raises:
         BadRequestError
@@ -532,7 +582,7 @@ def get_all_reports_for(company: str, order: str, page: str, per_page: str, /) -
     if not Order.is_valid(order):
         current_app.logger.error(f"invalid order {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
-    
+
     try:
         int(page)
     except ValueError:
@@ -543,11 +593,17 @@ def get_all_reports_for(company: str, order: str, page: str, per_page: str, /) -
     except ValueError:
         raise BadRequestError(f"הערך {per_page} עבור כמות עצמים בדף הינו שגוי")
 
-    reports = report_dal.find_all_reports_by_company(Company[company], Order[order], int(page), int(per_page))
+    reports = report_dal.find_all_reports_by_company(
+        Company[company], Order[order], int(page), int(per_page)
+    )
     if not reports.items:
-        current_app.logger.debug(f"no visible reports for company {company} for {current_user}")
+        current_app.logger.debug(
+            f"no visible reports for company {company} for {current_user}"
+        )
 
-    current_app.logger.debug(f"passing {reports.total} reports for {current_user}\n{chr(10).join([str(report) for report in reports.items])}")
+    current_app.logger.debug(
+        f"passing {reports.total} reports for {current_user}\n{chr(10).join([str(report) for report in reports.items])}"
+    )
     return reports
 
 
@@ -559,7 +615,7 @@ def get_all_reports(order: str, page: str, per_page: str, /) -> Pagination:
     if not Order.is_valid(order):
         current_app.logger.error(f"invalid order {order}")
         raise BadRequestError(f"סדר {order} אינו נתמך")
-    
+
     try:
         int(page)
     except ValueError:
@@ -569,10 +625,14 @@ def get_all_reports(order: str, page: str, per_page: str, /) -> Pagination:
         int(per_page)
     except ValueError:
         raise BadRequestError(f"הערך {per_page} עבור כמות עצמים בדף הינו שגוי")
-    
+
     reports = report_dal.find_all_distinct_reports(order, int(page), int(per_page))
     if not reports.items:
-        current_app.logger.debug(f"no visible reports across all companies for {current_user}")
+        current_app.logger.debug(
+            f"no visible reports across all companies for {current_user}"
+        )
 
-    current_app.logger.debug(f"passing {reports.total} reports for {current_user}\n{chr(10).join([str(report) for report in reports.items])}")
+    current_app.logger.debug(
+        f"passing {reports.total} reports for {current_user}\n{chr(10).join([str(report) for report in reports.items])}"
+    )
     return reports
