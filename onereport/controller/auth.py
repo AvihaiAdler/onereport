@@ -141,7 +141,7 @@ def oauth2_callback(provider: str):
         )
         abort(401)
 
-    email = provider_data["userinfo"]["email"](response.json())
+    email = provider_data["userinfo"]["email"](response.json()).lower()
 
     # find the user in the database
     user = user_dal.find_user_by_email(email)
