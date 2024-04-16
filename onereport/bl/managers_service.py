@@ -138,7 +138,7 @@ def register_user(form: UserRegistrationFrom, id: str, /) -> PersonnelDTO:
     if form.validate_on_submit():
         user = User(
             personnel.id,
-            form.email.data.strip(),
+            form.email.data.strip().lower(),
             form.first_name.data.strip(),
             form.last_name.data.strip(),
             form.role.data,
