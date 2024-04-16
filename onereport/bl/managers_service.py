@@ -363,9 +363,7 @@ def get_all_users(order_by: str, order: str, /) -> list[UserDTO]:
         current_app.logger.debug(f"there are no visible users for {current_user}")
         raise NotFoundError("לא נמצאו משתמשים")
 
-    current_app.logger.debug(
-        f"passing {len(users)} users for {current_user}\n{chr(10).join([str(user) for user in users])}"
-    )
+
     return [UserDTO(user) for user in users]
 
 
@@ -409,9 +407,6 @@ def get_all_personnel(
             f"there are no visible personnel in company {company} for {current_user}"
         )
 
-    current_app.logger.debug(
-        f"passing {len(personnel)} personnel for {current_user}\n{chr(10).join([str(p) for p in personnel])}"
-    )
     return [PersonnelDTO(p) for p in personnel]
 
 
@@ -601,9 +596,6 @@ def get_all_reports_for(
             f"no visible reports for company {company} for {current_user}"
         )
 
-    current_app.logger.debug(
-        f"passing {reports.total} reports for {current_user}\n{chr(10).join([str(report) for report in reports.items])}"
-    )
     return reports
 
 
@@ -632,7 +624,4 @@ def get_all_reports(order: str, page: str, per_page: str, /) -> Pagination:
             f"no visible reports across all companies for {current_user}"
         )
 
-    current_app.logger.debug(
-        f"passing {reports.total} reports for {current_user}\n{chr(10).join([str(report) for report in reports.items])}"
-    )
     return reports

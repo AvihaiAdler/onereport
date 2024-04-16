@@ -59,10 +59,6 @@ def get_all_personnel(
             f"אין חיילים.ות במאגר השייכים לפלוגה {Company[company].value}"
         )
 
-    # chr(10) == '\n'. \ cannot be used within an f-sting {} part prior to 3.12
-    current_app.logger.debug(
-        f"passing {len(personnel)} for {current_user}\n{chr(10).join([str(p) for p in personnel])}"
-    )
     return [PersonnelDTO(p) for p in personnel]
 
 
@@ -255,7 +251,4 @@ def get_all_reports(
         )
         raise NotFoundError(f"אין דוחות עבור פלוגה {Company[company].value}")
 
-    current_app.logger.debug(
-        f"passing {reports.total} reports for {current_user}\n{chr(10).join([str(report) for report in reports.items])}"
-    )
     return reports
