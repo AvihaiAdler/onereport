@@ -8,7 +8,7 @@ from onereport.dal import (
     UserOrderBy,
     PersonnelOrderBy,
 )
-from onereport.data.model import Personnel, User
+from onereport.data import Personnel, User
 from onereport.dto.user_dto import UserDTO
 from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.exceptions import BadRequestError, NotFoundError, InternalServerError

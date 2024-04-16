@@ -1,10 +1,10 @@
 from typing import Self
 from onereport.data import misc
-from onereport.data import model
+from onereport.data import User
 
 
 class UserDTO:
-    def __init__(self: Self, user: model.User) -> None:
+    def __init__(self: Self, user: User) -> None:
         self.id = user.id
         self.first_name = user.first_name
         self.last_name = user.last_name

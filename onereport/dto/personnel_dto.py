@@ -1,10 +1,10 @@
 from typing import Self
 from onereport.data import misc
-from onereport.data import model
+from onereport.data import Personnel, User
 
 
 class PersonnelDTO:
-    def __init__(self: Self, personnel: model.Personnel) -> None:
+    def __init__(self: Self, personnel: Personnel) -> None:
         self.id = personnel.id
         self.first_name = personnel.first_name
         self.last_name = personnel.last_name
@@ -13,8 +13,8 @@ class PersonnelDTO:
         self.active = personnel.active
         
     @staticmethod
-    def from_user(user: model.User) -> Self:
-        personnel = model.Personnel(
+    def from_user(user: User) -> Self:
+        personnel = Personnel(
             user.id,
             user.first_name,
             user.last_name,

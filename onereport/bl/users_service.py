@@ -6,7 +6,7 @@ from flask_login import current_user
 from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.dto.report_dto import ReportDTO
 from onereport.data.misc import Company, Active, Platoon
-from onereport.data.model import Personnel, Report
+from onereport.data import Personnel, Report
 from onereport.dal import personnel_dal, report_dal, Order, PersonnelOrderBy
 from onereport.exceptions import (
     BadRequestError,

@@ -1,118 +1,118 @@
 from flask_sqlalchemy.pagination import Pagination
 from flask import current_app
 from onereport.dal import Order
-from onereport.data import model, misc
+from onereport.data import db, misc, Report, Personnel, User
 import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
 import datetime
 
 
-def save(report: model.Report, /) -> bool:
+def save(report: Report, /) -> bool:
     if report is None:
         return False
 
     try:
-        model.db.session.add(report)
-        model.db.session.commit()
+        db.session.add(report)
+        db.session.commit()
     except SQLAlchemyError as se:
         current_app.logger.error(f"{se}")
-        model.db.session.rollback()
+        db.session.rollback()
         return False
     return True
 
 
-def update(report: model.Report, presence: set[model.Personnel], user: model.User=None, /) -> bool:
+def update(report: Report, presence: set[Personnel], user: User=None, /) -> bool:
     if report is None:
         return False
 
     try:
         report.update(presence, user)
-        model.db.session.commit()
+        db.session.commit()
     except SQLAlchemyError as se:
         current_app.logger.error(f"{se}")
-        model.db.session.rollback()
+        db.session.rollback()
         return False
     return True
 
 
-def save_all(reports: list[model.Report], /) -> bool:
+def save_all(reports: list[Report], /) -> bool:
     if reports is None or not reports:
         return False
 
     try:
-        model.db.session.add_all(reports)
-        model.db.session.commit()
+        db.session.add_all(reports)
+        db.session.commit()
     except SQLAlchemyError as se:
         current_app.logger.error(f"{se}")
-        model.db.session.rollback()
+        db.session.rollback()
         return False
     return True
 
 
-def delete(report: model.Report, /) -> bool:
+def delete(report: Report, /) -> bool:
     if report is None:
         return False
 
     try:
-        model.db.session.delete(report)
-        model.db.session.commit()
+        db.session.delete(report)
+        db.session.commit()
     except SQLAlchemyError as se:
         current_app.logger.error(f"{se}")
-        model.db.session.rollback()
+        db.session.rollback()
         return False
     return True
 
 
-def delete_all(reports: list[model.Report], /) -> bool:
+def delete_all(reports: list[Report], /) -> bool:
     if reports is None or not reports:
         return False
 
     try:
         for report in reports:
             try:
-                model.db.session.delete(report)
+                db.session.delete(report)
             except SQLAlchemyError as se:
                 current_app.logger.error(f"{se}")
-                model.db.session.rollback()
-        model.db.session.commit()
+                db.session.rollback()
+        db.session.commit()
     except SQLAlchemyError as se:
         current_app.logger.error(f"{se}")
-        model.db.session.rollback()
+        db.session.rollback()
         return False
     return True
 
 
-def find_report_by_id(id: int, /) -> model.Report | None:
-    return model.db.session.scalar(
-        sqlalchemy.select(model.Report).filter(model.Report.id == id)
+def find_report_by_id(id: int, /) -> Report | None:
+    return db.session.scalar(
+        sqlalchemy.select(Report).filter(Report.id == id)
     )
 
 
-def find_all_reports_by_date(date: datetime.date, /) -> list[model.Report]:
-    return model.db.session.scalars(
-        sqlalchemy.select(model.Report)
-        .filter(model.Report.date == date)
-        .filter(model.Report.presence.any())
+def find_all_reports_by_date(date: datetime.date, /) -> list[Report]:
+    return db.session.scalars(
+        sqlalchemy.select(Report)
+        .filter(Report.date == date)
+        .filter(Report.presence.any())
     ).all()
 
 
 def find_report_by_id_and_company(
     id: int, company: misc.Company, /
-) -> model.Report | None:
-    return model.db.session.scalar(
-        sqlalchemy.select(model.Report)
-        .filter(model.Report.id == id)
-        .filter(model.Report.company == company.name)
+) -> Report | None:
+    return db.session.scalar(
+        sqlalchemy.select(Report)
+        .filter(Report.id == id)
+        .filter(Report.company == company.name)
     )
 
 
 def find_report_by_date_and_company(
     date: datetime.date, company: misc.Company, /
-) -> model.Report | None:
-    return model.db.session.scalar(
-        sqlalchemy.select(model.Report)
-        .filter(model.Report.date == date)
-        .filter(model.Report.company == company.name)
+) -> Report | None:
+    return db.session.scalar(
+        sqlalchemy.select(Report)
+        .filter(Report.date == date)
+        .filter(Report.company == company.name)
     )
 
 
@@ -121,14 +121,14 @@ def find_report_by_date_and_company(
 def find_all_reports_by_company(
     company: misc.Company, order: Order, page=1, per_page=20, /
 ) -> Pagination:
-    return model.db.paginate(
-        sqlalchemy.select(model.Report)
-        .filter(model.Report.company == company.name)
-        .filter(model.Report.presence.any())
+    return db.paginate(
+        sqlalchemy.select(Report)
+        .filter(Report.company == company.name)
+        .filter(Report.presence.any())
         .order_by(
-            sqlalchemy.asc(model.Report.date)
+            sqlalchemy.asc(Report.date)
             if order == Order.ASC
-            else sqlalchemy.desc(model.Report.date)
+            else sqlalchemy.desc(Report.date)
         ),
         page=page,
         per_page=per_page,
@@ -136,11 +136,11 @@ def find_all_reports_by_company(
 
 
 def delete_all_empty_reports_by_company(company: misc.Company) -> None:
-    empty_reports = model.db.session.scalars(
-        sqlalchemy.select(model.Report)
-        .filter(model.Report.company == company.name)
-        .filter(model.Report.presence)
-        .order_by(model.Report.id.asc)
+    empty_reports = db.session.scalars(
+        sqlalchemy.select(Report)
+        .filter(Report.company == company.name)
+        .filter(Report.presence)
+        .order_by(Report.id.asc)
     ).all()
 
     delete_all(empty_reports)
@@ -149,19 +149,19 @@ def delete_all_empty_reports_by_company(company: misc.Company) -> None:
 def find_all_distinct_reports(
     order: Order, page: int = 1, per_page: int = 20, /
 ) -> Pagination:
-    return model.db.paginate(
-        sqlalchemy.select(model.Report)
-        .filter(model.Report.presence.any())
-        .distinct(model.Report.date)  # only works for postgres!
+    return db.paginate(
+        sqlalchemy.select(Report)
+        .filter(Report.presence.any())
+        .distinct(Report.date)  # only works for postgres!
         .order_by(
-            sqlalchemy.asc(model.Report.date)
+            sqlalchemy.asc(Report.date)
             if order == Order.ASC
-            else sqlalchemy.desc(model.Report.date)
+            else sqlalchemy.desc(Report.date)
         ),
         page=page,
         per_page=per_page,
     )
 
 
-def find_all_reports() -> list[model.Report]:
-    return model.db.session.scalars(sqlalchemy.select(model.Report)).all()
+def find_all_reports() -> list[Report]:
+    return db.session.scalars(sqlalchemy.select(Report)).all()

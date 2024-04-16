@@ -1,6 +1,6 @@
 import json
 import click
-from onereport.data.model import db, User, Personnel
+from onereport.data import db, User, Personnel
 from onereport.dal import personnel_dal, user_dal
 from flask import Blueprint
 

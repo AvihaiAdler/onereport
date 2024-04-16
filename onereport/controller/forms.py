@@ -14,7 +14,10 @@ ID_LEN = 6
 class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
     id = wtforms.StringField(
         "מספר אישי",
-        validators=[validators.InputRequired("שדה חובה"), validators.Length(min=ID_LEN)],
+        validators=[
+            validators.InputRequired("שדה חובה"),
+            validators.Length(min=ID_LEN),
+        ],
     )
     first_name = wtforms.StringField(
         "שם פרטי",

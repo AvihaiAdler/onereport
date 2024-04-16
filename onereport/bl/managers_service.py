@@ -2,7 +2,7 @@ from flask_sqlalchemy.pagination import Pagination
 from flask import request, current_app
 from flask_login import current_user
 from onereport.data.misc import Active, Company, Role
-from onereport.data.model import Personnel, User, Report
+from onereport.data import Personnel, User, Report
 from onereport.dto.personnel_dto import PersonnelDTO
 from onereport.dto.report_dto import UnifiedReportDTO, ReportDTO
 from onereport.dto.user_dto import UserDTO
@@ -211,6 +211,13 @@ def update_personnel(form: PersonnelUpdateForm, id: str, /) -> PersonnelDTO:
             form.platoon.data,
         )
 
+        user = user_dal.find_user_by_id(personnel.id)
+        if user is not None and Role.get_level(current_user.role) > Role.get_level(user.role):
+            current_app.logger.warning(
+                f"{current_user} with permision level {Role.get_level(current_user.role)} tried to register a user with permission level {Role.get_level(user.role)}"
+            )
+            raise ForbiddenError("אינך רשאי.ת לבצע פעולה זו")
+        
         # User tries to set itself to 'inactive' state
         if (
             personnel.id == current_user.id
