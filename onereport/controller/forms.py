@@ -8,13 +8,13 @@ import email_validator
 from onereport.data import misc
 from onereport.dal import order_attr
 
-ID_LEN = 7
+ID_LEN = 6
 
 
 class PersonnelRegistrationFrom(flask_wtf.FlaskForm):
     id = wtforms.StringField(
         "מספר אישי",
-        validators=[validators.InputRequired("שדה חובה"), validators.Length(ID_LEN, ID_LEN)],
+        validators=[validators.InputRequired("שדה חובה"), validators.Length(min=ID_LEN)],
     )
     first_name = wtforms.StringField(
         "שם פרטי",
