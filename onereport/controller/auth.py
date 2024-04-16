@@ -9,7 +9,7 @@ from flask import (
     flash,
     session,
 )
-import flask_login
+from flask_login import current_user, login_user
 import secrets
 import requests
 import urllib.parse as urllib_parse
@@ -21,9 +21,9 @@ auth = Blueprint("auth", __name__)
 # https://blog.miguelgrinberg.com/post/oauth-authentication-with-flask-in-2023
 @auth.get("/onereport/authorize/<provider>")
 def oauth2_authorize(provider: str):
-    if not flask_login.current_user.is_anonymous:
+    if not current_user.is_anonymous:
         current_app.logger.warning(
-            f"authorized access by {flask_login.current_user} - user already logged in"
+            f"authorized access by {current_user} - user already logged in"
         )
         return redirect(url_for("common.home"))
 
@@ -58,9 +58,9 @@ def oauth2_authorize(provider: str):
 
 @auth.get("/onereport/callback/<provider>")
 def oauth2_callback(provider: str):
-    if not flask_login.current_user.is_anonymous:
+    if not current_user.is_anonymous:
         current_app.logger.warning(
-            f"authorized access by {flask_login.current_user} - user already logged in"
+            f"authorized access by {current_user} - user already logged in"
         )
         return redirect(url_for("common.home"))
 
@@ -151,8 +151,7 @@ def oauth2_callback(provider: str):
         )
         abort(401)
 
-    # log the user in
-    ret = flask_login.login_user(user)
+    ret = login_user(user)
     if ret:
         current_app.logger.info(f"{user} logged in")
     else:

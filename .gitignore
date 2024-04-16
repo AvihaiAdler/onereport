@@ -2,6 +2,7 @@
 !.dockerignore
 log
 companies_data
+cred
 instance/
 __pycache__/
 onereport-compose*.*
