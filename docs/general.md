@@ -69,3 +69,4 @@ The routes are used to authenticate the user.
 ##### Known bugs
 - [x] due to the way `User` & `Personnel` interact with each other - promoting a `Personnel` / demoting a `User` will erase said person from all previous reports : FIXED
 - [x] mail addresses are case sensitve: FIXED
+- [x] non admins can deactivate an admin by deactivating the personnel 'behind' said admin: FIXED

@@ -179,7 +179,7 @@ def get_report(id: int) -> str:
             "errors/error.html", error=UnauthorizedError("אין לך הרשאה לדף זה")
         )
 
-    company = request.args.get("company", current_user.company)
+    company = request.args.get("company", default=current_user.company)
 
     return redirect(
         url_for(

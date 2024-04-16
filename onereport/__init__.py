@@ -5,7 +5,7 @@ import logging
 from typing import Any
 import logging.config
 from pathlib import Path
-from onereport.data import model, misc
+from onereport.data import db, login_manager, misc
 from os.path import dirname, abspath
 from dotenv import load_dotenv
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -19,7 +19,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 def create_logger(logger_config: str = "logger.json", /) -> None:
     with open(logger_config, "r") as file_config:
         config = json.load(file_config)
-        
+
     logging.config.dictConfig(config)
 
 
@@ -35,7 +35,7 @@ def register_filters(app: flask.Flask, /) -> None:
         return misc.Role.get_level(role_name) <= misc.Role.get_level(
             misc.Role.MANAGER.name
         )
-        
+
     @app.template_filter()
     def is_admin(role_name: str) -> bool:
         if not misc.Role.is_valid(role_name):
@@ -66,22 +66,22 @@ def register_filters(app: flask.Flask, /) -> None:
 
 
 def create_app(config: Any = None, /) -> flask.Flask:
-    env_file_path = Path(abspath(dirname(__file__))).absolute()    
+    env_file_path = Path(abspath(dirname(__file__))).absolute()
     if not load_dotenv(f"{env_file_path}/.env"):
         logging.error(f"failed to load .env file from {env_file_path}")
         exit(1)
-    
+
     if config is None:
         from onereport.config import Config
-        config = Config() 
-        
+        config = Config()
+
     create_logger(os.environ.get("LOGGING_CONFIG"))
 
     app = flask.Flask(__name__)
     app.config.from_object(config)
 
-    model.db.init_app(app=app)
-    model.login_manager.init_app(app=app)
+    db.init_app(app=app)
+    login_manager.init_app(app=app)
 
     from onereport.controller.common import common  # noqa: F401
     from onereport.controller.users import users  # noqa: F401
@@ -89,7 +89,7 @@ def create_app(config: Any = None, /) -> flask.Flask:
     from onereport.controller.managers import managers  # noqa: F401
     from onereport.controller.admins import admins  # noqa: F401
     from onereport.controller.errors import errors  # noqa: F401
-    from onereport.controller.commands import commands # noqa: F401
+    from onereport.controller.commands import commands  # noqa: F401
 
     app.register_blueprint(common)
     app.register_blueprint(users)
