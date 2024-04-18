@@ -63,12 +63,12 @@
             </a>
             <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_reports" )) }}
               class="link-underline link-underline-opacity-0">
-              <li class="list-group-item list-group-item-light hover">דוחו"ת קודמים (פלוגתי)</li>
+              <li class="list-group-item list-group-item-light hover">כל הדוחו"ת (פלוגתי)</li>
             </a>
             {% if current_user.role|has_permission %}
             <a href={{ url_for(current_user.role|generate_urlstr(urlstr="get_all_unified_reports" )) }}
               class="link-underline link-underline-opacity-0">
-              <li class="list-group-item list-group-item-light hover">דוחו"ת קודמים (גדודי)</li>
+              <li class="list-group-item list-group-item-light hover">כל הדוחו"ת (גדודי)</li>
             </a>
             {% endif %}
           </ul>
