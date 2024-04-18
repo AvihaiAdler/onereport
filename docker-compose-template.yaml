@@ -26,6 +26,8 @@ services:
   onereport:
     build: .
     command: gunicorn --bind 0.0.0.0:5000 -w 3 "onereport:create_app()"
+    volumes:
+      - onereport-logs:/usr/onereport/log/
     environment:
       - SQLALCHEMY_DATABASE_URI=
     expose:
@@ -54,3 +56,4 @@ services:
       retries: 5
 volumes:
   db-data:
+  onereport-logs:
