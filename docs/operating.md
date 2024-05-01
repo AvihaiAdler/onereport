@@ -13,11 +13,11 @@ Build a docker image is as simple as typing `docker build .`
 
 ##### docker-compose
 Building and launching with docker compose is slightly trickier:
-- Go to [here](https://github.com/AvihaiAdler/onereport/tree/main/docker-compose-template.yaml) and fill out the blacked lines
+- Go to [here](https://github.com/AvihaiAdler/onereport/tree/main/docker-compose-template.yaml) and fill out the blanked lines
 - Run `docker-compose -f path/to/your/docker-compose-file.yaml up --build` (add `-d` to launch in the background)
-- Run `docker-compose -f path/to/your/docker-compose-file.yaml exec -it onereport sh` to get a shell into your `onereport` container
-- To create the db repeat the steps listed above
-- To ensure the tables were created do:
+- Run `docker-compose -f path/to/your/docker-compose-file.yaml exec -it onereport sh` to get a shell within your `onereport` container
+- Create a db with the steps listed [here](https://github.com/AvihaiAdler/onereport/tree/main/docs/deployment.md)
+- To ensure the tables were created run:
   - `docker-compose -f path/to/your/docker-compose-file.yaml exec -it db sh`
   - `psql --username=your_db_username_as_written_in_onereport-compose.yaml --dbname=your_dbname_as_written_in_onereport-compose.yaml`
   - `\l` (to list all dbs)
