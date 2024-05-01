@@ -17,13 +17,13 @@ Installing docker-compose can be found [here](https://docs.docker.com/compose/in
 - `sudo apt update`
 - `curl -SL https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose`
 
-##### In depth guide
+#### In depth guide
 deployment:
 - `git clone https://github.com/AvihaiAdler/onereport`
 - `scp` over your `.env` & `docker-compose.yaml` files
 - `cp -r onereport/nginx .` 
 - `cd onereport`
-- 
+ 
 get an ssl certificate:
 - `docker compose -f cert-compose.yaml up --build -d`
 - `docker compose run --rm  certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d [domain name]` and ensure a successful completion
